@@ -84,21 +84,21 @@ export const AnyHandlerSchema = z.discriminatedUnion("type", [
  * Command-only handler union (single variant discriminated union for consistency).
  * For hooks that only support "command" type.
  */
-export const CommandOnlyHandlerSchema = z.discriminatedUnion("type", [
-  CommandHandlerSchema,
-])
+export const CommandOnlyHandlerSchema = CommandHandlerSchema
 
 /** @typedef {z.infer<typeof CommandOnlyHandlerSchema>} CommandOnlyHandler */
 
 /**
  * Builds a hook config entry schema for a given matcher schema and handler schema.
- * Hooks with matchers: { matcher: M, hooks: H[] }
+ * The optionality of `matcher` in the resulting type is determined by the passed
+ * schema — pass `schema.optional()` for an optional matcher, or the bare schema
+ * for a required one (e.g. FileChanged).
  *
- * @template {string} M
- * @template H
- * @param {z.ZodType<M>} matcherSchema - Zod schema for the matcher field
- * @param {z.ZodType<H>} handlerSchema - Zod schema for individual hook handlers
- * @returns {z.ZodObject<{ matcher: z.ZodOptional<z.ZodType<M>>, hooks: z.ZodTuple<[z.ZodType<H>, ...z.zodType<H>[]]>> }>}
+ * @template {z.ZodType} MS - Matcher schema (preserves optionality)
+ * @template {z.ZodType} HS - Handler schema
+ * @param {MS} matcherSchema - Zod schema for the matcher field
+ * @param {HS} handlerSchema - Zod schema for individual hook handlers
+ * @returns {z.ZodObject<{ matcher: MS, hooks: z.ZodArray<HS> }>}
  */
 export function makeMatchedConfigSchema(matcherSchema, handlerSchema) {
   return z.object({
@@ -110,9 +110,9 @@ export function makeMatchedConfigSchema(matcherSchema, handlerSchema) {
 /**
  * Builds a hook config entry schema without matcher support.
  *
- * @template H
- * @param {z.ZodType<H>} handlerSchema - Zod schema for individual hook handlers
- * @returns {z.ZodObject<{ hooks: z.ZodArray<z.ZodType<H>> }>}
+ * @template {z.ZodType} HS - Handler schema
+ * @param {HS} handlerSchema - Zod schema for individual hook handlers
+ * @returns {z.ZodObject<{ hooks: z.ZodArray<HS> }>}
  */
 export function makeUnmatchedConfigSchema(handlerSchema) {
   return z.object({
@@ -123,12 +123,13 @@ export function makeUnmatchedConfigSchema(handlerSchema) {
 /**
  * Builds a config entry with matcher and `once` support.
  * `once` is only valid for: SessionStart, SessionEnd, PreCompact.
+ * The optionality of `matcher` is determined by the passed schema.
  *
- * @template {string} M
- * @template H
- * @param {z.ZodType<M>} matcherSchema - Zod schema for the matcher field
- * @param {z.ZodType<H>} handlerSchema - Zod schema for individual hook handlers (intersected with `{ once?: boolean }`)
- * @returns {z.ZodObject<{ matcher: z.ZodType<M>, hooks: z.ZodArray<z.ZodType<H & { once?: boolean }>> }>}
+ * @template {z.ZodType} MS - Matcher schema (preserves optionality)
+ * @template {z.ZodType} HS - Handler schema
+ * @param {MS} matcherSchema - Zod schema for the matcher field
+ * @param {HS} handlerSchema - Zod schema for individual hook handlers (intersected with `{ once?: boolean }`)
+ * @returns {z.ZodObject<{ matcher: MS, hooks: z.ZodArray<z.ZodIntersection<HS, z.ZodObject<{ once: z.ZodOptional<z.ZodBoolean> }>>> }>}
  */
 export function makeMatchedConfigWithOnceSchema(matcherSchema, handlerSchema) {
   return z.object({
@@ -143,9 +144,9 @@ export function makeMatchedConfigWithOnceSchema(matcherSchema, handlerSchema) {
  * Builds a config entry without matcher but with `once` support.
  * `once` is only valid for: SessionStart, SessionEnd, PreCompact.
  *
- * @template H
- * @param {z.ZodType<H>} handlerSchema - Zod schema for individual hook handlers (intersected with `{ once?: boolean }`)
- * @returns {z.ZodObject<{ hooks: z.ZodArray<z.ZodType<H & { once?: boolean }>> }>}
+ * @template {z.ZodType} HS - Handler schema
+ * @param {HS} handlerSchema - Zod schema for individual hook handlers (intersected with `{ once?: boolean }`)
+ * @returns {z.ZodObject<{ hooks: z.ZodArray<z.ZodIntersection<HS, z.ZodObject<{ once: z.ZodOptional<z.ZodBoolean> }>>> }>}
  */
 export function makeUnmatchedConfigWithOnceSchema(handlerSchema) {
   return z.object({

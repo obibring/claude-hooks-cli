@@ -11,7 +11,11 @@ import {
 
 // --- Matcher ---
 
-export const NotificationMatcherExportSchema = NotificationMatcherSchema
+/** Notification type matcher. Values: \"permission_prompt\", \"idle_prompt\", \"auth_success\", \"elicitation_dialog\". */
+export const NotificationMatcherExportSchema =
+  NotificationMatcherSchema.describe(
+    'Notification type matcher. Values: "permission_prompt", "idle_prompt", "auth_success", "elicitation_dialog".',
+  )
 
 /** @typedef {z.infer<typeof NotificationMatcherExportSchema>} NotificationMatcher */
 
@@ -21,21 +25,40 @@ const handlerProps = SharedHandlerPropsSchema
 
 /** Command-only hook. Matcher matches notification_type. */
 export const NotificationConfigSchema = z.object({
-  matcher: NotificationMatcherSchema.optional(),
+  /** Notification type to filter on. Only fires when the notification matches. */
+  matcher: NotificationMatcherSchema.optional().describe(
+    "Notification type to filter on. Only fires when the notification matches.",
+  ),
   hooks: z
     .array(
       z.discriminatedUnion("type", [
         z
           .object({
-            type: z.literal("command"),
-            command: z.string(),
+            /** Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error. */
+            type: z
+              .literal("command")
+              .describe(
+                "Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error.",
+              ),
+            /** Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout. */
+            command: z
+              .string()
+              .describe(
+                "Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("http"),
-            url: z.url(),
+            /** POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63. */
+            type: z
+              .literal("http")
+              .describe(
+                "POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63.",
+              ),
+            /** URL to POST the hook JSON payload to. */
+            url: z.url().describe("URL to POST the hook JSON payload to."),
             ...handlerProps.shape,
             ...HttpExtraPropsSchema.shape,
           })
@@ -50,10 +73,16 @@ export const NotificationConfigSchema = z.object({
 // --- Input ---
 
 export const NotificationInputSchema = BaseHookInputSchema.extend({
-  hook_event_name: z.literal("Notification"),
-  notification_type: NotificationTypeSchema,
-  message: z.string(),
-  title: z.string(),
+  /** Notification */
+  hook_event_name: z.literal("Notification").describe("Notification"),
+  /** Type of notification being sent. */
+  notification_type: NotificationTypeSchema.describe(
+    "Type of notification being sent.",
+  ),
+  /** Notification message body. */
+  message: z.string().describe("Notification message body."),
+  /** Notification title. */
+  title: z.string().describe("Notification title."),
 })
 
 /** @typedef {z.infer<typeof NotificationInputSchema>} NotificationInput */

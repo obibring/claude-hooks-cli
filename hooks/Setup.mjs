@@ -19,8 +19,18 @@ export const SetupConfigSchema = z.object({
     .array(
       z
         .object({
-          type: z.literal("command"),
-          command: z.string(),
+          /** Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error. */
+          type: z
+            .literal("command")
+            .describe(
+              "Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error.",
+            ),
+          /** Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout. */
+          command: z
+            .string()
+            .describe(
+              "Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout.",
+            ),
           ...handlerProps.shape,
         })
         .strict(),
@@ -33,7 +43,8 @@ export const SetupConfigSchema = z.object({
 // --- Input ---
 
 export const SetupInputSchema = BaseHookInputSchema.extend({
-  hook_event_name: z.literal("Setup"),
+  /** Setup */
+  hook_event_name: z.literal("Setup").describe("Setup"),
 })
 
 /** @typedef {z.infer<typeof SetupInputSchema>} SetupInput */

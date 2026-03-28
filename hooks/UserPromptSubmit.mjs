@@ -23,29 +23,65 @@ export const UserPromptSubmitConfigSchema = z.object({
       z.discriminatedUnion("type", [
         z
           .object({
-            type: z.literal("command"),
-            command: z.string(),
+            /** Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error. */
+            type: z
+              .literal("command")
+              .describe(
+                "Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error.",
+              ),
+            /** Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout. */
+            command: z
+              .string()
+              .describe(
+                "Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("prompt"),
-            prompt: z.string(),
+            /** Sends a prompt to a Claude model for single-turn evaluation. Returns a yes/no decision as JSON. */
+            type: z
+              .literal("prompt")
+              .describe(
+                "Sends a prompt to a Claude model for single-turn evaluation. Returns a yes/no decision as JSON.",
+              ),
+            /** Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context. */
+            prompt: z
+              .string()
+              .describe(
+                "Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("agent"),
-            prompt: z.string(),
+            /** Spawns a subagent with multi-turn tool access (Read, Grep, Glob) to verify conditions. */
+            type: z
+              .literal("agent")
+              .describe(
+                "Spawns a subagent with multi-turn tool access (Read, Grep, Glob) to verify conditions.",
+              ),
+            /** Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context. */
+            prompt: z
+              .string()
+              .describe(
+                "Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("http"),
-            url: z.url(),
+            /** POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63. */
+            type: z
+              .literal("http")
+              .describe(
+                "POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63.",
+              ),
+            /** URL to POST the hook JSON payload to. */
+            url: z.url().describe("URL to POST the hook JSON payload to."),
             ...handlerProps.shape,
             ...HttpExtraPropsSchema.shape,
           })
@@ -60,8 +96,12 @@ export const UserPromptSubmitConfigSchema = z.object({
 // --- Input ---
 
 export const UserPromptSubmitInputSchema = BaseHookInputSchema.extend({
-  hook_event_name: z.literal("UserPromptSubmit"),
-  prompt: z.string(),
+  /** UserPromptSubmit */
+  hook_event_name: z.literal("UserPromptSubmit").describe("UserPromptSubmit"),
+  /** The user's submitted prompt text, before Claude processes it. */
+  prompt: z
+    .string()
+    .describe("The user's submitted prompt text, before Claude processes it."),
 })
 
 /** @typedef {z.infer<typeof UserPromptSubmitInputSchema>} UserPromptSubmitInput */
@@ -70,7 +110,13 @@ export const UserPromptSubmitInputSchema = BaseHookInputSchema.extend({
 
 /** UserPromptSubmit can modify the prompt field in output. */
 export const UserPromptSubmitOutputSchema = BaseHookOutputSchema.extend({
-  prompt: z.string().optional(),
+  /** Modified prompt text that replaces the original. Claude will see this instead of what the user typed. */
+  prompt: z
+    .string()
+    .optional()
+    .describe(
+      "Modified prompt text that replaces the original. Claude will see this instead of what the user typed.",
+    ),
 })
 
 /** @typedef {z.infer<typeof UserPromptSubmitOutputSchema>} UserPromptSubmitOutput */

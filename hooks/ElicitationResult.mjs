@@ -11,7 +11,10 @@ import {
 
 // --- Matcher ---
 
-export const ElicitationResultMatcherSchema = ElicitationMatcherSchema
+/** MCP server name matcher for ElicitationResult. */
+export const ElicitationResultMatcherSchema = ElicitationMatcherSchema.describe(
+  "MCP server name matcher for ElicitationResult.",
+)
 
 /** @typedef {z.infer<typeof ElicitationResultMatcherSchema>} ElicitationResultMatcher */
 
@@ -21,21 +24,40 @@ const handlerProps = SharedHandlerPropsSchema
 
 /** Command-only hook. Matcher matches mcp_server_name. */
 export const ElicitationResultConfigSchema = z.object({
-  matcher: ElicitationResultMatcherSchema.optional(),
+  /** MCP server name to filter on. */
+  matcher: ElicitationResultMatcherSchema.optional().describe(
+    "MCP server name to filter on.",
+  ),
   hooks: z
     .array(
       z.discriminatedUnion("type", [
         z
           .object({
-            type: z.literal("command"),
-            command: z.string(),
+            /** Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error. */
+            type: z
+              .literal("command")
+              .describe(
+                "Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error.",
+              ),
+            /** Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout. */
+            command: z
+              .string()
+              .describe(
+                "Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("http"),
-            url: z.url(),
+            /** POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63. */
+            type: z
+              .literal("http")
+              .describe(
+                "POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63.",
+              ),
+            /** URL to POST the hook JSON payload to. */
+            url: z.url().describe("URL to POST the hook JSON payload to."),
             ...handlerProps.shape,
             ...HttpExtraPropsSchema.shape,
           })
@@ -50,11 +72,20 @@ export const ElicitationResultConfigSchema = z.object({
 // --- Input ---
 
 export const ElicitationResultInputSchema = BaseHookInputSchema.extend({
-  hook_event_name: z.literal("ElicitationResult"),
-  mcp_server_name: z.string(),
-  user_response: z.unknown(),
-  message: z.string(),
-  elicitation_id: z.string(),
+  /** ElicitationResult */
+  hook_event_name: z.literal("ElicitationResult").describe("ElicitationResult"),
+  /** Name of the MCP server. */
+  mcp_server_name: z.string().describe("Name of the MCP server."),
+  /** The user's response to the elicitation (shape varies). */
+  user_response: z
+    .unknown()
+    .describe("The user's response to the elicitation (shape varies)."),
+  /** The original prompt message. */
+  message: z.string().describe("The original prompt message."),
+  /** Unique identifier matching the original Elicitation. */
+  elicitation_id: z
+    .string()
+    .describe("Unique identifier matching the original Elicitation."),
 })
 
 /** @typedef {z.infer<typeof ElicitationResultInputSchema>} ElicitationResultInput */
@@ -62,8 +93,12 @@ export const ElicitationResultInputSchema = BaseHookInputSchema.extend({
 // --- Output ---
 
 export const ElicitationResultHookSpecificOutputSchema = z.object({
-  action: ElicitationActionSchema.optional(),
-  content: z.unknown().optional(),
+  /** Override the user's response. \"accept\" sends replacement content, \"decline\" rejects, \"cancel\" aborts. */
+  action: ElicitationActionSchema.optional().describe(
+    'Override the user\'s response. "accept" sends replacement content, "decline" rejects, "cancel" aborts.',
+  ),
+  /** Replacement response content. */
+  content: z.unknown().optional().describe("Replacement response content."),
 })
 
 export const ElicitationResultOutputSchema = BaseHookOutputSchema.extend({

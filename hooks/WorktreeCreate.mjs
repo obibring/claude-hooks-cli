@@ -23,15 +23,31 @@ export const WorktreeCreateConfigSchema = z.object({
       z.discriminatedUnion("type", [
         z
           .object({
-            type: z.literal("command"),
-            command: z.string(),
+            /** Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error. */
+            type: z
+              .literal("command")
+              .describe(
+                "Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error.",
+              ),
+            /** Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout. */
+            command: z
+              .string()
+              .describe(
+                "Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("http"),
-            url: z.url(),
+            /** POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63. */
+            type: z
+              .literal("http")
+              .describe(
+                "POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63.",
+              ),
+            /** URL to POST the hook JSON payload to. */
+            url: z.url().describe("URL to POST the hook JSON payload to."),
             ...handlerProps.shape,
             ...HttpExtraPropsSchema.shape,
           })
@@ -46,8 +62,10 @@ export const WorktreeCreateConfigSchema = z.object({
 // --- Input ---
 
 export const WorktreeCreateInputSchema = BaseHookInputSchema.extend({
-  hook_event_name: z.literal("WorktreeCreate"),
-  name: z.string(),
+  /** WorktreeCreate */
+  hook_event_name: z.literal("WorktreeCreate").describe("WorktreeCreate"),
+  /** Name for the worktree being created. */
+  name: z.string().describe("Name for the worktree being created."),
 })
 
 /** @typedef {z.infer<typeof WorktreeCreateInputSchema>} WorktreeCreateInput */

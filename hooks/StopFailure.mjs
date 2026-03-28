@@ -2,7 +2,7 @@ import { z } from "zod/v4"
 
 import { StopFailureErrorSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { StopFailureMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { StopFailureMatcherSchema as _StopFailureMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 import {
   SharedHandlerPropsSchema,
@@ -11,7 +11,10 @@ import {
 
 // --- Matcher ---
 
-export { StopFailureMatcherSchema }
+/** StopFailure error type matcher. */
+export const StopFailureMatcherSchema = _StopFailureMatcherSchema.describe(
+  "StopFailure error type matcher.",
+)
 
 /** @typedef {z.infer<typeof StopFailureMatcherSchema>} StopFailureMatcher */
 
@@ -21,21 +24,40 @@ const handlerProps = SharedHandlerPropsSchema
 
 /** Command-only hook. Matcher matches error type. */
 export const StopFailureConfigSchema = z.object({
-  matcher: StopFailureMatcherSchema.optional(),
+  /** Error type to filter on. */
+  matcher: StopFailureMatcherSchema.optional().describe(
+    "Error type to filter on.",
+  ),
   hooks: z
     .array(
       z.discriminatedUnion("type", [
         z
           .object({
-            type: z.literal("command"),
-            command: z.string(),
+            /** Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error. */
+            type: z
+              .literal("command")
+              .describe(
+                "Runs a shell command. Receives JSON input on stdin, returns JSON on stdout. Exit code 0 = success, 2 = blocking error.",
+              ),
+            /** Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout. */
+            command: z
+              .string()
+              .describe(
+                "Shell command to execute. The hook receives JSON input on stdin and can return JSON on stdout.",
+              ),
             ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
-            type: z.literal("http"),
-            url: z.url(),
+            /** POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63. */
+            type: z
+              .literal("http")
+              .describe(
+                "POSTs JSON to a URL and receives a JSON response. Routed through sandbox network proxy when sandboxing is enabled. Since v2.1.63.",
+              ),
+            /** URL to POST the hook JSON payload to. */
+            url: z.url().describe("URL to POST the hook JSON payload to."),
             ...handlerProps.shape,
             ...HttpExtraPropsSchema.shape,
           })
@@ -50,10 +72,22 @@ export const StopFailureConfigSchema = z.object({
 // --- Input ---
 
 export const StopFailureInputSchema = BaseHookInputSchema.extend({
-  hook_event_name: z.literal("StopFailure"),
-  error: StopFailureErrorSchema,
-  error_details: z.unknown(),
-  last_assistant_message: z.string(),
+  /** StopFailure */
+  hook_event_name: z.literal("StopFailure").describe("StopFailure"),
+  /** The API error type that caused the failure. */
+  error: StopFailureErrorSchema.describe(
+    "The API error type that caused the failure.",
+  ),
+  /** Additional error details (shape varies by error type — may contain rate limit timing, auth error codes, etc.). */
+  error_details: z
+    .unknown()
+    .describe(
+      "Additional error details (shape varies by error type — may contain rate limit timing, auth error codes, etc.).",
+    ),
+  /** Claude's last response text before the error occurred. */
+  last_assistant_message: z
+    .string()
+    .describe("Claude's last response text before the error occurred."),
 })
 
 /** @typedef {z.infer<typeof StopFailureInputSchema>} StopFailureInput */

@@ -46,6 +46,7 @@ const addCmd = new Command("add")
   .option("--once", "Only fire once per session")
   .option("--status-message <msg>", "Status spinner message")
   .option("--if <condition>", "Conditional execution rule")
+  .option("--create", "Create the command file if it doesn't exist")
   .option("--non-interactive", "Non-interactive mode (for agents/scripts)")
 
 addScopeOption(addCmd)
@@ -66,6 +67,7 @@ addCmd.action(async (opts) => {
     once: opts.once,
     statusMessage: opts.statusMessage,
     ifCondition: opts.if,
+    create: opts.create,
     nonInteractive: opts.nonInteractive,
   })
 

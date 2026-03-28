@@ -102,7 +102,7 @@ export const CommandOnlyHandlerSchema = z.discriminatedUnion("type", [
  */
 export function makeMatchedConfigSchema(matcherSchema, handlerSchema) {
   return z.object({
-    matcher: matcherSchema.optional(),
+    matcher: matcherSchema,
     hooks: z.array(handlerSchema).nonempty(),
   })
 }

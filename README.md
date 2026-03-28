@@ -87,6 +87,7 @@ claude-hooks add [options]
 | `--once`                  | Only fire once per session (SessionStart, SessionEnd, PreCompact only) |
 | `--status-message <msg>`  | Custom spinner message shown while hook runs                           |
 | `--if <condition>`        | Conditional execution using permission rule syntax                     |
+| `--create`                | Create the command file with a starter template if it doesn't exist    |
 | `-s, --scope <scope>`     | Settings file: `user`, `project`, or `local` (default: `project`)      |
 | `--non-interactive`       | Skip all prompts — use only provided flag values                       |
 
@@ -191,6 +192,67 @@ claude-hooks add -e Stop -t command -c "./hooks/on-stop.sh" --non-interactive
 # Compound commands are left as-is
 claude-hooks add -e Stop -t command -c "echo done | tee /tmp/log" --non-interactive
 ```
+
+#### Example: Create a new hook file with `--create`
+
+Use `--create` to scaffold a new hook script file with a starter
+template. The CLI resolves the path, creates parent directories if
+needed, writes a language-appropriate template, and wires up the
+command with the correct runner.
+
+```bash
+claude-hooks add \
+  --event PreToolUse \
+  --type command \
+  --command "./hooks/validate-bash.ts" \
+  --matcher "Bash" \
+  --create \
+  --scope project \
+  --non-interactive
+```
+
+```
+┌  Add a Claude Code hook
+│
+●  Will create: hooks/validate-bash.ts
+│
+◆  Created hooks/validate-bash.ts
+│
+◆  Added PreToolUse hook to project settings
+└  Done
+```
+
+The created `hooks/validate-bash.ts` contains:
+
+```ts
+import { readFileSync } from "node:fs"
+
+const input = JSON.parse(readFileSync("/dev/stdin", "utf-8"))
+
+// Your hook logic here
+// console.log(JSON.stringify({ additionalContext: "..." }))
+```
+
+And the settings entry uses `npx tsx` to run it:
+
+```json
+{
+  "type": "command",
+  "command": "npx tsx \"/absolute/path/to/hooks/validate-bash.ts\""
+}
+```
+
+Templates are provided for `.ts`, `.js`, `.mjs`, `.cjs`, `.py`, `.sh`,
+`.bash`, and `.zsh`. If the file already exists, `--create` skips
+creation and proceeds normally. If the path has no file extension, the
+CLI errors:
+
+```
+■  File path must have an extension (e.g. .ts, .js, .py, .sh)
+```
+
+In interactive mode (without `--non-interactive`), you'll be asked to
+confirm before the file is created.
 
 #### Interactive Add Walkthrough
 

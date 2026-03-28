@@ -1,10 +1,6 @@
 import { z } from "zod/v4"
 
 import {
-  AnyHandlerWithIfSchema,
-  makeConfigSchemaWithMatched,
-} from "../schemas/config-schemas.mjs"
-import {
   BaseHookInputSchema,
   ToolFieldsSchema,
 } from "../schemas/input-schemas.mjs"
@@ -20,10 +16,61 @@ export const PostToolUseFailureMatcherSchema = ToolNameMatcherSchema
 // --- Config ---
 
 /** Supports all 4 handler types. Supports `if` for per-handler conditional execution. */
-export const PostToolUseFailureConfigSchema = makeConfigSchemaWithMatched(
-  PostToolUseFailureMatcherSchema.optional(),
-  AnyHandlerWithIfSchema,
-)
+export const PostToolUseFailureConfigSchema = z.object({
+  matcher: ToolNameMatcherSchema.optional(),
+  hooks: z
+    .array(
+      z.discriminatedUnion("type", [
+        z
+          .object({
+            type: z.literal("command"),
+            command: z.string(),
+            timeout: z.number().int().positive().optional(),
+            async: z.boolean().optional(),
+            asyncRewake: z.boolean().optional(),
+            statusMessage: z.string().optional(),
+            if: z.string().optional(),
+          })
+          .strict(),
+        z
+          .object({
+            type: z.literal("prompt"),
+            prompt: z.string(),
+            timeout: z.number().int().positive().optional(),
+            async: z.boolean().optional(),
+            asyncRewake: z.boolean().optional(),
+            statusMessage: z.string().optional(),
+            if: z.string().optional(),
+          })
+          .strict(),
+        z
+          .object({
+            type: z.literal("agent"),
+            prompt: z.string(),
+            timeout: z.number().int().positive().optional(),
+            async: z.boolean().optional(),
+            asyncRewake: z.boolean().optional(),
+            statusMessage: z.string().optional(),
+            if: z.string().optional(),
+          })
+          .strict(),
+        z
+          .object({
+            type: z.literal("http"),
+            url: z.url(),
+            timeout: z.number().int().positive().optional(),
+            async: z.boolean().optional(),
+            asyncRewake: z.boolean().optional(),
+            statusMessage: z.string().optional(),
+            if: z.string().optional(),
+            headers: z.record(z.string(), z.string()).optional(),
+            allowedEnvVars: z.array(z.string()).optional(),
+          })
+          .strict(),
+      ]),
+    )
+    .nonempty(),
+})
 
 /** @typedef {z.infer<typeof PostToolUseFailureConfigSchema>} PostToolUseFailureConfig */
 

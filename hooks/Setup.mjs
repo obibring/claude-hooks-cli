@@ -1,9 +1,5 @@
 import { z } from "zod/v4"
 
-import {
-  CommandOnlyHandlerSchema,
-  makeConfigSchemaWithoutMatched,
-} from "../schemas/config-schemas.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
@@ -15,9 +11,22 @@ export const SetupMatcherSchema = undefined
 // --- Config ---
 
 /** Command-only hook. No matcher support. Default timeout 30000ms. */
-export const SetupConfigSchema = makeConfigSchemaWithoutMatched(
-  CommandOnlyHandlerSchema,
-)
+export const SetupConfigSchema = z.object({
+  hooks: z
+    .array(
+      z
+        .object({
+          type: z.literal("command"),
+          command: z.string(),
+          timeout: z.number().int().positive().optional(),
+          async: z.boolean().optional(),
+          asyncRewake: z.boolean().optional(),
+          statusMessage: z.string().optional(),
+        })
+        .strict(),
+    )
+    .nonempty(),
+})
 
 /** @typedef {z.infer<typeof SetupConfigSchema>} SetupConfig */
 

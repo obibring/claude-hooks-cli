@@ -1,9 +1,5 @@
 import { z } from "zod/v4"
 
-import {
-  CommandOnlyHandlerSchema,
-  makeConfigSchemaWithMatched,
-} from "../schemas/config-schemas.mjs"
 import { NotificationTypeSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { NotificationMatcherSchema } from "../schemas/matcher-schemas.mjs"
@@ -18,10 +14,39 @@ export const NotificationMatcherExportSchema = NotificationMatcherSchema
 // --- Config ---
 
 /** Command-only hook. Matcher matches notification_type. */
-export const NotificationConfigSchema = makeConfigSchemaWithMatched(
-  NotificationMatcherSchema.optional(),
-  CommandOnlyHandlerSchema,
-)
+export const NotificationConfigSchema = z
+  .object({
+    matcher: NotificationMatcherSchema.optional(),
+    hooks: z
+      .array(
+        z.discriminatedUnion("type", [
+          z
+            .object({
+              type: z.literal("command"),
+              command: z.string(),
+              timeout: z.number().int().positive().optional(),
+              async: z.boolean().optional(),
+              asyncRewake: z.boolean().optional(),
+              statusMessage: z.string().optional(),
+            })
+            .strict(),
+          z
+            .object({
+              type: z.literal("http"),
+              url: z.url(),
+              timeout: z.number().int().positive().optional(),
+              async: z.boolean().optional(),
+              asyncRewake: z.boolean().optional(),
+              statusMessage: z.string().optional(),
+              headers: z.record(z.string(), z.string()).optional(),
+              allowedEnvVars: z.array(z.string()).optional(),
+            })
+            .strict(),
+        ]),
+      )
+      .nonempty(),
+  })
+  .strict()
 
 /** @typedef {z.infer<typeof NotificationConfigSchema>} NotificationConfig */
 

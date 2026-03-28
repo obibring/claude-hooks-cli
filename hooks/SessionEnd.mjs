@@ -1,9 +1,5 @@
 import { z } from "zod/v4"
 
-import {
-  CommandOnlyHandlerSchema,
-  makeConfigSchemaWithMatched,
-} from "../schemas/config-schemas.mjs"
 import { SessionEndReasonSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { SessionEndMatcherSchema } from "../schemas/matcher-schemas.mjs"
@@ -18,10 +14,41 @@ export { SessionEndMatcherSchema }
 // --- Config ---
 
 /** Command-only hook. Supports `once`. Matcher matches reason. */
-export const SessionEndConfigSchema = makeConfigSchemaWithMatched(
-  SessionEndMatcherSchema.optional(),
-  CommandOnlyHandlerSchema.extend({ once: z.boolean().optional() }),
-)
+export const SessionEndConfigSchema = z
+  .object({
+    matcher: SessionEndMatcherSchema.optional(),
+    hooks: z
+      .array(
+        z.discriminatedUnion("type", [
+          z
+            .object({
+              type: z.literal("command"),
+              command: z.string(),
+              timeout: z.number().int().positive().optional(),
+              async: z.boolean().optional(),
+              asyncRewake: z.boolean().optional(),
+              statusMessage: z.string().optional(),
+              once: z.boolean().optional(),
+            })
+            .strict(),
+          z
+            .object({
+              type: z.literal("http"),
+              url: z.url(),
+              timeout: z.number().int().positive().optional(),
+              async: z.boolean().optional(),
+              asyncRewake: z.boolean().optional(),
+              statusMessage: z.string().optional(),
+              headers: z.record(z.string(), z.string()).optional(),
+              allowedEnvVars: z.array(z.string()).optional(),
+              once: z.boolean().optional(),
+            })
+            .strict(),
+        ]),
+      )
+      .nonempty(),
+  })
+  .strict()
 
 /** @typedef {z.infer<typeof SessionEndConfigSchema>} SessionEndConfig */
 

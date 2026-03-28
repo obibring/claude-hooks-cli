@@ -11,15 +11,24 @@ export const StopFailureConfigSchema: z.ZodObject<{
         server_error: "server_error";
         max_output_tokens: "max_output_tokens";
     }>>;
-    hooks: z.ZodArray<z.ZodObject<{
+    hooks: z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
-    }, z.core.$strict>>;
-}, z.core.$strip>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"http">;
+        url: z.ZodURL;
+        timeout: z.ZodOptional<z.ZodNumber>;
+        async: z.ZodOptional<z.ZodBoolean>;
+        asyncRewake: z.ZodOptional<z.ZodBoolean>;
+        statusMessage: z.ZodOptional<z.ZodString>;
+        headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
+        allowedEnvVars: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    }, z.core.$strict>], "type">>;
+}, z.core.$strict>;
 /** @typedef {z.infer<typeof StopFailureConfigSchema>} StopFailureConfig */
 export const StopFailureInputSchema: z.ZodObject<{
     session_id: z.ZodString;

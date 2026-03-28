@@ -2,15 +2,24 @@
 export const TeammateIdleMatcherSchema: undefined;
 /** Command-only hook. No matcher support. Requires experimental agent teams. */
 export const TeammateIdleConfigSchema: z.ZodObject<{
-    hooks: z.ZodArray<z.ZodObject<{
+    hooks: z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
-    }, z.core.$strict>>;
-}, z.core.$strip>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"http">;
+        url: z.ZodURL;
+        timeout: z.ZodOptional<z.ZodNumber>;
+        async: z.ZodOptional<z.ZodBoolean>;
+        asyncRewake: z.ZodOptional<z.ZodBoolean>;
+        statusMessage: z.ZodOptional<z.ZodString>;
+        headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
+        allowedEnvVars: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    }, z.core.$strict>], "type">>;
+}, z.core.$strict>;
 /** @typedef {z.infer<typeof TeammateIdleConfigSchema>} TeammateIdleConfig */
 export const TeammateIdleInputSchema: z.ZodObject<{
     session_id: z.ZodString;

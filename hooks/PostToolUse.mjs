@@ -5,7 +5,7 @@ import {
 } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 import {
-  AnyHandlerSchema,
+  AnyHandlerWithIfSchema,
   makeMatchedConfigSchema,
 } from "../schemas/config-schemas.mjs"
 import { ToolNameMatcherSchema } from "../schemas/matcher-schemas.mjs"
@@ -22,7 +22,7 @@ export const PostToolUseMatcherSchema = ToolNameMatcherSchema
 /** Supports all 4 handler types. Supports `if` for per-handler conditional execution. */
 export const PostToolUseConfigSchema = makeMatchedConfigSchema(
   PostToolUseMatcherSchema.optional(),
-  AnyHandlerSchema,
+  AnyHandlerWithIfSchema,
 )
 
 /** @typedef {z.infer<typeof PostToolUseConfigSchema>} PostToolUseConfig */

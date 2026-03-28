@@ -10,8 +10,7 @@ export const ElicitationConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
-        if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>>;
+    }, z.core.$strict>>;
 }, z.core.$strip>;
 /** @typedef {z.infer<typeof ElicitationConfigSchema>} ElicitationConfig */
 export const ElicitationInputSchema: z.ZodObject<{

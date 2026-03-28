@@ -9,34 +9,30 @@ export const UserPromptSubmitConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
-        if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>, z.ZodObject<{
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"prompt">;
-        prompt: z.ZodString;
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
-        if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>, z.ZodObject<{
+        prompt: z.ZodString;
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"agent">;
+        timeout: z.ZodOptional<z.ZodNumber>;
+        async: z.ZodOptional<z.ZodBoolean>;
+        asyncRewake: z.ZodOptional<z.ZodBoolean>;
+        statusMessage: z.ZodOptional<z.ZodString>;
         prompt: z.ZodString;
-        timeout: z.ZodOptional<z.ZodNumber>;
-        async: z.ZodOptional<z.ZodBoolean>;
-        asyncRewake: z.ZodOptional<z.ZodBoolean>;
-        statusMessage: z.ZodOptional<z.ZodString>;
-        if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>, z.ZodObject<{
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"http">;
-        url: z.ZodURL;
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
-        if: z.ZodOptional<z.ZodString>;
+        url: z.ZodURL;
         headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
         allowedEnvVars: z.ZodOptional<z.ZodArray<z.ZodString>>;
-    }, z.core.$strip>], "type">>;
+    }, z.core.$strict>], "type">>;
 }, z.core.$strip>;
 /** @typedef {z.infer<typeof UserPromptSubmitConfigSchema>} UserPromptSubmitConfig */
 export const UserPromptSubmitInputSchema: z.ZodObject<{

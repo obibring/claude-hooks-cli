@@ -11,7 +11,7 @@ export const PermissionRequestConfigSchema: z.ZodObject<{
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
         if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>, z.ZodObject<{
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"prompt">;
         prompt: z.ZodString;
         timeout: z.ZodOptional<z.ZodNumber>;
@@ -19,7 +19,7 @@ export const PermissionRequestConfigSchema: z.ZodObject<{
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
         if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>, z.ZodObject<{
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"agent">;
         prompt: z.ZodString;
         timeout: z.ZodOptional<z.ZodNumber>;
@@ -27,7 +27,7 @@ export const PermissionRequestConfigSchema: z.ZodObject<{
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
         if: z.ZodOptional<z.ZodString>;
-    }, z.core.$strip>, z.ZodObject<{
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"http">;
         url: z.ZodURL;
         timeout: z.ZodOptional<z.ZodNumber>;
@@ -37,7 +37,7 @@ export const PermissionRequestConfigSchema: z.ZodObject<{
         if: z.ZodOptional<z.ZodString>;
         headers: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodString>>;
         allowedEnvVars: z.ZodOptional<z.ZodArray<z.ZodString>>;
-    }, z.core.$strip>], "type">>;
+    }, z.core.$strict>], "type">>;
 }, z.core.$strip>;
 /** @typedef {z.infer<typeof PermissionRequestConfigSchema>} PermissionRequestConfig */
 export const PermissionRequestInputSchema: z.ZodObject<{

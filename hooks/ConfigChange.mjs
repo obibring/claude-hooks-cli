@@ -1,15 +1,16 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { ConfigChangeMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import {
-  ConfigChangeSourceSchema,
   BlockDecisionSchema,
+  ConfigChangeSourceSchema,
 } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { ConfigChangeMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -20,7 +21,7 @@ export { ConfigChangeMatcherSchema }
 // --- Config ---
 
 /** Command-only hook. Matcher matches source. */
-export const ConfigChangeConfigSchema = makeMatchedConfigSchema(
+export const ConfigChangeConfigSchema = makeConfigSchemaWithMatched(
   ConfigChangeMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

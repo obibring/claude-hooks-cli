@@ -1,10 +1,11 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   AnyHandlerSchema,
-  makeUnmatchedConfigSchema,
+  makeConfigSchemaWithoutMatched,
 } from "../schemas/config-schemas.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -15,7 +16,7 @@ export const TaskCompletedMatcherSchema = undefined
 
 /** Supports all 4 handler types. No matcher support. Requires experimental agent teams. */
 export const TaskCompletedConfigSchema =
-  makeUnmatchedConfigSchema(AnyHandlerSchema)
+  makeConfigSchemaWithoutMatched(AnyHandlerSchema)
 
 /** @typedef {z.infer<typeof TaskCompletedConfigSchema>} TaskCompletedConfig */
 

@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigWithOnceSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { SessionStartMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { SessionStartSourceSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { SessionStartMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,9 +18,9 @@ export { SessionStartMatcherSchema }
 // --- Config ---
 
 /** Command-only hook. Supports `once`. Matcher matches source. */
-export const SessionStartConfigSchema = makeMatchedConfigWithOnceSchema(
+export const SessionStartConfigSchema = makeConfigSchemaWithMatched(
   SessionStartMatcherSchema.optional(),
-  CommandOnlyHandlerSchema,
+  CommandOnlyHandlerSchema.extend({ once: z.boolean().optional() }),
 )
 
 /** @typedef {z.infer<typeof SessionStartConfigSchema>} SessionStartConfig */

@@ -10,7 +10,15 @@ export const SessionEndConfigSchema: z.ZodObject<{
         bypass_permissions_disabled: "bypass_permissions_disabled";
         other: "other";
     }>>;
-    hooks: z.ZodArray;
+    hooks: z.ZodArray<z.ZodObject<{
+        type: z.ZodLiteral<"command">;
+        command: z.ZodString;
+        timeout: z.ZodOptional<z.ZodNumber>;
+        async: z.ZodOptional<z.ZodBoolean>;
+        asyncRewake: z.ZodOptional<z.ZodBoolean>;
+        statusMessage: z.ZodOptional<z.ZodString>;
+        once: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strict>>;
 }, z.core.$strip>;
 /** @typedef {z.infer<typeof SessionEndConfigSchema>} SessionEndConfig */
 export const SessionEndInputSchema: z.ZodObject<{

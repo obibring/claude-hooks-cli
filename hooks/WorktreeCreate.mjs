@@ -1,10 +1,11 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeUnmatchedConfigSchema,
+  makeConfigSchemaWithoutMatched,
 } from "../schemas/config-schemas.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -14,7 +15,7 @@ export const WorktreeCreateMatcherSchema = undefined
 // --- Config ---
 
 /** Command-only hook. No matcher support. */
-export const WorktreeCreateConfigSchema = makeUnmatchedConfigSchema(
+export const WorktreeCreateConfigSchema = makeConfigSchemaWithoutMatched(
   CommandOnlyHandlerSchema,
 )
 

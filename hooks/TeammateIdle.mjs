@@ -1,10 +1,11 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeUnmatchedConfigSchema,
+  makeConfigSchemaWithoutMatched,
 } from "../schemas/config-schemas.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -14,7 +15,7 @@ export const TeammateIdleMatcherSchema = undefined
 // --- Config ---
 
 /** Command-only hook. No matcher support. Requires experimental agent teams. */
-export const TeammateIdleConfigSchema = makeUnmatchedConfigSchema(
+export const TeammateIdleConfigSchema = makeConfigSchemaWithoutMatched(
   CommandOnlyHandlerSchema,
 )
 

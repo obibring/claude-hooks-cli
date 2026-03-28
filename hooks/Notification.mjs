@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { NotificationMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { NotificationTypeSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { NotificationMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,7 +18,7 @@ export const NotificationMatcherExportSchema = NotificationMatcherSchema
 // --- Config ---
 
 /** Command-only hook. Matcher matches notification_type. */
-export const NotificationConfigSchema = makeMatchedConfigSchema(
+export const NotificationConfigSchema = makeConfigSchemaWithMatched(
   NotificationMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

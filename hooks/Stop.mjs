@@ -1,11 +1,12 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   AnyHandlerSchema,
-  makeUnmatchedConfigSchema,
+  makeConfigSchemaWithoutMatched,
 } from "../schemas/config-schemas.mjs"
 import { BlockDecisionSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -15,7 +16,7 @@ export const StopMatcherSchema = undefined
 // --- Config ---
 
 /** Supports all 4 handler types. No matcher support. */
-export const StopConfigSchema = makeUnmatchedConfigSchema(AnyHandlerSchema)
+export const StopConfigSchema = makeConfigSchemaWithoutMatched(AnyHandlerSchema)
 
 /** @typedef {z.infer<typeof StopConfigSchema>} StopConfig */
 

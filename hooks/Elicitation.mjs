@@ -2,7 +2,7 @@ import { z } from "zod/v4"
 
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
 import { ElicitationActionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
@@ -18,7 +18,7 @@ export { ElicitationMatcherSchema }
 // --- Config ---
 
 /** Command-only hook. Matcher matches mcp_server_name. */
-export const ElicitationConfigSchema = makeMatchedConfigSchema(
+export const ElicitationConfigSchema = makeConfigSchemaWithMatched(
   ElicitationMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

@@ -31,7 +31,6 @@ export const PromptHandlerSchema = z
     async: z.boolean().optional(),
     asyncRewake: z.boolean().optional(),
     statusMessage: z.string().optional(),
-    if: z.string().optional(),
   })
   .strict()
 
@@ -141,7 +140,7 @@ export const CommandOnlyHandlerSchema = CommandHandlerNoIfSchema
  * @param {HS} handlerSchema - Zod schema for individual hook handlers
  * @returns {z.ZodObject<{ matcher: MS, hooks: z.ZodArray<HS> }>}
  */
-export function makeMatchedConfigSchema(matcherSchema, handlerSchema) {
+export function makeConfigSchemaWithMatched(matcherSchema, handlerSchema) {
   return z.object({
     matcher: matcherSchema,
     hooks: z.array(handlerSchema).nonempty(),
@@ -155,43 +154,8 @@ export function makeMatchedConfigSchema(matcherSchema, handlerSchema) {
  * @param {HS} handlerSchema - Zod schema for individual hook handlers
  * @returns {z.ZodObject<{ hooks: z.ZodArray<HS> }>}
  */
-export function makeUnmatchedConfigSchema(handlerSchema) {
+export function makeConfigSchemaWithoutMatched(handlerSchema) {
   return z.object({
     hooks: z.array(handlerSchema).nonempty(),
-  })
-}
-
-/**
- * Builds a config entry with matcher and `once` support.
- * `once` is only valid for: SessionStart, SessionEnd, PreCompact.
- * Uses `.extend()` to preserve strict mode from the handler schema.
- *
- * @template {z.ZodType} MS - Matcher schema (preserves optionality)
- * @template {z.ZodObject} HS - Handler schema (must be a z.ZodObject to support .extend())
- * @param {MS} matcherSchema - Zod schema for the matcher field
- * @param {HS} handlerSchema - Zod schema for individual hook handlers (extended with `once?: boolean`)
- * @returns {z.ZodObject<{ matcher: MS, hooks: z.ZodArray }>}
- */
-export function makeMatchedConfigWithOnceSchema(matcherSchema, handlerSchema) {
-  const withOnce = handlerSchema.extend({ once: z.boolean().optional() })
-  return z.object({
-    matcher: matcherSchema,
-    hooks: z.array(withOnce).nonempty(),
-  })
-}
-
-/**
- * Builds a config entry without matcher but with `once` support.
- * `once` is only valid for: SessionStart, SessionEnd, PreCompact.
- * Uses `.extend()` to preserve strict mode from the handler schema.
- *
- * @template {z.ZodObject} HS - Handler schema (must be a z.ZodObject to support .extend())
- * @param {HS} handlerSchema - Zod schema for individual hook handlers (extended with `once?: boolean`)
- * @returns {z.ZodObject<{ hooks: z.ZodArray }>}
- */
-export function makeUnmatchedConfigWithOnceSchema(handlerSchema) {
-  const withOnce = handlerSchema.extend({ once: z.boolean().optional() })
-  return z.object({
-    hooks: z.array(withOnce).nonempty(),
   })
 }

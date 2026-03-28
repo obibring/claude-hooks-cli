@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   AnyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { SubagentTypeMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BlockDecisionSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { SubagentTypeMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,7 +18,7 @@ export const SubagentStopMatcherSchema = SubagentTypeMatcherSchema
 // --- Config ---
 
 /** Supports all 4 handler types. Matcher matches agent_type. */
-export const SubagentStopConfigSchema = makeMatchedConfigSchema(
+export const SubagentStopConfigSchema = makeConfigSchemaWithMatched(
   SubagentStopMatcherSchema.optional(),
   AnyHandlerSchema,
 )

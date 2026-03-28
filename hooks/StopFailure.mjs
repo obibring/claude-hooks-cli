@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { StopFailureMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { StopFailureErrorSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { StopFailureMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,7 +18,7 @@ export { StopFailureMatcherSchema }
 // --- Config ---
 
 /** Command-only hook. Matcher matches error type. */
-export const StopFailureConfigSchema = makeMatchedConfigSchema(
+export const StopFailureConfigSchema = makeConfigSchemaWithMatched(
   StopFailureMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

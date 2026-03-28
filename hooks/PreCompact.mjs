@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigWithOnceSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { CompactTriggerMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { CompactTriggerSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { CompactTriggerMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,9 +18,9 @@ export const PreCompactMatcherSchema = CompactTriggerMatcherSchema
 // --- Config ---
 
 /** Command-only hook. Supports `once`. Matcher matches trigger. */
-export const PreCompactConfigSchema = makeMatchedConfigWithOnceSchema(
+export const PreCompactConfigSchema = makeConfigSchemaWithMatched(
   PreCompactMatcherSchema.optional(),
-  CommandOnlyHandlerSchema,
+  CommandOnlyHandlerSchema.extend({ once: z.boolean().optional() }),
 )
 
 /** @typedef {z.infer<typeof PreCompactConfigSchema>} PreCompactConfig */

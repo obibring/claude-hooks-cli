@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { CompactTriggerMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { CompactTriggerSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { CompactTriggerMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,7 +18,7 @@ export const PostCompactMatcherSchema = CompactTriggerMatcherSchema
 // --- Config ---
 
 /** Command-only hook. Matcher matches trigger. */
-export const PostCompactConfigSchema = makeMatchedConfigSchema(
+export const PostCompactConfigSchema = makeConfigSchemaWithMatched(
   PostCompactMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

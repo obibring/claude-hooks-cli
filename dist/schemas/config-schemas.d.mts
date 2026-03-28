@@ -26,33 +26,6 @@ export function makeUnmatchedConfigSchema<HS extends z.ZodType>(handlerSchema: H
     hooks: z.ZodArray<HS>;
 }>;
 /**
- * Builds a config entry with matcher and `once` support.
- * `once` is only valid for: SessionStart, SessionEnd, PreCompact.
- * Uses `.extend()` to preserve strict mode from the handler schema.
- *
- * @template {z.ZodType} MS - Matcher schema (preserves optionality)
- * @template {z.ZodObject} HS - Handler schema (must be a z.ZodObject to support .extend())
- * @param {MS} matcherSchema - Zod schema for the matcher field
- * @param {HS} handlerSchema - Zod schema for individual hook handlers (extended with `once?: boolean`)
- * @returns {z.ZodObject<{ matcher: MS, hooks: z.ZodArray }>}
- */
-export function makeMatchedConfigWithOnceSchema<MS extends z.ZodType, HS extends z.ZodObject>(matcherSchema: MS, handlerSchema: HS): z.ZodObject<{
-    matcher: MS;
-    hooks: z.ZodArray;
-}>;
-/**
- * Builds a config entry without matcher but with `once` support.
- * `once` is only valid for: SessionStart, SessionEnd, PreCompact.
- * Uses `.extend()` to preserve strict mode from the handler schema.
- *
- * @template {z.ZodObject} HS - Handler schema (must be a z.ZodObject to support .extend())
- * @param {HS} handlerSchema - Zod schema for individual hook handlers (extended with `once?: boolean`)
- * @returns {z.ZodObject<{ hooks: z.ZodArray }>}
- */
-export function makeUnmatchedConfigWithOnceSchema<HS extends z.ZodObject>(handlerSchema: HS): z.ZodObject<{
-    hooks: z.ZodArray;
-}>;
-/**
  * Handler: type "command" — runs a shell command.
  * Available for ALL 26 hook events.
  */

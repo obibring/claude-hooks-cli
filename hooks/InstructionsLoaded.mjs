@@ -1,12 +1,13 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
-import { InstructionsLoadedMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { InstructionsLoadReasonSchema } from "../schemas/enums.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
+import { InstructionsLoadedMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -17,7 +18,7 @@ export { InstructionsLoadedMatcherSchema }
 // --- Config ---
 
 /** Command-only hook. Matcher matches load_reason. */
-export const InstructionsLoadedConfigSchema = makeMatchedConfigSchema(
+export const InstructionsLoadedConfigSchema = makeConfigSchemaWithMatched(
   InstructionsLoadedMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

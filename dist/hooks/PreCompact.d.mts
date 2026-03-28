@@ -9,7 +9,15 @@ export const PreCompactConfigSchema: z.ZodObject<{
         manual: "manual";
         auto: "auto";
     }>>;
-    hooks: z.ZodArray;
+    hooks: z.ZodArray<z.ZodObject<{
+        type: z.ZodLiteral<"command">;
+        command: z.ZodString;
+        timeout: z.ZodOptional<z.ZodNumber>;
+        async: z.ZodOptional<z.ZodBoolean>;
+        asyncRewake: z.ZodOptional<z.ZodBoolean>;
+        statusMessage: z.ZodOptional<z.ZodString>;
+        once: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strict>>;
 }, z.core.$strip>;
 /** @typedef {z.infer<typeof PreCompactConfigSchema>} PreCompactConfig */
 export const PreCompactInputSchema: z.ZodObject<{

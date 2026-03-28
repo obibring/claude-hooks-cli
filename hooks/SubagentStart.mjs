@@ -1,11 +1,12 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { SubagentTypeMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -16,7 +17,7 @@ export const SubagentStartMatcherSchema = SubagentTypeMatcherSchema
 // --- Config ---
 
 /** Command-only hook. Matcher matches agent_type. */
-export const SubagentStartConfigSchema = makeMatchedConfigSchema(
+export const SubagentStartConfigSchema = makeConfigSchemaWithMatched(
   SubagentStartMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )

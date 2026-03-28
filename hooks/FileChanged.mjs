@@ -1,11 +1,12 @@
 import { z } from "zod/v4"
-import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
-import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+
 import {
   CommandOnlyHandlerSchema,
-  makeMatchedConfigSchema,
+  makeConfigSchemaWithMatched,
 } from "../schemas/config-schemas.mjs"
+import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { FileChangedMatcherSchema } from "../schemas/matcher-schemas.mjs"
+import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 
 // --- Matcher ---
 
@@ -19,7 +20,7 @@ export { FileChangedMatcherSchema }
  * Command-only hook. Matcher is REQUIRED — pipe-separated basenames
  * specifying which files to watch (e.g. ".envrc|.env").
  */
-export const FileChangedConfigSchema = makeMatchedConfigSchema(
+export const FileChangedConfigSchema = makeConfigSchemaWithMatched(
   FileChangedMatcherSchema,
   CommandOnlyHandlerSchema,
 )

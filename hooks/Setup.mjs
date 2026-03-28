@@ -2,6 +2,7 @@ import { z } from "zod/v4"
 
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+import { SharedHandlerPropsSchema } from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -9,6 +10,8 @@ import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 export const SetupMatcherSchema = undefined
 
 // --- Config ---
+
+const handlerProps = SharedHandlerPropsSchema
 
 /** Command-only hook. No matcher support. Default timeout 30000ms. */
 export const SetupConfigSchema = z.object({
@@ -18,10 +21,7 @@ export const SetupConfigSchema = z.object({
         .object({
           type: z.literal("command"),
           command: z.string(),
-          timeout: z.number().int().positive().optional(),
-          async: z.boolean().optional(),
-          asyncRewake: z.boolean().optional(),
-          statusMessage: z.string().optional(),
+          ...handlerProps.shape,
         })
         .strict(),
     )

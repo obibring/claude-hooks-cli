@@ -4,6 +4,10 @@ import { NotificationTypeSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { NotificationMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+import {
+  SharedHandlerPropsSchema,
+  HttpExtraPropsSchema,
+} from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -13,40 +17,33 @@ export const NotificationMatcherExportSchema = NotificationMatcherSchema
 
 // --- Config ---
 
+const handlerProps = SharedHandlerPropsSchema
+
 /** Command-only hook. Matcher matches notification_type. */
-export const NotificationConfigSchema = z
-  .object({
-    matcher: NotificationMatcherSchema.optional(),
-    hooks: z
-      .array(
-        z.discriminatedUnion("type", [
-          z
-            .object({
-              type: z.literal("command"),
-              command: z.string(),
-              timeout: z.number().int().positive().optional(),
-              async: z.boolean().optional(),
-              asyncRewake: z.boolean().optional(),
-              statusMessage: z.string().optional(),
-            })
-            .strict(),
-          z
-            .object({
-              type: z.literal("http"),
-              url: z.url(),
-              timeout: z.number().int().positive().optional(),
-              async: z.boolean().optional(),
-              asyncRewake: z.boolean().optional(),
-              statusMessage: z.string().optional(),
-              headers: z.record(z.string(), z.string()).optional(),
-              allowedEnvVars: z.array(z.string()).optional(),
-            })
-            .strict(),
-        ]),
-      )
-      .nonempty(),
-  })
-  .strict()
+export const NotificationConfigSchema = z.object({
+  matcher: NotificationMatcherSchema.optional(),
+  hooks: z
+    .array(
+      z.discriminatedUnion("type", [
+        z
+          .object({
+            type: z.literal("command"),
+            command: z.string(),
+            ...handlerProps.shape,
+          })
+          .strict(),
+        z
+          .object({
+            type: z.literal("http"),
+            url: z.url(),
+            ...handlerProps.shape,
+            ...HttpExtraPropsSchema.shape,
+          })
+          .strict(),
+      ]),
+    )
+    .nonempty(),
+})
 
 /** @typedef {z.infer<typeof NotificationConfigSchema>} NotificationConfig */
 

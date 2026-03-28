@@ -4,6 +4,7 @@ import { SessionStartSourceSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { SessionStartMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+import { SharedHandlerPropsSchema } from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -12,6 +13,10 @@ export { SessionStartMatcherSchema }
 /** @typedef {z.infer<typeof SessionStartMatcherSchema>} SessionStartMatcher */
 
 // --- Config ---
+
+const handlerProps = SharedHandlerPropsSchema.extend({
+  once: z.boolean().optional(),
+})
 
 /** Command-only hook. Supports `once`. Matcher matches source. */
 export const SessionStartConfigSchema = z.object({
@@ -22,11 +27,7 @@ export const SessionStartConfigSchema = z.object({
         .object({
           type: z.literal("command"),
           command: z.string(),
-          timeout: z.number().int().positive().optional(),
-          async: z.boolean().optional(),
-          asyncRewake: z.boolean().optional(),
-          statusMessage: z.string().optional(),
-          once: z.boolean().optional(),
+          ...handlerProps.shape,
         })
         .strict(),
     )

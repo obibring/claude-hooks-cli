@@ -3,6 +3,10 @@ import { z } from "zod/v4"
 import { BlockDecisionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+import {
+  SharedHandlerPropsSchema,
+  HttpExtraPropsSchema,
+} from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -10,6 +14,8 @@ import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 export const StopMatcherSchema = undefined
 
 // --- Config ---
+
+const handlerProps = SharedHandlerPropsSchema
 
 /** Supports all 4 handler types. No matcher support. */
 export const StopConfigSchema = z.object({
@@ -20,42 +26,29 @@ export const StopConfigSchema = z.object({
           .object({
             type: z.literal("command"),
             command: z.string(),
-            timeout: z.number().int().positive().optional(),
-            async: z.boolean().optional(),
-            asyncRewake: z.boolean().optional(),
-            statusMessage: z.string().optional(),
+            ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
             type: z.literal("prompt"),
             prompt: z.string(),
-            timeout: z.number().int().positive().optional(),
-            async: z.boolean().optional(),
-            asyncRewake: z.boolean().optional(),
-            statusMessage: z.string().optional(),
+            ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
             type: z.literal("agent"),
             prompt: z.string(),
-            timeout: z.number().int().positive().optional(),
-            async: z.boolean().optional(),
-            asyncRewake: z.boolean().optional(),
-            statusMessage: z.string().optional(),
+            ...handlerProps.shape,
           })
           .strict(),
         z
           .object({
             type: z.literal("http"),
             url: z.url(),
-            timeout: z.number().int().positive().optional(),
-            async: z.boolean().optional(),
-            asyncRewake: z.boolean().optional(),
-            statusMessage: z.string().optional(),
-            headers: z.record(z.string(), z.string()).optional(),
-            allowedEnvVars: z.array(z.string()).optional(),
+            ...handlerProps.shape,
+            ...HttpExtraPropsSchema.shape,
           })
           .strict(),
       ]),

@@ -4,12 +4,61 @@
   "version": "1.0.0",
   "description": "Claude Code helper for creating and installing valid hooks using typescript",
   "type": "module",
-  "main": "index.mjs",
+  "main": "./index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.mts",
+        "default": "./index.cjs"
+      }
+    },
+    "./schemas": {
+      "import": {
+        "types": "./dist/schemas/index.d.mts",
+        "default": "./schemas/index.mjs"
+      }
+    },
+    "./schemas/*": {
+      "import": {
+        "types": "./dist/schemas/*.d.mts",
+        "default": "./schemas/*.mjs"
+      }
+    },
+    "./hooks": {
+      "import": {
+        "types": "./dist/hooks/index.d.mts",
+        "default": "./hooks/index.mjs"
+      }
+    },
+    "./hooks/*": {
+      "import": {
+        "types": "./dist/hooks/*.d.mts",
+        "default": "./hooks/*.mjs"
+      }
+    }
+  },
+  "files": [
+    "index.mjs",
+    "index.cjs",
+    "schemas/**/*.mjs",
+    "hooks/**/*.mjs",
+    "dist/**/*.d.mts",
+    "dist/**/*.d.mts.map",
+    "bin/cli.mjs",
+    "lib/**/*.mjs"
+  ],
   "bin": {
     "claude-hooks": "./bin/cli.mjs"
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
+    "build": "tsc",
+    "prepublishOnly": "bun run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "prettier --write .",
     "prepare": "husky"
@@ -25,9 +74,11 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2"
   },
   "keywords": []
 }

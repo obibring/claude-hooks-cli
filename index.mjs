@@ -1,6 +1,20 @@
 // Re-export schemas (enums, base schemas, matchers, config builders, output)
 export * from "./schemas/index.mjs"
 
+// Re-export utility modules for programmatic use
+export {
+  getSettingsPath,
+  readSettings,
+  writeSettings,
+} from "./lib/settings-io.mjs"
+export {
+  getHooksObject,
+  addHook,
+  removeHook,
+  listHooks,
+} from "./lib/hooks-store.mjs"
+export { getHooks, saveHook, deleteHook } from "./lib/hooks-manager.mjs"
+
 // Re-export all per-hook schemas (Config, Input, Output, Matcher for each event).
 // Hook files may re-export matcher schemas that are also in schemas/ — TS
 // resolves these to the same binding so the duplicate export is harmless at

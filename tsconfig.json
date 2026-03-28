@@ -11,7 +11,15 @@
     "moduleResolution": "NodeNext",
     "target": "ES2022",
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["schemas/**/*.mjs", "hooks/**/*.mjs", "index.mjs"]
+  "include": [
+    "schemas/**/*.mjs",
+    "hooks/**/*.mjs",
+    "lib/settings-io.mjs",
+    "lib/hooks-store.mjs",
+    "lib/hooks-manager.mjs",
+    "index.mjs"
+  ]
 }

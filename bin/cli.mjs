@@ -6,12 +6,7 @@ import { addHookFlow } from "../lib/add-hook.mjs"
 import { listHooksFlow } from "../lib/list-hooks.mjs"
 import { removeHookFlow } from "../lib/remove-hook.mjs"
 import { testHookFlow } from "../lib/test-hook.mjs"
-import {
-  getSettingsPath,
-  readSettings,
-  writeSettings,
-  addHookToSettings,
-} from "../lib/settings.mjs"
+import { saveHook } from "../lib/hooks-manager.mjs"
 import { HOOK_EVENT_NAMES } from "../lib/hook-metadata.mjs"
 
 const program = new Command()
@@ -76,10 +71,11 @@ addCmd.action(async (opts) => {
     return
   }
 
-  const filePath = getSettingsPath(scope)
-  const settings = await readSettings(filePath)
-  addHookToSettings(settings, result.eventName, result.configEntry)
-  await writeSettings(filePath, settings)
+  const { filePath } = await saveHook(
+    scope,
+    result.eventName,
+    result.configEntry,
+  )
 
   clack.log.success(
     `Added ${result.eventName} hook to ${scope} settings (${filePath})`,
@@ -215,12 +211,11 @@ program.action(async () => {
     case "add": {
       const result = await addHookFlow()
       if (result) {
-        const filePath = getSettingsPath(
+        await saveHook(
           /** @type {"user"|"project"|"local"} */ (scope),
+          result.eventName,
+          result.configEntry,
         )
-        const settings = await readSettings(filePath)
-        addHookToSettings(settings, result.eventName, result.configEntry)
-        await writeSettings(filePath, settings)
         clack.log.success(`Added ${result.eventName} hook to ${scope} settings`)
         clack.log.message(JSON.stringify(result.configEntry, null, 2))
       }

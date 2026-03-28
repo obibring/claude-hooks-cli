@@ -40,6 +40,24 @@
         "types": "./dist/hooks/*.d.mts",
         "default": "./hooks/*.mjs"
       }
+    },
+    "./settings": {
+      "import": {
+        "types": "./dist/lib/settings-io.d.mts",
+        "default": "./lib/settings-io.mjs"
+      }
+    },
+    "./store": {
+      "import": {
+        "types": "./dist/lib/hooks-store.d.mts",
+        "default": "./lib/hooks-store.mjs"
+      }
+    },
+    "./manager": {
+      "import": {
+        "types": "./dist/lib/hooks-manager.d.mts",
+        "default": "./lib/hooks-manager.mjs"
+      }
     }
   },
   "files": [
@@ -47,6 +65,9 @@
     "index.cjs",
     "schemas/**/*.mjs",
     "hooks/**/*.mjs",
+    "lib/settings-io.mjs",
+    "lib/hooks-store.mjs",
+    "lib/hooks-manager.mjs",
     "dist/**/*.d.mts",
     "dist/**/*.d.mts.map",
     "bin/cli.mjs",

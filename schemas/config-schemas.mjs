@@ -98,7 +98,7 @@ export const CommandOnlyHandlerSchema = z.discriminatedUnion("type", [
  * @template H
  * @param {z.ZodType<M>} matcherSchema - Zod schema for the matcher field
  * @param {z.ZodType<H>} handlerSchema - Zod schema for individual hook handlers
- * @returns {z.ZodObject<{ matcher: z.ZodType<M>, hooks: z.ZodArray<z.ZodType<H>> }>}
+ * @returns {z.ZodObject<{ matcher: z.ZodType<M>, hooks: z.ZodArray<z.ZodType<[H,...H[]]>> }>}
  */
 export function makeMatchedConfigSchema(matcherSchema, handlerSchema) {
   return z.object({

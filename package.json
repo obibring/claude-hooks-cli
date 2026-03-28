@@ -5,7 +5,11 @@
   "description": "Claude Code helper for creating and installing valid hooks using typescript",
   "type": "module",
   "main": "index.mjs",
+  "bin": {
+    "claude-hooks": "./bin/cli.mjs"
+  },
   "scripts": {
+    "start": "node ./bin/cli.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "prettier --write .",
     "prepare": "husky"
@@ -16,6 +20,8 @@
   "author": "orr",
   "license": "UNLICENSED",
   "dependencies": {
+    "@clack/prompts": "^1.1.0",
+    "commander": "^14.0.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

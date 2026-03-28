@@ -26,7 +26,7 @@ have to hand-edit JSON.
 | --------------- | ------------------------------------------------------------------------ |
 | Package manager | bun — always use `bun add` / `bun run`, never npm or yarn                |
 | Module format   | ESM only — all files use `.mjs` extension                                |
-| CLI framework   | Commander.js                                                             |
+| CLI framework   | Commander.js + @clack/prompts for interactive UI                         |
 | Node target     | >=18                                                                     |
 | No build step   | Runs directly via `node bin/cli.mjs` or shebang                          |
 | Formatting      | Prettier via `bun run lint`. Pre-commit hook runs lint-staged via husky. |

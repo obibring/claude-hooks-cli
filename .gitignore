@@ -1,0 +1,5 @@
+node_modules
+.claude
+!.claude/hooks
+!.claude/commands
+!.claude/settings.json

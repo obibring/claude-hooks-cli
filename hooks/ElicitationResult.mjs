@@ -18,7 +18,7 @@ export const ElicitationResultMatcherSchema = ElicitationMatcherSchema
 
 /** Command-only hook. Matcher matches mcp_server_name. */
 export const ElicitationResultConfigSchema = makeMatchedConfigSchema(
-  ElicitationResultMatcherSchema,
+  ElicitationResultMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

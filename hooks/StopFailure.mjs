@@ -18,7 +18,7 @@ export { StopFailureMatcherSchema }
 
 /** Command-only hook. Matcher matches error type. */
 export const StopFailureConfigSchema = makeMatchedConfigSchema(
-  StopFailureMatcherSchema,
+  StopFailureMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

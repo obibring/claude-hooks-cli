@@ -17,7 +17,7 @@ export const SubagentStartMatcherSchema = SubagentTypeMatcherSchema
 
 /** Command-only hook. Matcher matches agent_type. */
 export const SubagentStartConfigSchema = makeMatchedConfigSchema(
-  SubagentStartMatcherSchema,
+  SubagentStartMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

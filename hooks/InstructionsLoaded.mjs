@@ -18,7 +18,7 @@ export { InstructionsLoadedMatcherSchema }
 
 /** Command-only hook. Matcher matches load_reason. */
 export const InstructionsLoadedConfigSchema = makeMatchedConfigSchema(
-  InstructionsLoadedMatcherSchema,
+  InstructionsLoadedMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

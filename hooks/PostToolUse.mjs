@@ -21,7 +21,7 @@ export const PostToolUseMatcherSchema = ToolNameMatcherSchema
 
 /** Supports all 4 handler types. Supports `if` for per-handler conditional execution. */
 export const PostToolUseConfigSchema = makeMatchedConfigSchema(
-  PostToolUseMatcherSchema,
+  PostToolUseMatcherSchema.optional(),
   AnyHandlerSchema,
 )
 

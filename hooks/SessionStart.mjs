@@ -18,7 +18,7 @@ export { SessionStartMatcherSchema }
 
 /** Command-only hook. Supports `once`. Matcher matches source. */
 export const SessionStartConfigSchema = makeMatchedConfigWithOnceSchema(
-  SessionStartMatcherSchema,
+  SessionStartMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

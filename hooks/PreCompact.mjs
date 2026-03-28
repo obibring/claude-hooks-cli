@@ -18,7 +18,7 @@ export const PreCompactMatcherSchema = CompactTriggerMatcherSchema
 
 /** Command-only hook. Supports `once`. Matcher matches trigger. */
 export const PreCompactConfigSchema = makeMatchedConfigWithOnceSchema(
-  PreCompactMatcherSchema,
+  PreCompactMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

@@ -18,7 +18,7 @@ export const SubagentStopMatcherSchema = SubagentTypeMatcherSchema
 
 /** Supports all 4 handler types. Matcher matches agent_type. */
 export const SubagentStopConfigSchema = makeMatchedConfigSchema(
-  SubagentStopMatcherSchema,
+  SubagentStopMatcherSchema.optional(),
   AnyHandlerSchema,
 )
 

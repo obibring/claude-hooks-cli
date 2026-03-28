@@ -21,7 +21,7 @@ export { ConfigChangeMatcherSchema }
 
 /** Command-only hook. Matcher matches source. */
 export const ConfigChangeConfigSchema = makeMatchedConfigSchema(
-  ConfigChangeMatcherSchema,
+  ConfigChangeMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

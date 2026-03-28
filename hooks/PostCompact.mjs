@@ -18,7 +18,7 @@ export const PostCompactMatcherSchema = CompactTriggerMatcherSchema
 
 /** Command-only hook. Matcher matches trigger. */
 export const PostCompactConfigSchema = makeMatchedConfigSchema(
-  PostCompactMatcherSchema,
+  PostCompactMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

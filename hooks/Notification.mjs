@@ -18,7 +18,7 @@ export const NotificationMatcherExportSchema = NotificationMatcherSchema
 
 /** Command-only hook. Matcher matches notification_type. */
 export const NotificationConfigSchema = makeMatchedConfigSchema(
-  NotificationMatcherSchema,
+  NotificationMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

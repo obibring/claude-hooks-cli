@@ -25,7 +25,7 @@ export const PreToolUseMatcherSchema = ToolNameMatcherSchema
 
 /** Supports all 4 handler types. Supports `if` for per-handler conditional execution. */
 export const PreToolUseConfigSchema = makeMatchedConfigSchema(
-  PreToolUseMatcherSchema,
+  PreToolUseMatcherSchema.optional(),
   AnyHandlerSchema,
 )
 

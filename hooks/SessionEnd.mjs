@@ -18,7 +18,7 @@ export { SessionEndMatcherSchema }
 
 /** Command-only hook. Supports `once`. Matcher matches reason. */
 export const SessionEndConfigSchema = makeMatchedConfigWithOnceSchema(
-  SessionEndMatcherSchema,
+  SessionEndMatcherSchema.optional(),
   CommandOnlyHandlerSchema,
 )
 

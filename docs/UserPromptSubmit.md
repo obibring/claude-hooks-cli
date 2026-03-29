@@ -91,7 +91,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("UserPromptSubmit").emitOutput({ ... })`):
+`new HookHandler("UserPromptSubmit").exit("success", { ... })`):
 
 | Property | Type     | Description                                                       |
 | -------- | -------- | ----------------------------------------------------------------- |

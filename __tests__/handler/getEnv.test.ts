@@ -10,7 +10,7 @@ function makeScript(envVarName: string): string {
     handler.parseInput();
     const val = handler.getEnv('${envVarName}');
     process.stdout.write(JSON.stringify({ value: val ?? null }));
-    handler.exit();
+    handler.exit("success");
   `
 }
 

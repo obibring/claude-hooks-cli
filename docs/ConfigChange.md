@@ -70,7 +70,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("ConfigChange").emitOutput({ ... })`):
+`new HookHandler("ConfigChange").exit("success", { ... })`):
 
 | Property   | Type      | Description              |
 | ---------- | --------- | ------------------------ |

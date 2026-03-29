@@ -178,7 +178,7 @@ export function runHandler(
   input: Record<string, unknown>,
   output: Record<string, unknown> | null,
 ): Promise<RunHandlerResult> {
-  const outputExpr = output === null ? "handler.exit()" : `handler.emitOutput(${JSON.stringify(output)})`
+  const outputExpr = output === null ? 'handler.exit("success")' : `handler.exit("success", ${JSON.stringify(output)})`
 
   const script = `
     import { HookHandler } from './lib/handler.mjs';

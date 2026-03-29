@@ -101,7 +101,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("TaskCreated").emitOutput({ ... })`):
+`new HookHandler("TaskCreated").exit("success", { ... })`):
 
 No hook-specific output properties. Only common fields are present.
 Exit code 2 blocks task creation (stderr is fed to the model).

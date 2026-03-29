@@ -20,7 +20,7 @@ async function testPreToolUse() {
   const cwd: string = input.cwd
 
   // ✓ Valid outputs
-  preToolUse.emitOutput({
+  preToolUse.exit("success",{
     hookSpecificOutput: {
       permissionDecision: "deny",
       permissionDecisionReason: "blocked",
@@ -38,8 +38,8 @@ async function testStop() {
   const active: boolean = input.stop_hook_active
   const hookEvent: "Stop" = input.hook_event_name
 
-  stop.emitOutput({ decision: "block" })
-  stop.emitOutput({})
+  stop.exit("success",{ decision: "block" })
+  stop.exit("success",{})
 }
 
 // --- UserPromptSubmit: output can modify prompt ---
@@ -48,7 +48,7 @@ const ups = new HookHandler("UserPromptSubmit")
 async function testUserPromptSubmit() {
   const input = await ups.parseInput()
   const prompt: string = input.prompt
-  ups.emitOutput({ prompt: "modified prompt" })
+  ups.exit("success",{ prompt: "modified prompt" })
 }
 
 // --- SessionStart: has model and source ---
@@ -66,7 +66,7 @@ const elicit = new HookHandler("Elicitation")
 async function testElicitation() {
   const input = await elicit.parseInput()
   const serverName: string = input.mcp_server_name
-  elicit.emitOutput({ hookSpecificOutput: { action: "accept" } })
+  elicit.exit("success",{ hookSpecificOutput: { action: "accept" } })
 }
 
 // =============================================================
@@ -77,13 +77,13 @@ async function testElicitation() {
 void preToolUse.parseInput().then((i) => i.nonExistent)
 
 // @ts-expect-error — "invalidProp" is not a valid output property
-preToolUse.emitOutput({ invalidProp: true })
+preToolUse.exit("success",{ invalidProp: true })
 
 // @ts-expect-error — Stop input does not have "tool_name"
 void stop.parseInput().then((i) => i.tool_name)
 
 // @ts-expect-error — Stop output does not have "hookSpecificOutput"
-stop.emitOutput({ hookSpecificOutput: { permissionDecision: "allow" } })
+stop.exit("success",{ hookSpecificOutput: { permissionDecision: "allow" } })
 
 // @ts-expect-error — "invalid_event" is not a valid hook event name
 new HookHandler("invalid_event")

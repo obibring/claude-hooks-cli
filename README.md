@@ -239,11 +239,11 @@ const handler = new HookHandler("PreToolUse")
  * Parse the hook input from stdin (synchronous, strongly typed):
  *   const input = handler.parseInput()
  *
- * Emit output and exit with code 0:
- *   handler.emitOutput({ additionalContext: "extra info for Claude" })
+ * Exit with output (code 0):
+ *   handler.exit("success", { additionalContext: "extra info for Claude" })
  *
  * Exit with a blocking error (code 2, message fed to model):
- *   handler.emitBlockingError("Something went wrong")
+ *   handler.exit("error", "Something went wrong")
  *
  * Read Claude Code environment variables:
  *   const projectDir = handler.getEnv("CLAUDE_PROJECT_DIR")
@@ -255,15 +255,15 @@ const handler = new HookHandler("PreToolUse")
  *   }
  *
  * Pass through (exit 0, no output):
- *   handler.exit()
+ *   handler.exit("success")
  */
 
 const input = handler.parseInput()
 
 // TODO: Add your hook logic here, then call one of:
-//   handler.emitOutput({ ... })      — send output to Claude and exit (code 0)
-//   handler.emitBlockingError("...")  — block with error message (code 2)
-//   handler.exit()                    — pass through, no output (code 0)
+//   handler.exit("success", { ... })  — send output to Claude and exit (code 0)
+//   handler.exit("error", "...")      — block with error message (code 2)
+//   handler.exit("success")           — pass through, no output (code 0)
 ```
 
 And the settings entry uses `npx -y tsx` to run it:
@@ -662,10 +662,10 @@ cch add \
 ## Writing Custom Hooks in TypeScript
 
 This package exports a `HookHandler` class that gives you
-strongly-typed input parsing and output emission for hook scripts. The
-class is parameterized by the hook event name, so TypeScript knows
-exactly which input fields are available and which output fields are
-valid.
+strongly-typed input parsing and a unified `exit()` method for hook
+scripts. The class is parameterized by the hook event name, so
+TypeScript knows exactly which input fields are available and which
+output fields are valid.
 
 ### Step 1: Create and register the hook file
 
@@ -708,18 +708,18 @@ const input = handler.parseInput()
 const command = input.tool_input.command as string | undefined
 
 if (command?.includes("rm -rf /")) {
-  // emitOutput is also strongly typed — only valid fields accepted:
-  handler.emitOutput({
+  // exit("success", output) is also strongly typed — only valid fields accepted:
+  handler.exit("success", {
     hookSpecificOutput: {
       permissionDecision: "deny",
       permissionDecisionReason: "Blocked dangerous rm -rf / command",
     },
   })
-  // Code after emitOutput is unreachable (it calls process.exit)
+  // Code after exit is unreachable (it calls process.exit)
 }
 
 // Pass through — let the tool call proceed
-handler.exit()
+handler.exit("success")
 ```
 
 ### API Reference
@@ -727,7 +727,7 @@ handler.exit()
 #### `new HookHandler(eventName)`
 
 Creates a handler bound to a specific hook event. The event name
-determines the types of `parseInput()` and `emitOutput()`.
+determines the types of `parseInput()` and `exit()`.
 
 ```ts
 const handler = new HookHandler("Stop")
@@ -746,38 +746,36 @@ const input = handler.parseInput()
 // For "PreToolUse": input.tool_name, input.tool_input, input.tool_use_id
 ```
 
-#### `handler.emitOutput(output): never`
+#### `handler.exit(status, data?): never`
 
-Writes JSON to stdout and exits with code 0. The output parameter is
-typed to only accept valid fields for the hook event. Code after this
-call is unreachable.
+Exits the hook script. Code after this call is unreachable.
+
+- `exit("success")` — pass through, no output (exit code 0)
+- `exit("success", output)` — write typed JSON output to stdout (exit
+  code 0)
+- `exit("error", message)` — write error to stderr, fed back to Claude
+  model (exit code 2)
 
 ```ts
-// PreToolUse — can set permission decision:
-handler.emitOutput({
+// Pass through — no output:
+handler.exit("success")
+
+// PreToolUse — set permission decision:
+handler.exit("success", {
   hookSpecificOutput: { permissionDecision: "allow" },
 })
 
-// Stop — can block to re-engage Claude:
-handler.emitOutput({ decision: "block" })
+// Stop — block to re-engage Claude:
+handler.exit("success", { decision: "block" })
 
-// Any hook — universal fields:
-handler.emitOutput({
+// Any hook — universal output fields:
+handler.exit("success", {
   additionalContext: "Extra info for Claude",
   systemMessage: "Warning shown to user",
 })
 
-// Empty output is always valid:
-handler.emitOutput({})
-```
-
-#### `handler.emitBlockingError(message): never`
-
-Writes a message to stderr and exits with code 2. The message is fed
-back to the Claude model as an error.
-
-```ts
-handler.emitBlockingError("Operation not allowed in this directory")
+// Block with error (exit code 2):
+handler.exit("error", "Operation not allowed in this directory")
 ```
 
 #### `handler.getEnv(name): string | undefined`
@@ -836,15 +834,6 @@ if (edit) {
 Supported tools: `Bash`, `Write`, `Edit`, `Read`, `Glob`, `Grep`,
 `WebFetch`, `WebSearch`, `Agent`, `AskUserQuestion`.
 
-#### `handler.exit(): never`
-
-Exits silently with code 0. The hook passes through without affecting
-Claude's behavior.
-
-```ts
-handler.exit()
-```
-
 ### Full Examples
 
 #### Block `git push --force`
@@ -862,7 +851,7 @@ if (bash) {
     bash.command.includes("push --force") ||
     bash.command.includes("push -f")
   ) {
-    handler.emitOutput({
+    handler.exit("success", {
       hookSpecificOutput: {
         permissionDecision: "deny",
         permissionDecisionReason: "Force push is not allowed",
@@ -871,7 +860,7 @@ if (bash) {
   }
 }
 
-handler.exit()
+handler.exit("success")
 ```
 
 Register it:
@@ -907,7 +896,7 @@ appendFileSync(
   }) + "\n",
 )
 
-handler.exit()
+handler.exit("success")
 ```
 
 Register it:
@@ -934,12 +923,12 @@ const handler = new HookHandler("SessionStart")
 const input = handler.parseInput()
 
 if (input.source === "startup") {
-  handler.emitOutput({
+  handler.exit("success", {
     additionalContext: `Project uses bun as package manager. Node ${process.version}.`,
   })
 }
 
-handler.exit()
+handler.exit("success")
 ```
 
 Register it:
@@ -966,7 +955,7 @@ const handler = new HookHandler("UserPromptSubmit")
 const input = handler.parseInput()
 
 // Prefix all prompts with a reminder
-handler.emitOutput({
+handler.exit("success", {
   prompt: `[Remember: always use TypeScript, never JavaScript]\n\n${input.prompt}`,
 })
 ```
@@ -993,7 +982,7 @@ const handler = new HookHandler("Elicitation")
 const input = handler.parseInput()
 
 if (input.mcp_server_name === "my-auth-server") {
-  handler.emitOutput({
+  handler.exit("success", {
     hookSpecificOutput: {
       action: "accept",
       content: { token: process.env.MY_AUTH_TOKEN },
@@ -1001,7 +990,7 @@ if (input.mcp_server_name === "my-auth-server") {
   })
 }
 
-handler.exit()
+handler.exit("success")
 ```
 
 Register it:
@@ -1068,7 +1057,7 @@ const projectDir = handler.getEnv("CLAUDE_PROJECT_DIR")
 
 const edit = handler.getToolInput("Edit", input)
 if (edit && projectDir && !edit.file_path.startsWith(projectDir)) {
-  handler.emitOutput({
+  handler.exit("success", {
     hookSpecificOutput: {
       permissionDecision: "deny",
       permissionDecisionReason: `Cannot edit files outside project: ${projectDir}`,
@@ -1076,7 +1065,7 @@ if (edit && projectDir && !edit.file_path.startsWith(projectDir)) {
   })
 }
 
-handler.exit()
+handler.exit("success")
 ```
 
 ## Zod Schemas

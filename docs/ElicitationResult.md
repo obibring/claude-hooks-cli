@@ -75,7 +75,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("ElicitationResult").emitOutput({ ... })`):
+`new HookHandler("ElicitationResult").exit("success", { ... })`):
 
 | Property                     | Type                                | Description                      |
 | ---------------------------- | ----------------------------------- | -------------------------------- |

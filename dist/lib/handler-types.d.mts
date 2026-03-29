@@ -374,7 +374,7 @@ type EnvVarReturnType<
  * // input.tool_name is typed as string
  * // input.nonExistent would be a TS error
  *
- * handler.emitOutput({
+ * handler.exit("success", {
  *   hookSpecificOutput: { permissionDecision: "deny", permissionDecisionReason: "blocked" }
  * })
  * ```
@@ -391,18 +391,6 @@ export declare class HookHandler<E extends keyof HookIOMap> {
    */
   parseInput(): HookIOMap[E]["input"]
 
-  /**
-   * Writes JSON output to stdout and exits with code 0.
-   * Code after this call is unreachable.
-   */
-  emitOutput(output: HookIOMap[E]["output"]): never
-
-  /**
-   * Writes an error message to stderr and exits with code 2 (blocking error).
-   * The message is fed back to the Claude model.
-   * Code after this call is unreachable.
-   */
-  emitBlockingError(message: string): never
 
   /**
    * Reads a Claude Code environment variable by name.
@@ -470,8 +458,20 @@ export declare class HookHandler<E extends keyof HookIOMap> {
     : `getToolInput() is only available for tool-event hooks (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest). "${E & string}" is not a tool-event hook.`
 
   /**
-   * Exits silently with code 0 (no output — hook passes through).
-   * Code after this call is unreachable.
+   * Exits the hook script. Code after this call is unreachable.
+   *
+   * - `exit("success")` — pass through, no output (exit code 0)
+   * - `exit("success", output)` — write JSON output to stdout (exit code 0)
+   * - `exit("error", message)` — write error to stderr, fed back to model (exit code 2)
+   *
+   * @example
+   * ```ts
+   * handler.exit("success")
+   * handler.exit("success", { additionalContext: "info for Claude" })
+   * handler.exit("error", "Operation not allowed")
+   * ```
    */
-  exit(): never
+  exit(status: "success"): never
+  exit(status: "success", output: HookIOMap[E]["output"]): never
+  exit(status: "error", message: string): never
 }

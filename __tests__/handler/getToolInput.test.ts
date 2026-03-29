@@ -8,7 +8,7 @@ function makeScript(toolName: string): string {
     const input = handler.parseInput();
     const toolInput = handler.getToolInput('${toolName}', input);
     process.stdout.write(JSON.stringify(toolInput));
-    handler.exit();
+    handler.exit("success");
   `
 }
 
@@ -167,7 +167,7 @@ describe("HookHandler.getToolInput()", () => {
       const input = handler.parseInput();
       const toolInput = handler.getToolInput('Edit', input);
       process.stdout.write(JSON.stringify({ result: toolInput }));
-      handler.exit();
+      handler.exit("success");
     `
     const input = {
       ...buildInput("PreToolUse"),
@@ -188,7 +188,7 @@ describe("HookHandler.getToolInput()", () => {
       const input = handler.parseInput();
       const toolInput = handler.getToolInput('Bash', input);
       process.stdout.write(JSON.stringify(toolInput));
-      handler.exit();
+      handler.exit("success");
     `
     const input = {
       ...buildInput("PostToolUse"),

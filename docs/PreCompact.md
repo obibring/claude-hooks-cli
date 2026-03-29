@@ -74,7 +74,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("PreCompact").emitOutput({ ... })`):
+`new HookHandler("PreCompact").exit("success", { ... })`):
 
 No hook-specific output properties. Only common fields are present.
 

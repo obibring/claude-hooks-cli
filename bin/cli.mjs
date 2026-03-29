@@ -7,7 +7,8 @@ import { listHooksFlow } from "../lib/list-hooks.mjs"
 import { removeHookFlow } from "../lib/remove-hook.mjs"
 import { testHookFlow } from "../lib/test-hook.mjs"
 import { saveHook } from "../lib/hooks-manager.mjs"
-import { HOOK_EVENT_NAMES } from "../lib/hook-metadata.mjs"
+import { HOOK_EVENT_NAMES, HOOK_METADATA } from "../lib/hook-metadata.mjs"
+import { HOOK_DOCS_MAP } from "../lib/docs-map.mjs"
 
 const program = new Command()
 
@@ -158,6 +159,48 @@ testCmd.action(async (opts) => {
 
 program.addCommand(testCmd)
 
+// --- DOCS ---
+
+const docsCmd = new Command("docs")
+  .description("View documentation for a hook event")
+  .option("--hook <hook>", "Hook event name (required in non-interactive mode)")
+
+docsCmd.action(async (opts) => {
+  let hookName = opts.hook
+
+  if (!hookName) {
+    clack.intro("Hook Documentation")
+
+    const sorted = [...HOOK_METADATA].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )
+
+    hookName = await clack.autocomplete({
+      message: "Select a hook event (type to filter):",
+      options: sorted.map((h) => ({
+        value: h.name,
+        label: h.name,
+        hint: h.description,
+      })),
+    })
+
+    if (clack.isCancel(hookName)) {
+      clack.outro("Cancelled")
+      return
+    }
+  }
+
+  const doc = HOOK_DOCS_MAP[hookName]
+  if (!doc) {
+    console.error(`Unknown hook event: ${hookName}`)
+    process.exit(1)
+  }
+
+  console.log(doc)
+})
+
+program.addCommand(docsCmd)
+
 // --- Default: interactive menu ---
 
 program.action(async () => {
@@ -182,11 +225,39 @@ program.action(async () => {
         label: "Test a hook",
         hint: "Run a hook with synthetic input",
       },
+      {
+        value: "docs",
+        label: "View docs",
+        hint: "Read documentation for a hook event",
+      },
     ],
   })
 
   if (clack.isCancel(action)) {
     clack.outro("Goodbye")
+    return
+  }
+
+  // Docs don't need a scope — handle separately
+  if (action === "docs") {
+    const sorted = [...HOOK_METADATA].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    )
+    const hookName = await clack.autocomplete({
+      message: "Select a hook event (type to filter):",
+      options: sorted.map((h) => ({
+        value: h.name,
+        label: h.name,
+        hint: h.description,
+      })),
+    })
+    if (clack.isCancel(hookName)) {
+      clack.outro("Cancelled")
+      return
+    }
+    const doc = HOOK_DOCS_MAP[hookName]
+    if (doc) console.log(doc)
+    clack.outro("Done")
     return
   }
 

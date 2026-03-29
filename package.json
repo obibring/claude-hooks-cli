@@ -63,6 +63,10 @@
       "import": {
         "types": "./lib/handler-types.d.mts",
         "default": "./lib/handler.mjs"
+      },
+      "require": {
+        "types": "./lib/handler.d.cts",
+        "default": "./lib/handler.mjs"
       }
     }
   },
@@ -77,6 +81,7 @@
     "lib/schema-map.mjs",
     "lib/handler.mjs",
     "lib/handler.d.mts",
+    "lib/handler.d.cts",
     "lib/handler-types.d.mts",
     "dist/**/*.d.mts",
     "dist/**/*.d.mts.map",

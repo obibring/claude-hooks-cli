@@ -9,6 +9,10 @@ import { testHookFlow } from "../lib/test-hook.mjs"
 import { saveHook } from "../lib/hooks-manager.mjs"
 import { HOOK_EVENT_NAMES, HOOK_METADATA } from "../lib/hook-metadata.mjs"
 import { HOOK_DOCS_MAP } from "../lib/docs-map.mjs"
+import { marked } from "marked"
+import { markedTerminal } from "marked-terminal"
+
+marked.use(markedTerminal())
 
 const program = new Command()
 
@@ -196,7 +200,7 @@ docsCmd.action(async (opts) => {
     process.exit(1)
   }
 
-  console.log(doc)
+  console.log(marked(doc))
 })
 
 program.addCommand(docsCmd)
@@ -256,7 +260,7 @@ program.action(async () => {
       return
     }
     const doc = HOOK_DOCS_MAP[hookName]
-    if (doc) console.log(doc)
+    if (doc) console.log(marked(doc))
     clack.outro("Done")
     return
   }

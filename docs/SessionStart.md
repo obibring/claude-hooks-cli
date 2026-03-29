@@ -6,6 +6,13 @@ Runs when Claude Code starts a new session or resumes an existing one.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                                                       | Description                   |
+| --------- | ---------------------------------------------------------- | ----------------------------- |
+| `matcher` | `"startup" \| "resume" \| "clear" \| "compact"` (optional) | Enum matched against `source` |
+| `once`    | `boolean` (optional)                                       | Run only once per session     |
+
+Supported handler types: command only.
+
 ```ts
 {
   matcher?: "startup" | "resume" | "clear" | "compact"  // matched against source
@@ -27,6 +34,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property | Type                                            | Description                                   |
+| -------- | ----------------------------------------------- | --------------------------------------------- |
+| `model`  | `string`                                        | Claude model in use (e.g., "claude-opus-4-6") |
+| `source` | `"startup" \| "resume" \| "clear" \| "compact"` | How the session started                       |
+
 ```ts
 {
   hook_event_name: "SessionStart"
@@ -45,6 +57,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("SessionStart").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

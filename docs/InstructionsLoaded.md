@@ -7,6 +7,12 @@ context.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                                                                                              | Description                        |
+| --------- | ------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `matcher` | `"session_start" \| "nested_traversal" \| "path_glob_match" \| "include" \| "compact"` (optional) | Enum matched against `load_reason` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "session_start" | "nested_traversal" | "path_glob_match" | "include" | "compact"  // matched against load_reason
@@ -37,6 +43,15 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property            | Type                                                                                   | Description                                  |
+| ------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `file_path`         | `string`                                                                               | Path to the instruction file                 |
+| `memory_type`       | `string`                                                                               | Type of memory/instruction                   |
+| `load_reason`       | `"session_start" \| "nested_traversal" \| "path_glob_match" \| "include" \| "compact"` | Why the file was loaded                      |
+| `globs`             | `unknown` (optional)                                                                   | Glob patterns; present for `path_glob_match` |
+| `trigger_file_path` | `string` (optional)                                                                    | File that triggered the load                 |
+| `parent_file_path`  | `string` (optional)                                                                    | Parent file; present for `include`           |
+
 ```ts
 {
   hook_event_name: "InstructionsLoaded"
@@ -59,6 +74,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("InstructionsLoaded").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

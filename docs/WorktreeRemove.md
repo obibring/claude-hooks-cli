@@ -7,6 +7,10 @@ teardown.
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` support.
+
+Supported handler types: command, http only.
+
 ```ts
 {
   hooks: Array<
@@ -38,6 +42,10 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property        | Type     | Description                        |
+| --------------- | -------- | ---------------------------------- |
+| `worktree_path` | `string` | Path to the worktree being removed |
+
 ```ts
 {
   hook_event_name: "WorktreeRemove"
@@ -55,6 +63,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("WorktreeRemove").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

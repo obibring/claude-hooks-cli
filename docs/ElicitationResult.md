@@ -7,6 +7,12 @@ is sent back to the server.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                       |
+| --------- | ------------------- | --------------------------------- |
+| `matcher` | `string` (optional) | Matched against `mcp_server_name` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: string  // matched against mcp_server_name
@@ -37,6 +43,13 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property          | Type      | Description                                    |
+| ----------------- | --------- | ---------------------------------------------- |
+| `mcp_server_name` | `string`  | Name of the MCP server                         |
+| `user_response`   | `unknown` | What the user replied                          |
+| `message`         | `string`  | The original prompt message                    |
+| `elicitation_id`  | `string`  | Correlates with the original Elicitation event |
+
 ```ts
 {
   hook_event_name: "ElicitationResult"
@@ -57,6 +70,11 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("ElicitationResult").emitOutput({ ... })`):
+
+| Property                     | Type                                | Description                      |
+| ---------------------------- | ----------------------------------- | -------------------------------- |
+| `hookSpecificOutput.action`  | `"accept" \| "decline" \| "cancel"` | Can override the user's response |
+| `hookSpecificOutput.content` | `unknown`                           | Replacement content              |
 
 ```ts
 {

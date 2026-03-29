@@ -6,6 +6,12 @@ Runs when Claude Code sends a notification to the user.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                                                                                        | Description                              |
+| --------- | ------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `matcher` | `"permission_prompt" \| "idle_prompt" \| "auth_success" \| "elicitation_dialog"` (optional) | Enum matched against `notification_type` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "permission_prompt" | "idle_prompt" | "auth_success" | "elicitation_dialog"  // matched against notification_type
@@ -36,6 +42,12 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property            | Type                                                                             | Description            |
+| ------------------- | -------------------------------------------------------------------------------- | ---------------------- |
+| `notification_type` | `"permission_prompt" \| "idle_prompt" \| "auth_success" \| "elicitation_dialog"` | Type of notification   |
+| `message`           | `string`                                                                         | Notification body text |
+| `title`             | `string`                                                                         | Notification title     |
+
 ```ts
 {
   hook_event_name: "Notification"
@@ -55,6 +67,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("Notification").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

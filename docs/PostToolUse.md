@@ -6,6 +6,13 @@ Runs **after** a tool call completes successfully.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                                                          |
+| --------- | ------------------- | -------------------------------------------------------------------- |
+| `matcher` | `string` (optional) | Regex matched against `tool_name`                                    |
+| `if`      | `string` (optional) | Condition expression; supported on command, agent, and http handlers |
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   matcher?: string  // regex matched against tool_name
@@ -53,6 +60,13 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property        | Type                      | Description                                    |
+| --------------- | ------------------------- | ---------------------------------------------- |
+| `tool_name`     | `string`                  | Name of the tool that was called               |
+| `tool_input`    | `Record<string, unknown>` | Tool arguments                                 |
+| `tool_use_id`   | `string`                  | Unique ID for this tool call                   |
+| `tool_response` | `unknown`                 | The tool's return value (shape varies by tool) |
+
 ```ts
 {
   hook_event_name: "PostToolUse"
@@ -73,6 +87,10 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("PostToolUse").emitOutput({ ... })`):
+
+| Property   | Type      | Description                  |
+| ---------- | --------- | ---------------------------- |
+| `decision` | `"block"` | Stops Claude from continuing |
 
 ```ts
 {

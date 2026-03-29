@@ -6,6 +6,12 @@ Runs **after** Claude Code completes a compact operation.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                            | Description                    |
+| --------- | ------------------------------- | ------------------------------ |
+| `matcher` | `"manual" \| "auto"` (optional) | Enum matched against `trigger` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "manual" | "auto"  // matched against trigger
@@ -36,6 +42,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property          | Type                 | Description                             |
+| ----------------- | -------------------- | --------------------------------------- |
+| `trigger`         | `"manual" \| "auto"` | How the compact was triggered           |
+| `compact_summary` | `string`             | The summary text produced by compaction |
+
 ```ts
 {
   hook_event_name: "PostCompact"
@@ -54,6 +65,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("PostCompact").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

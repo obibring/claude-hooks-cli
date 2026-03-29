@@ -6,6 +6,13 @@ Runs when a Claude Code session ends.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                                                                                                            | Description                   |
+| --------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `matcher` | `"clear" \| "resume" \| "logout" \| "prompt_input_exit" \| "bypass_permissions_disabled" \| "other"` (optional) | Enum matched against `reason` |
+| `once`    | `boolean` (optional)                                                                                            | Run only once per session     |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "clear" | "resume" | "logout" | "prompt_input_exit" | "bypass_permissions_disabled" | "other"  // matched against reason
@@ -38,6 +45,10 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property | Type                                                                                                 | Description           |
+| -------- | ---------------------------------------------------------------------------------------------------- | --------------------- |
+| `reason` | `"clear" \| "resume" \| "logout" \| "prompt_input_exit" \| "bypass_permissions_disabled" \| "other"` | Why the session ended |
+
 ```ts
 {
   hook_event_name: "SessionEnd"
@@ -55,6 +66,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("SessionEnd").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

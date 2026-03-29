@@ -7,6 +7,11 @@ teams.**
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` support. Requires
+`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+
+Supported handler types: command, http only.
+
 ```ts
 {
   hooks: Array<
@@ -38,6 +43,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property        | Type     | Description               |
+| --------------- | -------- | ------------------------- |
+| `teammate_name` | `string` | Name of the idle teammate |
+| `team_name`     | `string` | Name of the team          |
+
 ```ts
 {
   hook_event_name: "TeammateIdle"
@@ -56,6 +66,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("TeammateIdle").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

@@ -7,6 +7,12 @@ etc.).
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                                                                                                                                               | Description                  |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `matcher` | `"rate_limit" \| "authentication_failed" \| "billing_error" \| "invalid_request" \| "server_error" \| "max_output_tokens" \| "unknown"` (optional) | Enum matched against `error` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "rate_limit" | "authentication_failed" | "billing_error" | "invalid_request" | "server_error" | "max_output_tokens" | "unknown"  // matched against error
@@ -37,6 +43,12 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property                 | Type                                                                                                                                    | Description                                              |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `error`                  | `"rate_limit" \| "authentication_failed" \| "billing_error" \| "invalid_request" \| "server_error" \| "max_output_tokens" \| "unknown"` | Error type that caused the stop                          |
+| `error_details`          | `unknown`                                                                                                                               | Additional error information; shape varies by error type |
+| `last_assistant_message` | `string`                                                                                                                                | Claude's last response before the error                  |
+
 ```ts
 {
   hook_event_name: "StopFailure"
@@ -56,6 +68,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("StopFailure").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

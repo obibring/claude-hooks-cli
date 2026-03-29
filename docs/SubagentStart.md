@@ -6,6 +6,12 @@ Runs when a subagent task starts.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                  |
+| --------- | ------------------- | ---------------------------- |
+| `matcher` | `string` (optional) | Matched against `agent_type` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: string  // matched against agent_type
@@ -36,6 +42,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property     | Type                | Description                                     |
+| ------------ | ------------------- | ----------------------------------------------- |
+| `agent_id`   | `string` (required) | Unique subagent ID                              |
+| `agent_type` | `string` (required) | Subagent type (e.g., "Bash", "Explore", "Plan") |
+
 ```ts
 {
   hook_event_name: "SubagentStart"
@@ -52,6 +63,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("SubagentStart").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

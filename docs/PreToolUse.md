@@ -7,6 +7,13 @@ the tool call.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                                                                                                                                  |
+| --------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `matcher` | `string` (optional) | Regex matched against `tool_name`                                                                                                            |
+| `if`      | `string` (optional) | Condition expression; supported on command, agent, and http handlers. Reduces spawning by only running when both matcher AND condition match |
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   matcher?: string  // regex matched against tool_name
@@ -54,6 +61,12 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property      | Type                      | Description                   |
+| ------------- | ------------------------- | ----------------------------- |
+| `tool_name`   | `string`                  | Name of the tool being called |
+| `tool_input`  | `Record<string, unknown>` | Tool arguments                |
+| `tool_use_id` | `string`                  | Unique ID for this tool call  |
+
 ```ts
 {
   hook_event_name: "PreToolUse"
@@ -73,6 +86,13 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("PreToolUse").emitOutput({ ... })`):
+
+| Property                                      | Type                         | Description                                           |
+| --------------------------------------------- | ---------------------------- | ----------------------------------------------------- |
+| `hookSpecificOutput.permissionDecision`       | `"allow" \| "deny" \| "ask"` | Controls whether the tool call proceeds               |
+| `hookSpecificOutput.permissionDecisionReason` | `string`                     | Shown to the model when denied                        |
+| `hookSpecificOutput.autoAllow`                | `boolean`                    | Auto-approve future uses of this tool (since v2.0.76) |
+| `hookSpecificOutput.updatedInput`             | `Record<string, unknown>`    | Replaces the original tool input (since v2.1.85)      |
 
 ```ts
 {

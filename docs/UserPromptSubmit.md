@@ -6,6 +6,10 @@ Runs when the user submits a prompt, **before** Claude processes it.
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` or `if` support.
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   hooks: Array<
@@ -58,6 +62,10 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property | Type     | Description                                          |
+| -------- | -------- | ---------------------------------------------------- |
+| `prompt` | `string` | The user's submitted text before Claude processes it |
+
 ```ts
 {
   hook_event_name: "UserPromptSubmit"
@@ -75,6 +83,10 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("UserPromptSubmit").emitOutput({ ... })`):
+
+| Property | Type     | Description                                                       |
+| -------- | -------- | ----------------------------------------------------------------- |
+| `prompt` | `string` | Replacement text; Claude sees this instead of what the user typed |
 
 ```ts
 {

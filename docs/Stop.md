@@ -6,6 +6,10 @@ Runs when Claude Code finishes responding (the turn ends normally).
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` or `if` support.
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   hooks: Array<
@@ -58,6 +62,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property                 | Type      | Description                                                              |
+| ------------------------ | --------- | ------------------------------------------------------------------------ |
+| `last_assistant_message` | `string`  | Claude's final response text                                             |
+| `stop_hook_active`       | `boolean` | `true` if another stop hook is already running; check to avoid recursion |
+
 ```ts
 {
   hook_event_name: "Stop"
@@ -76,6 +85,10 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("Stop").emitOutput({ ... })`):
+
+| Property   | Type      | Description                        |
+| ---------- | --------- | ---------------------------------- |
+| `decision` | `"block"` | Re-engages Claude for another turn |
 
 ```ts
 {

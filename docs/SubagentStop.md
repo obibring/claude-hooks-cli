@@ -6,6 +6,13 @@ Runs when a subagent task completes.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                  |
+| --------- | ------------------- | ---------------------------- |
+| `matcher` | `string` (optional) | Matched against `agent_type` |
+
+Supported handler types: command, prompt, agent, http (all 4). No `if`
+support.
+
 ```ts
 {
   matcher?: string  // matched against agent_type
@@ -50,6 +57,14 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property                 | Type      | Description                                    |
+| ------------------------ | --------- | ---------------------------------------------- |
+| `agent_id`               | `string`  | Unique subagent ID                             |
+| `agent_type`             | `string`  | Subagent type                                  |
+| `last_assistant_message` | `string`  | The subagent's final response                  |
+| `agent_transcript_path`  | `string`  | Path to the full transcript JSON               |
+| `stop_hook_active`       | `boolean` | `true` if another stop hook is already running |
+
 ```ts
 {
   hook_event_name: "SubagentStop"
@@ -69,6 +84,10 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("SubagentStop").emitOutput({ ... })`):
+
+| Property   | Type      | Description                              |
+| ---------- | --------- | ---------------------------------------- |
+| `decision` | `"block"` | Re-engages the subagent for another turn |
 
 ```ts
 {

@@ -6,6 +6,12 @@ Runs when a configuration file changes during a session.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                                                                                                    | Description                   |
+| --------- | ------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `matcher` | `"user_settings" \| "project_settings" \| "local_settings" \| "policy_settings" \| "skills"` (optional) | Enum matched against `source` |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "user_settings" | "project_settings" | "local_settings" | "policy_settings" | "skills"  // matched against source
@@ -36,6 +42,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property    | Type                                                                                         | Description                            |
+| ----------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `file_path` | `string`                                                                                     | Path to the changed configuration file |
+| `source`    | `"user_settings" \| "project_settings" \| "local_settings" \| "policy_settings" \| "skills"` | Which config source changed            |
+
 ```ts
 {
   hook_event_name: "ConfigChange"
@@ -54,6 +65,10 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("ConfigChange").emitOutput({ ... })`):
+
+| Property   | Type      | Description              |
+| ---------- | --------- | ------------------------ |
+| `decision` | `"block"` | Blocks the config change |
 
 ```ts
 {

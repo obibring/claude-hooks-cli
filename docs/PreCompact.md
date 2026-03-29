@@ -7,6 +7,13 @@ compression).
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                            | Description                                              |
+| --------- | ------------------------------- | -------------------------------------------------------- |
+| `matcher` | `"manual" \| "auto"` (optional) | Enum matched against `trigger`                           |
+| `once`    | `boolean` (optional)            | Run only once per session (on command and http handlers) |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher?: "manual" | "auto"  // matched against trigger
@@ -39,6 +46,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property              | Type                 | Description                                |
+| --------------------- | -------------------- | ------------------------------------------ |
+| `trigger`             | `"manual" \| "auto"` | How the compact was triggered              |
+| `custom_instructions` | `string` (optional)  | User-provided compact instructions, if any |
+
 ```ts
 {
   hook_event_name: "PreCompact"
@@ -57,6 +69,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("PreCompact").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

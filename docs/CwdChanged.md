@@ -6,6 +6,10 @@ Runs when the working directory changes during a session.
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` support.
+
+Supported handler types: command, http only.
+
 ```ts
 {
   hooks: Array<
@@ -37,6 +41,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property  | Type     | Description                |
+| --------- | -------- | -------------------------- |
+| `old_cwd` | `string` | Previous working directory |
+| `new_cwd` | `string` | New working directory      |
+
 ```ts
 {
   hook_event_name: "CwdChanged"
@@ -55,6 +64,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("CwdChanged").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

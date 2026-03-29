@@ -7,6 +7,13 @@ call.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                                                          |
+| --------- | ------------------- | -------------------------------------------------------------------- |
+| `matcher` | `string` (optional) | Regex matched against `tool_name`                                    |
+| `if`      | `string` (optional) | Condition expression; supported on command, agent, and http handlers |
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   matcher?: string  // regex matched against tool_name
@@ -54,6 +61,12 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property                 | Type                      | Description                            |
+| ------------------------ | ------------------------- | -------------------------------------- |
+| `tool_name`              | `string`                  | Name of the tool requesting permission |
+| `tool_input`             | `Record<string, unknown>` | Tool arguments                         |
+| `permission_suggestions` | `unknown` (optional)      | Suggested permission actions           |
+
 ```ts
 {
   hook_event_name: "PermissionRequest"
@@ -73,6 +86,10 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("PermissionRequest").emitOutput({ ... })`):
+
+| Property                               | Type                | Description                                                                                                                  |
+| -------------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `hookSpecificOutput.decision.behavior` | `"allow" \| "deny"` | Controls whether permission is granted (note: nested under `decision` object, unlike PreToolUse's flat `permissionDecision`) |
 
 ```ts
 {

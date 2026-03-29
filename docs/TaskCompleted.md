@@ -7,6 +7,11 @@ teams.**
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` or `if` support.
+Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   hooks: Array<
@@ -59,6 +64,14 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property           | Type     | Description                                  |
+| ------------------ | -------- | -------------------------------------------- |
+| `task_id`          | `string` | Unique task identifier                       |
+| `task_subject`     | `string` | Subject/title of the task                    |
+| `task_description` | `string` | Full task description                        |
+| `teammate_name`    | `string` | Name of the teammate that completed the task |
+| `team_name`        | `string` | Name of the team                             |
+
 ```ts
 {
   hook_event_name: "TaskCompleted"
@@ -80,6 +93,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("TaskCompleted").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

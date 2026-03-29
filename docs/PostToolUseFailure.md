@@ -6,6 +6,13 @@ Runs **after** a tool call fails.
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                | Description                                                          |
+| --------- | ------------------- | -------------------------------------------------------------------- |
+| `matcher` | `string` (optional) | Regex matched against `tool_name`                                    |
+| `if`      | `string` (optional) | Condition expression; supported on command, agent, and http handlers |
+
+Supported handler types: command, prompt, agent, http (all 4).
+
 ```ts
 {
   matcher?: string  // regex matched against tool_name
@@ -53,6 +60,14 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property       | Type                      | Description                                                 |
+| -------------- | ------------------------- | ----------------------------------------------------------- |
+| `tool_name`    | `string`                  | Name of the tool that failed                                |
+| `tool_input`   | `Record<string, unknown>` | Tool arguments                                              |
+| `tool_use_id`  | `string`                  | Unique ID for this tool call                                |
+| `error`        | `string`                  | Error message from the tool                                 |
+| `is_interrupt` | `boolean`                 | `true` if the user interrupted, `false` if the tool errored |
+
 ```ts
 {
   hook_event_name: "PostToolUseFailure"
@@ -74,6 +89,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("PostToolUseFailure").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

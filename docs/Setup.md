@@ -7,6 +7,11 @@ initialization.
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher`, `if`, or `once`
+support. Default timeout is 30000ms (not 5000ms).
+
+Supported handler types: command only.
+
 ```ts
 {
   hooks: Array<{
@@ -25,6 +30,8 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+No hook-specific properties. Only common fields are present.
+
 ```ts
 {
   hook_event_name: "Setup"
@@ -41,6 +48,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("Setup").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

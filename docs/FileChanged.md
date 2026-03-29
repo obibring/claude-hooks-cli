@@ -7,6 +7,12 @@ matcher.**
 
 The settings.json configuration object for this hook:
 
+| Property  | Type                    | Description                                                                                    |
+| --------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `matcher` | `string` (**required**) | Pipe-separated basenames to watch (e.g., `".envrc\|.env"`). NOT regex -- unique to FileChanged |
+
+Supported handler types: command, http only.
+
 ```ts
 {
   matcher: string // REQUIRED — pipe-separated basenames (e.g., ".envrc|.env")
@@ -39,6 +45,11 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property    | Type     | Description                   |
+| ----------- | -------- | ----------------------------- |
+| `file_path` | `string` | Full path to the changed file |
+| `event`     | `string` | Filesystem event type         |
+
 ```ts
 {
   hook_event_name: "FileChanged"
@@ -57,6 +68,8 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("FileChanged").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
 
 ```ts
 {

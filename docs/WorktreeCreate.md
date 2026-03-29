@@ -7,6 +7,10 @@ setup.
 
 The settings.json configuration object for this hook:
 
+No hook-specific config properties. No `matcher` support.
+
+Supported handler types: command, http only.
+
 ```ts
 {
   hooks: Array<
@@ -38,6 +42,10 @@ The settings.json configuration object for this hook:
 
 The JSON object received on stdin:
 
+| Property | Type     | Description   |
+| -------- | -------- | ------------- |
+| `name`   | `string` | Worktree name |
+
 ```ts
 {
   hook_event_name: "WorktreeCreate"
@@ -55,6 +63,9 @@ The JSON object received on stdin:
 
 The JSON object to write to stdout (can be handled via
 `new HookHandler("WorktreeCreate").emitOutput({ ... })`):
+
+No hook-specific output properties. Only common fields are present.
+Non-zero exit fails creation; stdout provides worktree path.
 
 ```ts
 {

@@ -102,11 +102,17 @@ const envFile2: string | undefined = cwdChanged.getEnv("CLAUDE_ENV_FILE") // ✓
 const fileChanged = new HookHandler("FileChanged")
 const envFile3: string | undefined = fileChanged.getEnv("CLAUDE_ENV_FILE") // ✓
 
-// Stop does NOT have CLAUDE_ENV_FILE — return type is just undefined
-const envFile4: undefined = stop.getEnv("CLAUDE_ENV_FILE") // ✓
+// Stop does NOT have CLAUDE_ENV_FILE — return type includes error message
+const envFile4:
+  | undefined
+  | 'CLAUDE_ENV_FILE is not available in "Stop" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.' =
+  stop.getEnv("CLAUDE_ENV_FILE") // ✓
 
-// PreToolUse does NOT have CLAUDE_ENV_FILE
-const envFile5: undefined = preToolUse.getEnv("CLAUDE_ENV_FILE") // ✓
+// PreToolUse does NOT have CLAUDE_ENV_FILE — return type includes error message
+const envFile5:
+  | undefined
+  | 'CLAUDE_ENV_FILE is not available in "PreToolUse" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.' =
+  preToolUse.getEnv("CLAUDE_ENV_FILE") // ✓
 
 // All hooks can read CLAUDE_PROJECT_DIR
 const projectDir: string | undefined = stop.getEnv("CLAUDE_PROJECT_DIR") // ✓

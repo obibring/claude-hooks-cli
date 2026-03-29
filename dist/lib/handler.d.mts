@@ -94,9 +94,9 @@ export class HookHandler<E extends keyof HookIOMap> {
      *
      * @template {import("../schemas/enums.mjs").ClaudeEnvVarName} N
      * @param {N} name - One of the Claude Code environment variable names
-     * @returns {N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined) : string | undefined}
+     * @returns {N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined | `CLAUDE_ENV_FILE is not available in "${E & string}" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.`) : string | undefined}
      */
-    getEnv<N extends import("../schemas/enums.mjs").ClaudeEnvVarName>(name: N): N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined) : string | undefined;
+    getEnv<N extends import("../schemas/enums.mjs").ClaudeEnvVarName>(name: N): N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined | `CLAUDE_ENV_FILE is not available in "${E & string}" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.`) : string | undefined;
     /**
      * Exits silently with code 0 (no output — hook passes through).
      * Code after this call is unreachable.

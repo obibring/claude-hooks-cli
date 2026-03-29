@@ -68,7 +68,7 @@ type EnvFileEvents = "SessionStart" | "CwdChanged" | "FileChanged"
 
 /**
  * Resolves the return type of `getEnv()` based on the hook event and env var name.
- * `CLAUDE_ENV_FILE` returns `undefined` for hooks that don't receive it.
+ * `CLAUDE_ENV_FILE` returns a descriptive error type for hooks that don't receive it.
  */
 type EnvVarReturnType<
   E extends keyof HookIOMap,
@@ -76,7 +76,7 @@ type EnvVarReturnType<
 > = N extends "CLAUDE_ENV_FILE"
   ? E extends EnvFileEvents
     ? string | undefined
-    : undefined
+    : undefined | `CLAUDE_ENV_FILE is not available in "${E & string}" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.`
   : string | undefined
 
 /**

@@ -64,6 +64,33 @@ export class HookHandler<E extends keyof HookIOMap> {
      * Reads a Claude Code environment variable by name.
      * Returns the value from `process.env`, or `undefined` if not set.
      *
+     * Available variables:
+     *
+     * - `CLAUDE_PROJECT_DIR` — Project root directory. Available to **all hooks**.
+     *   Always set. Wrap in quotes for paths with spaces.
+     *
+     * - `CLAUDE_ENV_FILE` — File path for persisting environment variables for
+     *   subsequent Bash commands. Use append (`>>`) to preserve variables from
+     *   other hooks. **Only available in SessionStart, CwdChanged, and FileChanged hooks.**
+     *
+     * - `CLAUDE_PLUGIN_ROOT` — Plugin's root directory, for scripts bundled with
+     *   a plugin. **Only available in plugin hooks.** Not set in project or user hooks.
+     *
+     * - `CLAUDE_CODE_REMOTE` — Set to `"true"` when running in remote web
+     *   environments (e.g. claude.ai/code). **Not set in local CLI sessions.**
+     *   Check for `=== "true"` rather than truthiness.
+     *
+     * - `CLAUDE_SKILL_DIR` — Skill's own directory, for scripts bundled with a
+     *   skill. **Only available in skill hooks.** Since v2.1.69.
+     *
+     * - `CLAUDE_PLUGIN_DATA` — Plugin's persistent data directory that survives
+     *   plugin updates. **Only available in plugin hooks.** Since v2.1.78.
+     *
+     * - `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` — Override SessionEnd hook
+     *   timeout in milliseconds. Prior to v2.1.74, SessionEnd hooks were killed
+     *   after 1.5s regardless of configured timeout. Now respects the hook's
+     *   `timeout` value, or this env var if set. Since v2.1.74.
+     *
      * @param {import("../schemas/enums.mjs").ClaudeEnvVarName} name - One of the Claude Code environment variable names
      * @returns {string | undefined}
      */

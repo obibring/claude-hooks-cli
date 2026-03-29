@@ -39,7 +39,8 @@ The JSON object received on stdin:
 
 ## Output
 
-The JSON object to write to stdout:
+The JSON object to write to stdout (can be handled via
+`new HookHandler("Setup").emitOutput({ ... })`):
 
 ```ts
 {

@@ -1,13 +1,13 @@
 // This file is type-checked with tsc --noEmit to verify
-// that HookHandler provides correct types based on the event name.
+// that HookHandler.for() provides correct types based on the event name.
 
 import { HookHandler } from "../lib/handler.mjs"
 
-// --- PreToolUse: should accept tool-specific fields and hookSpecificOutput ---
-const preToolUse = new HookHandler("PreToolUse")
+// --- PreToolUse: has getToolInput, no CLAUDE_ENV_FILE ---
+const preToolUse = HookHandler.for("PreToolUse")
 
 async function testPreToolUse() {
-  const input = await preToolUse.parseInput()
+  const input = preToolUse.parseInput()
 
   // ✓ PreToolUse-specific fields
   const toolName: string = input.tool_name
@@ -19,54 +19,68 @@ async function testPreToolUse() {
   const sessionId: string = input.session_id
   const cwd: string = input.cwd
 
-  // ✓ Valid outputs
-  preToolUse.exit("success",{
+  // ✓ Valid output
+  preToolUse.exit("success", {
     hookSpecificOutput: {
       permissionDecision: "deny",
       permissionDecisionReason: "blocked",
     },
   })
+
+  // ✓ getToolInput works on tool events
+  const bash = preToolUse.getToolInput("Bash", input)
+  if (bash) {
+    const cmd: string = bash.command
+  }
+
+  // ✓ getEnv works with base vars
+  const projectDir: string | undefined = preToolUse.getEnv("CLAUDE_PROJECT_DIR")
 }
 
-// --- Stop: should accept last_assistant_message and decision ---
-const stop = new HookHandler("Stop")
+// --- Stop: no getToolInput, no CLAUDE_ENV_FILE ---
+const stop = HookHandler.for("Stop")
 
 async function testStop() {
-  const input = await stop.parseInput()
+  const input = stop.parseInput()
 
   const lastMsg: string = input.last_assistant_message
   const active: boolean = input.stop_hook_active
   const hookEvent: "Stop" = input.hook_event_name
 
-  stop.exit("success",{ decision: "block" })
-  stop.exit("success",{})
+  stop.exit("success", { decision: "block" })
+  stop.exit("success", {})
+  stop.exit("error", "something went wrong")
 }
 
 // --- UserPromptSubmit: output can modify prompt ---
-const ups = new HookHandler("UserPromptSubmit")
+const ups = HookHandler.for("UserPromptSubmit")
 
 async function testUserPromptSubmit() {
-  const input = await ups.parseInput()
+  const input = ups.parseInput()
   const prompt: string = input.prompt
-  ups.exit("success",{ prompt: "modified prompt" })
+  ups.exit("success", { prompt: "modified prompt" })
 }
 
-// --- SessionStart: has model and source ---
-const ss = new HookHandler("SessionStart")
+// --- SessionStart: has CLAUDE_ENV_FILE ---
+const sessionStart = HookHandler.for("SessionStart")
 
 async function testSessionStart() {
-  const input = await ss.parseInput()
+  const input = sessionStart.parseInput()
   const model: string = input.model
   const source: "startup" | "resume" | "clear" | "compact" = input.source
+
+  // ✓ SessionStart can access CLAUDE_ENV_FILE
+  const envFile: string | undefined = sessionStart.getEnv("CLAUDE_ENV_FILE")
+  const projectDir: string | undefined = sessionStart.getEnv("CLAUDE_PROJECT_DIR")
 }
 
 // --- Elicitation: has hookSpecificOutput with action ---
-const elicit = new HookHandler("Elicitation")
+const elicit = HookHandler.for("Elicitation")
 
 async function testElicitation() {
-  const input = await elicit.parseInput()
+  const input = elicit.parseInput()
   const serverName: string = input.mcp_server_name
-  elicit.exit("success",{ hookSpecificOutput: { action: "accept" } })
+  elicit.exit("success", { hookSpecificOutput: { action: "accept" } })
 }
 
 // =============================================================
@@ -74,45 +88,33 @@ async function testElicitation() {
 // =============================================================
 
 // @ts-expect-error — "nonExistent" is not a property of PreToolUseInput
-void preToolUse.parseInput().then((i) => i.nonExistent)
+void preToolUse.parseInput().nonExistent
 
 // @ts-expect-error — "invalidProp" is not a valid output property
-preToolUse.exit("success",{ invalidProp: true })
+preToolUse.exit("success", { invalidProp: true })
 
 // @ts-expect-error — Stop input does not have "tool_name"
-void stop.parseInput().then((i) => i.tool_name)
+void stop.parseInput().tool_name
 
 // @ts-expect-error — Stop output does not have "hookSpecificOutput"
-stop.exit("success",{ hookSpecificOutput: { permissionDecision: "allow" } })
+stop.exit("success", { hookSpecificOutput: { permissionDecision: "allow" } })
 
 // @ts-expect-error — "invalid_event" is not a valid hook event name
-new HookHandler("invalid_event")
+HookHandler.for("invalid_event")
 
-// =============================================================
-// getEnv() CLAUDE_ENV_FILE availability tests
-// =============================================================
+// @ts-expect-error — Stop does not have getToolInput
+stop.getToolInput("Bash", stop.parseInput())
 
-// SessionStart, CwdChanged, FileChanged CAN have CLAUDE_ENV_FILE
-const sessionStart = new HookHandler("SessionStart")
-const envFile1: string | undefined = sessionStart.getEnv("CLAUDE_ENV_FILE") // ✓
+// @ts-expect-error — Stop cannot access CLAUDE_ENV_FILE
+stop.getEnv("CLAUDE_ENV_FILE")
 
-const cwdChanged = new HookHandler("CwdChanged")
-const envFile2: string | undefined = cwdChanged.getEnv("CLAUDE_ENV_FILE") // ✓
+// @ts-expect-error — PreToolUse cannot access CLAUDE_ENV_FILE
+preToolUse.getEnv("CLAUDE_ENV_FILE")
 
-const fileChanged = new HookHandler("FileChanged")
-const envFile3: string | undefined = fileChanged.getEnv("CLAUDE_ENV_FILE") // ✓
+// ✓ CwdChanged CAN access CLAUDE_ENV_FILE
+const cwdChanged = HookHandler.for("CwdChanged")
+const envFile2: string | undefined = cwdChanged.getEnv("CLAUDE_ENV_FILE")
 
-// Stop does NOT have CLAUDE_ENV_FILE — return type includes error message
-const envFile4:
-  | undefined
-  | 'CLAUDE_ENV_FILE is not available in "Stop" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.' =
-  stop.getEnv("CLAUDE_ENV_FILE") // ✓
-
-// PreToolUse does NOT have CLAUDE_ENV_FILE — return type includes error message
-const envFile5:
-  | undefined
-  | 'CLAUDE_ENV_FILE is not available in "PreToolUse" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.' =
-  preToolUse.getEnv("CLAUDE_ENV_FILE") // ✓
-
-// All hooks can read CLAUDE_PROJECT_DIR
-const projectDir: string | undefined = stop.getEnv("CLAUDE_PROJECT_DIR") // ✓
+// ✓ FileChanged CAN access CLAUDE_ENV_FILE
+const fileChanged = HookHandler.for("FileChanged")
+const envFile3: string | undefined = fileChanged.getEnv("CLAUDE_ENV_FILE")

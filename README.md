@@ -233,7 +233,7 @@ The created `hooks/validate-bash.ts` contains:
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("PreToolUse")
+const handler = HookHandler.for("PreToolUse")
 
 /**
  * Parse the hook input from stdin (synchronous, strongly typed):
@@ -695,7 +695,7 @@ Replace the generated template with typed handler code:
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("PreToolUse")
+const handler = HookHandler.for("PreToolUse")
 const input = handler.parseInput()
 
 // input is strongly typed — IDE autocomplete works for all fields:
@@ -724,13 +724,20 @@ handler.exit("success")
 
 ### API Reference
 
-#### `new HookHandler(eventName)`
+#### `HookHandler.for(eventName)`
 
-Creates a handler bound to a specific hook event. The event name
-determines the types of `parseInput()` and `exit()`.
+Creates a handler bound to a specific hook event. Returns a handler
+interface specific to the event — with only the methods and env vars
+that apply to that hook type. For example, tool-event hooks have
+`getToolInput()`, env-file hooks accept `"CLAUDE_ENV_FILE"` in
+`getEnv()`.
 
 ```ts
-const handler = new HookHandler("Stop")
+const handler = HookHandler.for("PreToolUse")
+// handler has getToolInput(), getEnv() without CLAUDE_ENV_FILE
+
+const handler2 = HookHandler.for("SessionStart")
+// handler2 has getEnv("CLAUDE_ENV_FILE"), no getToolInput()
 ```
 
 #### `handler.parseInput(): Input`
@@ -812,7 +819,7 @@ tool-event hooks (PreToolUse, PostToolUse, PostToolUseFailure,
 PermissionRequest).
 
 ```ts
-const handler = new HookHandler("PreToolUse")
+const handler = HookHandler.for("PreToolUse")
 const input = handler.parseInput()
 
 const bash = handler.getToolInput("Bash", input)
@@ -843,7 +850,7 @@ Supported tools: `Bash`, `Write`, `Edit`, `Read`, `Glob`, `Grep`,
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("PreToolUse")
+const handler = HookHandler.for("PreToolUse")
 const input = handler.parseInput()
 
 const bash = handler.getToolInput("Bash", input)
@@ -885,7 +892,7 @@ cch add \
 import { appendFileSync } from "node:fs"
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("PostToolUse")
+const handler = HookHandler.for("PostToolUse")
 const input = handler.parseInput()
 
 appendFileSync(
@@ -920,7 +927,7 @@ cch add \
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("SessionStart")
+const handler = HookHandler.for("SessionStart")
 const input = handler.parseInput()
 
 if (input.source === "startup") {
@@ -952,7 +959,7 @@ cch add \
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("UserPromptSubmit")
+const handler = HookHandler.for("UserPromptSubmit")
 const input = handler.parseInput()
 
 // Prefix all prompts with a reminder
@@ -979,7 +986,7 @@ cch add \
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("Elicitation")
+const handler = HookHandler.for("Elicitation")
 const input = handler.parseInput()
 
 if (input.mcp_server_name === "my-auth-server") {
@@ -1052,7 +1059,7 @@ cch add \
 #!/usr/bin/env npx tsx
 import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const handler = new HookHandler("PreToolUse")
+const handler = HookHandler.for("PreToolUse")
 const input = handler.parseInput()
 const projectDir = handler.getEnv("CLAUDE_PROJECT_DIR")
 

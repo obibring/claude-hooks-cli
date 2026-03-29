@@ -73,7 +73,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("StopFailure").exit("success", { ... })`):
+`HookHandler.for("StopFailure").exit("success", { ... })`):
 
 No hook-specific output properties. Only common fields are present.
 

@@ -52,7 +52,7 @@ No hook-specific properties. Only common fields are present.
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("Setup").exit("success", { ... })`):
+`HookHandler.for("Setup").exit("success", { ... })`):
 
 No hook-specific output properties. Only common fields are present.
 

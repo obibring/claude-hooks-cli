@@ -88,7 +88,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("PostToolUse").exit("success", { ... })`):
+`HookHandler.for("PostToolUse").exit("success", { ... })`):
 
 | Property   | Type      | Description                  |
 | ---------- | --------- | ---------------------------- |

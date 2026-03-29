@@ -71,7 +71,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("TeammateIdle").exit("success", { ... })`):
+`HookHandler.for("TeammateIdle").exit("success", { ... })`):
 
 No hook-specific output properties. Only common fields are present.
 

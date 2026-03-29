@@ -89,7 +89,7 @@
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
-    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts",
+    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts",
     "dev": "bun run build && tsc --watch --preserveWatchOutput",
     "prepublishOnly": "bun run build",
     "test": "vitest run",

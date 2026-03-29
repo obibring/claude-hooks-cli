@@ -383,7 +383,25 @@ export declare class HookHandler<E extends keyof HookIOMap> {
   /** The hook event name this handler is bound to. */
   readonly event: E
 
-  constructor(event: E)
+  protected constructor(event: E)
+
+  /**
+   * Creates a hook handler with the correct type for the given event name.
+   * Returns a handler interface specific to the event — with only the methods
+   * and env vars that apply to that hook type.
+   *
+   * @example
+   * ```ts
+   * const handler = HookHandler.for("PreToolUse")
+   * // handler has getToolInput(), getEnv() without CLAUDE_ENV_FILE
+   *
+   * const handler2 = HookHandler.for("SessionStart")
+   * // handler2 has getEnv("CLAUDE_ENV_FILE"), no getToolInput()
+   * ```
+   */
+  static for<E extends keyof import("./handlers/index.d.mts").HookHandlerMap>(
+    event: E,
+  ): import("./handlers/index.d.mts").HookHandlerMap[E]
 
   /**
    * Reads stdin synchronously, JSON-parses it, and validates against the hook's input schema.

@@ -68,7 +68,7 @@ The JSON object received on stdin:
 ## Output
 
 The JSON object to write to stdout (can be handled via
-`new HookHandler("WorktreeRemove").exit("success", { ... })`):
+`HookHandler.for("WorktreeRemove").exit("success", { ... })`):
 
 No hook-specific output properties. Only common fields are present.
 

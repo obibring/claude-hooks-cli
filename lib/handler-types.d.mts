@@ -363,13 +363,13 @@ type EnvVarReturnType<
 /**
  * Strongly-typed handler for Claude Code hook scripts.
  *
- * Provides typed input parsing and output emission based on the hook event name
- * passed to the constructor. Methods that call `process.exit()` return `never`
+ * Use `HookHandler.for(eventName)` to create a handler with the correct
+ * type for the given event. Methods that call `process.exit()` return `never`
  * so code after them is correctly flagged as unreachable.
  *
  * @example
  * ```ts
- * const handler = new HookHandler("PreToolUse")
+ * const handler = HookHandler.for("PreToolUse")
  * const input = handler.parseInput()
  * // input.tool_name is typed as string
  * // input.nonExistent would be a TS error
@@ -460,7 +460,7 @@ export declare class HookHandler<E extends keyof HookIOMap> {
    *
    * Use this to branch on tool names:
    * ```ts
-   * const handler = new HookHandler("PreToolUse")
+   * const handler = HookHandler.for("PreToolUse")
    * const input = handler.parseInput()
    *
    * const bash = handler.getToolInput("Bash", input)

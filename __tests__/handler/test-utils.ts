@@ -183,7 +183,7 @@ export function runHandler(
   const script = `
     import { HookHandler } from './lib/handler.mjs';
     const handler = new HookHandler('${eventName}');
-    const input = await handler.parseInput();
+    const input = handler.parseInput();
     process.stderr.write(JSON.stringify(input));
     ${outputExpr};
   `

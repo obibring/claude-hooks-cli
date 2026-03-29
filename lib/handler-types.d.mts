@@ -73,7 +73,7 @@ export type HookEventName = keyof HookIOMap
  * @example
  * ```ts
  * const handler = new HookHandler("PreToolUse")
- * const input = await handler.parseInput()
+ * const input = handler.parseInput()
  * // input.tool_name is typed as string
  * // input.nonExistent would be a TS error
  *
@@ -89,10 +89,10 @@ export declare class HookHandler<E extends keyof HookIOMap> {
   constructor(event: E)
 
   /**
-   * Reads stdin, JSON-parses it, and validates against the hook's input schema.
-   * Exits with code 2 if validation fails.
+   * Reads stdin synchronously, JSON-parses it, and validates against the hook's input schema.
+   * Exits with code 2 if stdin is empty, not valid JSON, or fails schema validation.
    */
-  parseInput(): Promise<HookIOMap[E]["input"]>
+  parseInput(): HookIOMap[E]["input"]
 
   /**
    * Writes JSON output to stdout and exits with code 0.

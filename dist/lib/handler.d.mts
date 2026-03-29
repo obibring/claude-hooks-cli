@@ -12,7 +12,7 @@
  * import { HookHandler } from "@obibring/claude-hooks-cli/handler"
  *
  * const handler = new HookHandler("PreToolUse")
- * const input = await handler.parseInput()
+ * const input = handler.parseInput()
  *
  * if (input.tool_name === "Bash" && input.tool_input.command?.includes("rm -rf")) {
  *   handler.emitOutput({
@@ -36,20 +36,21 @@ export class HookHandler<E extends keyof HookIOMap> {
     /** @private */
     private _inputSchema;
     /**
-     * Reads stdin, JSON-parses it, and validates against the hook's input schema.
-     * Exits with code 2 if the input is invalid.
+     * Reads stdin synchronously, JSON-parses it, and validates against the hook's input schema.
+     * Exits with code 2 if stdin is empty, not valid JSON, or fails schema validation.
      *
-     * @returns {Promise<HookIOMap[E]["input"]>}
+     * @returns {HookIOMap[E]["input"]}
      */
-    parseInput(): Promise<HookIOMap[E]["input"]>;
+    parseInput(): HookIOMap[E]["input"];
     /**
      * Writes JSON output to stdout and exits with code 0.
      * Code after this call is unreachable.
      *
+     * @this {HookHandler<E>}
      * @param {HookIOMap[E]["output"]} output
      * @returns {never}
      */
-    emitOutput(output: HookIOMap[E]["output"]): never;
+    emitOutput(this: HookHandler<E>, output: HookIOMap[E]["output"]): never;
     /**
      * Writes an error message to stderr and exits with code 2 (blocking error).
      * The message is fed back to the Claude model.

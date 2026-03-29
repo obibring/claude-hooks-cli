@@ -1,4 +1,4 @@
-# claude-hooks-cli
+# claude-hooks-cli (`cch`)
 
 A CLI tool for managing
 [Claude Code hooks](https://code.claude.com/docs/en/hooks) — the

@@ -156,3 +156,24 @@ HookHandler.for("PreToolUse", { readFile: (p: string) => "" })
 
 // @ts-expect-error — Stop does not accept options
 HookHandler.for("Stop", { readFile: (p: string) => "" })
+
+// =============================================================
+// Array of events — union type
+// =============================================================
+
+const multi = HookHandler.for(["PreToolUse", "PostToolUse"])
+// multi.event is "PreToolUse" | "PostToolUse"
+const multiEvent: "PreToolUse" | "PostToolUse" = multi.event
+
+// parseInput returns union of both input types
+const multiInput = multi.parseInput()
+const multiSessionId: string = multiInput.session_id // common field works
+
+// Narrow by event to use specific methods
+if (multi.event === "PreToolUse") {
+  // After narrowing, event is typed but handler type isn't narrowed
+  // Use handler.parseInput() in the narrowed branch
+}
+
+// @ts-expect-error — empty array not allowed
+HookHandler.for([])

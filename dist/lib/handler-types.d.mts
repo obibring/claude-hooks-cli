@@ -412,6 +412,25 @@ export declare class HookHandler<E extends keyof HookIOMap> {
   ): import("./handlers/index.d.mts").HookHandlerMap[E]
 
   /**
+   * Creates a handler that accepts any of the given event names.
+   * The returned type is the union of all handler interfaces for the provided events.
+   * Use `handler.event` to narrow which event was received.
+   *
+   * @example
+   * ```ts
+   * const handler = HookHandler.for(["PreToolUse", "PostToolUse"])
+   * const input = handler.parseInput()
+   *
+   * if (handler.event === "PreToolUse") {
+   *   // input is narrowed to PreToolUseInput
+   * }
+   * ```
+   */
+  static for<E extends keyof import("./handlers/index.d.mts").HookHandlerMap>(
+    events: [E, ...E[]],
+  ): import("./handlers/index.d.mts").HookHandlerMap[E]
+
+  /**
    * Reads stdin synchronously, JSON-parses it, and validates against the hook's input schema.
    * Results are cached — can be called multiple times without performance penalty.
    * Exits with code 2 if stdin is empty, not valid JSON, or fails schema validation.

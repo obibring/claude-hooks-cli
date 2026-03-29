@@ -20,6 +20,9 @@
     "lib/settings-io.mjs",
     "lib/hooks-store.mjs",
     "lib/hooks-manager.mjs",
+    "lib/schema-map.mjs",
+    "lib/handler.mjs",
+    "lib/handler-types.d.mts",
     "index.mjs"
   ]
 }

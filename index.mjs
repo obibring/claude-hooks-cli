@@ -1,6 +1,10 @@
 // Re-export schemas (enums, base schemas, matchers, config builders, output)
 export * from "./schemas/index.mjs"
 
+// Re-export HookHandler class for hook script authors
+// Types HookIOMap and HookEventName are available via ./lib/handler-types.d.mts
+export { HookHandler } from "./lib/handler.mjs"
+
 // Re-export utility modules for programmatic use
 export {
   getSettingsPath,

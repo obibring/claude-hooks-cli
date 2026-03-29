@@ -1,0 +1,115 @@
+import type { z } from "zod/v4"
+
+import type { PreToolUseInputSchema, PreToolUseOutputSchema } from "../hooks/PreToolUse.mjs"
+import type { PermissionRequestInputSchema, PermissionRequestOutputSchema } from "../hooks/PermissionRequest.mjs"
+import type { PostToolUseInputSchema, PostToolUseOutputSchema } from "../hooks/PostToolUse.mjs"
+import type { PostToolUseFailureInputSchema, PostToolUseFailureOutputSchema } from "../hooks/PostToolUseFailure.mjs"
+import type { UserPromptSubmitInputSchema, UserPromptSubmitOutputSchema } from "../hooks/UserPromptSubmit.mjs"
+import type { NotificationInputSchema, NotificationOutputSchema } from "../hooks/Notification.mjs"
+import type { StopInputSchema, StopOutputSchema } from "../hooks/Stop.mjs"
+import type { SubagentStartInputSchema, SubagentStartOutputSchema } from "../hooks/SubagentStart.mjs"
+import type { SubagentStopInputSchema, SubagentStopOutputSchema } from "../hooks/SubagentStop.mjs"
+import type { PreCompactInputSchema, PreCompactOutputSchema } from "../hooks/PreCompact.mjs"
+import type { PostCompactInputSchema, PostCompactOutputSchema } from "../hooks/PostCompact.mjs"
+import type { SessionStartInputSchema, SessionStartOutputSchema } from "../hooks/SessionStart.mjs"
+import type { SessionEndInputSchema, SessionEndOutputSchema } from "../hooks/SessionEnd.mjs"
+import type { SetupInputSchema, SetupOutputSchema } from "../hooks/Setup.mjs"
+import type { TeammateIdleInputSchema, TeammateIdleOutputSchema } from "../hooks/TeammateIdle.mjs"
+import type { TaskCreatedInputSchema, TaskCreatedOutputSchema } from "../hooks/TaskCreated.mjs"
+import type { TaskCompletedInputSchema, TaskCompletedOutputSchema } from "../hooks/TaskCompleted.mjs"
+import type { ConfigChangeInputSchema, ConfigChangeOutputSchema } from "../hooks/ConfigChange.mjs"
+import type { WorktreeCreateInputSchema, WorktreeCreateOutputSchema } from "../hooks/WorktreeCreate.mjs"
+import type { WorktreeRemoveInputSchema, WorktreeRemoveOutputSchema } from "../hooks/WorktreeRemove.mjs"
+import type { InstructionsLoadedInputSchema, InstructionsLoadedOutputSchema } from "../hooks/InstructionsLoaded.mjs"
+import type { ElicitationInputSchema, ElicitationOutputSchema } from "../hooks/Elicitation.mjs"
+import type { ElicitationResultInputSchema, ElicitationResultOutputSchema } from "../hooks/ElicitationResult.mjs"
+import type { StopFailureInputSchema, StopFailureOutputSchema } from "../hooks/StopFailure.mjs"
+import type { CwdChangedInputSchema, CwdChangedOutputSchema } from "../hooks/CwdChanged.mjs"
+import type { FileChangedInputSchema, FileChangedOutputSchema } from "../hooks/FileChanged.mjs"
+
+/**
+ * Maps each hook event name to its strongly-typed Input and Output types.
+ * Used by `HookHandler<E>` to resolve the correct types based on the event name.
+ */
+export interface HookIOMap {
+  PreToolUse: { input: z.infer<typeof PreToolUseInputSchema>; output: z.infer<typeof PreToolUseOutputSchema> }
+  PermissionRequest: { input: z.infer<typeof PermissionRequestInputSchema>; output: z.infer<typeof PermissionRequestOutputSchema> }
+  PostToolUse: { input: z.infer<typeof PostToolUseInputSchema>; output: z.infer<typeof PostToolUseOutputSchema> }
+  PostToolUseFailure: { input: z.infer<typeof PostToolUseFailureInputSchema>; output: z.infer<typeof PostToolUseFailureOutputSchema> }
+  UserPromptSubmit: { input: z.infer<typeof UserPromptSubmitInputSchema>; output: z.infer<typeof UserPromptSubmitOutputSchema> }
+  Notification: { input: z.infer<typeof NotificationInputSchema>; output: z.infer<typeof NotificationOutputSchema> }
+  Stop: { input: z.infer<typeof StopInputSchema>; output: z.infer<typeof StopOutputSchema> }
+  SubagentStart: { input: z.infer<typeof SubagentStartInputSchema>; output: z.infer<typeof SubagentStartOutputSchema> }
+  SubagentStop: { input: z.infer<typeof SubagentStopInputSchema>; output: z.infer<typeof SubagentStopOutputSchema> }
+  PreCompact: { input: z.infer<typeof PreCompactInputSchema>; output: z.infer<typeof PreCompactOutputSchema> }
+  PostCompact: { input: z.infer<typeof PostCompactInputSchema>; output: z.infer<typeof PostCompactOutputSchema> }
+  SessionStart: { input: z.infer<typeof SessionStartInputSchema>; output: z.infer<typeof SessionStartOutputSchema> }
+  SessionEnd: { input: z.infer<typeof SessionEndInputSchema>; output: z.infer<typeof SessionEndOutputSchema> }
+  Setup: { input: z.infer<typeof SetupInputSchema>; output: z.infer<typeof SetupOutputSchema> }
+  TeammateIdle: { input: z.infer<typeof TeammateIdleInputSchema>; output: z.infer<typeof TeammateIdleOutputSchema> }
+  TaskCreated: { input: z.infer<typeof TaskCreatedInputSchema>; output: z.infer<typeof TaskCreatedOutputSchema> }
+  TaskCompleted: { input: z.infer<typeof TaskCompletedInputSchema>; output: z.infer<typeof TaskCompletedOutputSchema> }
+  ConfigChange: { input: z.infer<typeof ConfigChangeInputSchema>; output: z.infer<typeof ConfigChangeOutputSchema> }
+  WorktreeCreate: { input: z.infer<typeof WorktreeCreateInputSchema>; output: z.infer<typeof WorktreeCreateOutputSchema> }
+  WorktreeRemove: { input: z.infer<typeof WorktreeRemoveInputSchema>; output: z.infer<typeof WorktreeRemoveOutputSchema> }
+  InstructionsLoaded: { input: z.infer<typeof InstructionsLoadedInputSchema>; output: z.infer<typeof InstructionsLoadedOutputSchema> }
+  Elicitation: { input: z.infer<typeof ElicitationInputSchema>; output: z.infer<typeof ElicitationOutputSchema> }
+  ElicitationResult: { input: z.infer<typeof ElicitationResultInputSchema>; output: z.infer<typeof ElicitationResultOutputSchema> }
+  StopFailure: { input: z.infer<typeof StopFailureInputSchema>; output: z.infer<typeof StopFailureOutputSchema> }
+  CwdChanged: { input: z.infer<typeof CwdChangedInputSchema>; output: z.infer<typeof CwdChangedOutputSchema> }
+  FileChanged: { input: z.infer<typeof FileChangedInputSchema>; output: z.infer<typeof FileChangedOutputSchema> }
+}
+
+/** All valid hook event names. */
+export type HookEventName = keyof HookIOMap
+
+/**
+ * Strongly-typed handler for Claude Code hook scripts.
+ *
+ * Provides typed input parsing and output emission based on the hook event name
+ * passed to the constructor. Methods that call `process.exit()` return `never`
+ * so code after them is correctly flagged as unreachable.
+ *
+ * @example
+ * ```ts
+ * const handler = new HookHandler("PreToolUse")
+ * const input = await handler.parseInput()
+ * // input.tool_name is typed as string
+ * // input.nonExistent would be a TS error
+ *
+ * handler.emitOutput({
+ *   hookSpecificOutput: { permissionDecision: "deny", permissionDecisionReason: "blocked" }
+ * })
+ * ```
+ */
+export declare class HookHandler<E extends keyof HookIOMap> {
+  /** The hook event name this handler is bound to. */
+  readonly event: E
+
+  constructor(event: E)
+
+  /**
+   * Reads stdin, JSON-parses it, and validates against the hook's input schema.
+   * Exits with code 2 if validation fails.
+   */
+  parseInput(): Promise<HookIOMap[E]["input"]>
+
+  /**
+   * Writes JSON output to stdout and exits with code 0.
+   * Code after this call is unreachable.
+   */
+  emitOutput(output: HookIOMap[E]["output"]): never
+
+  /**
+   * Writes an error message to stderr and exits with code 2 (blocking error).
+   * The message is fed back to the Claude model.
+   * Code after this call is unreachable.
+   */
+  emitBlockingError(message: string): never
+
+  /**
+   * Exits silently with code 0 (no output — hook passes through).
+   * Code after this call is unreachable.
+   */
+  exit(): never
+}

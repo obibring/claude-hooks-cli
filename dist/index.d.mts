@@ -1,4 +1,5 @@
 export * from "./schemas/index.mjs";
+export { HookHandler } from "./lib/handler.mjs";
 export { getSettingsPath, readSettings, writeSettings } from "./lib/settings-io.mjs";
 export { getHooksObject, addHook, removeHook, listHooks } from "./lib/hooks-store.mjs";
 export { getHooks, saveHook, deleteHook } from "./lib/hooks-manager.mjs";

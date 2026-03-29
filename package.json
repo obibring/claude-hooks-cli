@@ -58,6 +58,12 @@
         "types": "./dist/lib/hooks-manager.d.mts",
         "default": "./lib/hooks-manager.mjs"
       }
+    },
+    "./handler": {
+      "import": {
+        "types": "./lib/handler-types.d.mts",
+        "default": "./lib/handler.mjs"
+      }
     }
   },
   "files": [
@@ -68,6 +74,9 @@
     "lib/settings-io.mjs",
     "lib/hooks-store.mjs",
     "lib/hooks-manager.mjs",
+    "lib/schema-map.mjs",
+    "lib/handler.mjs",
+    "lib/handler-types.d.mts",
     "dist/**/*.d.mts",
     "dist/**/*.d.mts.map",
     "bin/cli.mjs",

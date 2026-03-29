@@ -64,3 +64,13 @@ When adding/modifying output types:
 
 The build step (`bun run build`) runs `tsc` then copies both `.d.mts`
 files to `dist/lib/`.
+
+## Hook Handler Type Rules
+
+INSTRUCTION: Prompt-type hook handlers (`type: "prompt"`) do NOT use
+`SharedHandlerPropsSchema` or `...handlerProps.shape`. They have their
+own explicit fields: `type`, `prompt`, `model` (enum), and `timeout`.
+The `async`, `asyncRewake`, and `statusMessage` properties are NOT
+supported by prompt handlers — never add them. When creating or
+modifying prompt handler definitions in hook config schemas, always
+use the explicit field pattern from `hooks/Stop.mjs` as the reference.

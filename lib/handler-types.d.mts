@@ -387,6 +387,7 @@ export declare class HookHandler<E extends keyof HookIOMap> {
 
   /**
    * Reads stdin synchronously, JSON-parses it, and validates against the hook's input schema.
+   * Results are cached — can be called multiple times without performance penalty.
    * Exits with code 2 if stdin is empty, not valid JSON, or fails schema validation.
    */
   parseInput(): HookIOMap[E]["input"]

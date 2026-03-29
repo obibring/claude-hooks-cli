@@ -737,8 +737,9 @@ const handler = new HookHandler("Stop")
 
 Reads stdin synchronously, parses JSON, and validates it against the
 hook's zod input schema. Returns the strongly-typed input object.
-Exits with code 2 if stdin is empty, not valid JSON, or fails
-validation.
+Results are cached — can be called multiple times without performance
+penalty (stdin is only read once). Exits with code 2 if stdin is
+empty, not valid JSON, or fails validation.
 
 ```ts
 const input = handler.parseInput()

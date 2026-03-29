@@ -108,6 +108,21 @@ export declare class HookHandler<E extends keyof HookIOMap> {
   emitBlockingError(message: string): never
 
   /**
+   * Reads a Claude Code environment variable by name.
+   * Returns the value from `process.env`, or `undefined` if not set.
+   *
+   * Available variables:
+   * - `CLAUDE_PROJECT_DIR` — project root directory (all hooks)
+   * - `CLAUDE_ENV_FILE` — path for persisting env vars (SessionStart, CwdChanged, FileChanged only)
+   * - `CLAUDE_PLUGIN_ROOT` — plugin's root directory (plugin hooks)
+   * - `CLAUDE_CODE_REMOTE` — `"true"` in remote web environments
+   * - `CLAUDE_SKILL_DIR` — skill's own directory (skill hooks, since v2.1.69)
+   * - `CLAUDE_PLUGIN_DATA` — plugin's persistent data directory (since v2.1.78)
+   * - `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` — override SessionEnd hook timeout
+   */
+  getEnv(name: import("../schemas/enums.mjs").ClaudeEnvVarName): string | undefined
+
+  /**
    * Exits silently with code 0 (no output — hook passes through).
    * Code after this call is unreachable.
    */

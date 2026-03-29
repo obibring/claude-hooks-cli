@@ -61,6 +61,14 @@ export class HookHandler<E extends keyof HookIOMap> {
      */
     emitBlockingError(message: string): never;
     /**
+     * Reads a Claude Code environment variable by name.
+     * Returns the value from `process.env`, or `undefined` if not set.
+     *
+     * @param {import("../schemas/enums.mjs").ClaudeEnvVarName} name - One of the Claude Code environment variable names
+     * @returns {string | undefined}
+     */
+    getEnv(name: import("../schemas/enums.mjs").ClaudeEnvVarName): string | undefined;
+    /**
      * Exits silently with code 0 (no output — hook passes through).
      * Code after this call is unreachable.
      *

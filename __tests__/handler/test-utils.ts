@@ -188,10 +188,27 @@ export function runHandler(
     ${outputExpr};
   `
 
+  return runScript(script, JSON.stringify(input))
+}
+
+/**
+ * Spawns a Node.js child process that runs a custom handler script.
+ * Pipes stdinData to stdin and captures stdout/stderr.
+ *
+ * @param script - ESM script source code
+ * @param stdinData - Data to pipe to stdin
+ * @param env - Additional environment variables to set
+ */
+export function runScript(
+  script: string,
+  stdinData: string,
+  env?: Record<string, string>,
+): Promise<RunHandlerResult> {
   return new Promise((resolve, reject) => {
     const child = spawn("node", ["--input-type=module", "-e", script], {
       cwd: PROJECT_ROOT,
       stdio: ["pipe", "pipe", "pipe"],
+      env: { ...process.env, ...env },
     })
 
     let stdout = ""
@@ -209,7 +226,7 @@ export function runHandler(
       resolve({ exitCode: code ?? 1, stdout, stderr })
     })
 
-    child.stdin.write(JSON.stringify(input))
+    child.stdin.write(stdinData)
     child.stdin.end()
   })
 }

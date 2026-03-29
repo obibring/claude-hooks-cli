@@ -42,6 +42,14 @@ const addCmd = new Command("add")
   .option("--status-message <msg>", "Status spinner message")
   .option("--if <condition>", "Conditional execution rule")
   .option("--create", "Create the command file if it doesn't exist")
+  .option(
+    "--auto-prompt-suffix",
+    "Auto-append JSON response format instructions to prompt hooks",
+  )
+  .option(
+    "--no-auto-prompt-suffix",
+    "Do not append JSON response format instructions to prompt hooks",
+  )
   .option("--non-interactive", "Non-interactive mode (for agents/scripts)")
 
 addScopeOption(addCmd)
@@ -63,6 +71,7 @@ addCmd.action(async (opts) => {
     statusMessage: opts.statusMessage,
     ifCondition: opts.if,
     create: opts.create,
+    autoPromptSuffix: opts.autoPromptSuffix,
     nonInteractive: opts.nonInteractive,
   })
 

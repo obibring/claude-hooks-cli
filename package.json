@@ -1,7 +1,7 @@
 {
   "name": "@obibring/claude-hooks-cli",
   "packageManager": "bun@1.3.2",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Claude Code helper for creating and installing valid hooks using typescript",
   "type": "module",
   "main": "./index.mjs",
@@ -103,8 +103,7 @@
     "dev": "bun run build && tsc --watch --preserveWatchOutput",
     "prepublishOnly": "bun run build",
     "test": "vitest run",
-    "lint": "prettier --write .",
-    "prepare": "husky"
+    "lint": "prettier --write ."
   },
   "lint-staged": {
     "*.{mjs,js,json,md}": "prettier --write"
@@ -113,6 +112,7 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@clack/prompts": "^1.1.0",
+    "husky": "^9.1.7",
     "commander": "^14.0.3",
     "marked": "^17.0.5",
     "marked-terminal": "^7.3.0",
@@ -120,7 +120,6 @@
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
-    "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "typescript": "^6.0.2",

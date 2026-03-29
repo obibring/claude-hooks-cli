@@ -87,3 +87,26 @@ stop.emitOutput({ hookSpecificOutput: { permissionDecision: "allow" } })
 
 // @ts-expect-error — "invalid_event" is not a valid hook event name
 new HookHandler("invalid_event")
+
+// =============================================================
+// getEnv() CLAUDE_ENV_FILE availability tests
+// =============================================================
+
+// SessionStart, CwdChanged, FileChanged CAN have CLAUDE_ENV_FILE
+const sessionStart = new HookHandler("SessionStart")
+const envFile1: string | undefined = sessionStart.getEnv("CLAUDE_ENV_FILE") // ✓
+
+const cwdChanged = new HookHandler("CwdChanged")
+const envFile2: string | undefined = cwdChanged.getEnv("CLAUDE_ENV_FILE") // ✓
+
+const fileChanged = new HookHandler("FileChanged")
+const envFile3: string | undefined = fileChanged.getEnv("CLAUDE_ENV_FILE") // ✓
+
+// Stop does NOT have CLAUDE_ENV_FILE — return type is just undefined
+const envFile4: undefined = stop.getEnv("CLAUDE_ENV_FILE") // ✓
+
+// PreToolUse does NOT have CLAUDE_ENV_FILE
+const envFile5: undefined = preToolUse.getEnv("CLAUDE_ENV_FILE") // ✓
+
+// All hooks can read CLAUDE_PROJECT_DIR
+const projectDir: string | undefined = stop.getEnv("CLAUDE_PROJECT_DIR") // ✓

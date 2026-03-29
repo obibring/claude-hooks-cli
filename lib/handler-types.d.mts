@@ -63,6 +63,22 @@ export interface HookIOMap {
 /** All valid hook event names. */
 export type HookEventName = keyof HookIOMap
 
+/** Hook events that have access to CLAUDE_ENV_FILE. */
+type EnvFileEvents = "SessionStart" | "CwdChanged" | "FileChanged"
+
+/**
+ * Resolves the return type of `getEnv()` based on the hook event and env var name.
+ * `CLAUDE_ENV_FILE` returns `undefined` for hooks that don't receive it.
+ */
+type EnvVarReturnType<
+  E extends keyof HookIOMap,
+  N extends import("../schemas/enums.mjs").ClaudeEnvVarName,
+> = N extends "CLAUDE_ENV_FILE"
+  ? E extends EnvFileEvents
+    ? string | undefined
+    : undefined
+  : string | undefined
+
 /**
  * Strongly-typed handler for Claude Code hook scripts.
  *
@@ -138,7 +154,9 @@ export declare class HookHandler<E extends keyof HookIOMap> {
    *   after 1.5s regardless of configured timeout. Now respects the hook's
    *   `timeout` value, or this env var if set. Since v2.1.74.
    */
-  getEnv(name: import("../schemas/enums.mjs").ClaudeEnvVarName): string | undefined
+  getEnv<N extends import("../schemas/enums.mjs").ClaudeEnvVarName>(
+    name: N,
+  ): EnvVarReturnType<E, N>
 
   /**
    * Exits silently with code 0 (no output — hook passes through).

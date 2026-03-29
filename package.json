@@ -76,6 +76,7 @@
     "lib/hooks-manager.mjs",
     "lib/schema-map.mjs",
     "lib/handler.mjs",
+    "lib/handler.d.mts",
     "lib/handler-types.d.mts",
     "dist/**/*.d.mts",
     "dist/**/*.d.mts.map",

@@ -10,12 +10,16 @@ export const StopConfigSchema: z.ZodObject<{
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
     }, z.core.$strict>, z.ZodObject<{
-        timeout: z.ZodOptional<z.ZodNumber>;
-        async: z.ZodOptional<z.ZodBoolean>;
-        asyncRewake: z.ZodOptional<z.ZodBoolean>;
-        statusMessage: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"prompt">;
         prompt: z.ZodString;
+        model: z.ZodOptional<z.ZodEnum<{
+            opus: "opus";
+            sonnet: "sonnet";
+            haiku: "haiku";
+            "opus[4m]": "opus[4m]";
+            "sonnet[4m]": "sonnet[4m]";
+        }>>;
+        timeout: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strict>, z.ZodObject<{
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;

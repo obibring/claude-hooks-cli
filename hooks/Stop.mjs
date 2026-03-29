@@ -1,12 +1,12 @@
 import { z } from "zod/v4"
 
+import {
+  HttpExtraPropsSchema,
+  SharedHandlerPropsSchema,
+} from "../schemas/config-schemas.mjs"
 import { BlockDecisionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
-import {
-  SharedHandlerPropsSchema,
-  HttpExtraPropsSchema,
-} from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -47,13 +47,29 @@ export const StopConfigSchema = z.object({
               .describe(
                 "Sends a prompt to a Claude model for single-turn evaluation. Returns a yes/no decision as JSON.",
               ),
-            /** Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context. */
+            /**
+             * Prompt to send to the model. Prompt must suppoprt yes/no type answers.
+             * Use $ARGUMENTS for dynamic input.
+             */
             prompt: z
               .string()
               .describe(
-                "Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context.",
+                "Prompt to send to the model. Prompt must suppoprt yes/no type answers. Use $ARGUMENTS for dynamic input.",
               ),
-            ...handlerProps.shape,
+            /** Model to use for the prompt. */
+            model: z
+              .enum(["opus", "sonnet", "haiku", "opus[4m]", "sonnet[4m]"])
+              .describe("Model to use for the prompt.")
+              .optional(),
+            /** Maximum execution time in milliseconds before the hook is killed. Default is 5000ms for most hooks, 30000ms for Setup. Example: 10000 gives the hook 10 seconds to complete. */
+            timeout: z
+              .number()
+              .int()
+              .positive()
+              .optional()
+              .describe(
+                "Maximum execution time in milliseconds before the hook is killed. Default is 5000ms for most hooks, 30000ms for Setup. Example: 10000 gives the hook 10 seconds to complete.",
+              ),
           })
           .strict(),
         z

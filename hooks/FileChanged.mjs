@@ -1,12 +1,12 @@
 import { z } from "zod/v4"
 
+import {
+  HttpExtraPropsSchema,
+  SharedHandlerPropsSchema,
+} from "../schemas/config-schemas.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { FileChangedMatcherSchema as _FileChangedMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
-import {
-  SharedHandlerPropsSchema,
-  HttpExtraPropsSchema,
-} from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -86,6 +86,20 @@ export const FileChangedInputSchema = BaseHookInputSchema.extend({
 
 // --- Output ---
 
-export const FileChangedOutputSchema = BaseHookOutputSchema
+export const FileChangedOutputSchema = z.object({
+  ...BaseHookOutputSchema.shape,
+  /**
+   * Array of absolute paths. Replaces the current dynamic watch list (paths from your
+   * matcher configuration are always watched). Use this when your hook script discovers
+   * additional files to watch based on the changed file
+   */
+  watchPaths: z
+    .string()
+    .array()
+    .optional()
+    .describe(
+      "Array of absolute paths. Replaces the current dynamic watch list (paths from your matcher configuration are always watched). Use this when your hook script discovers additional files to watch based on the changed file.",
+    ),
+})
 
 /** @typedef {z.infer<typeof FileChangedOutputSchema>} FileChangedOutput */

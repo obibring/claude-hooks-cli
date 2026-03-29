@@ -46,13 +46,28 @@ export const TaskCreatedConfigSchema = z.object({
               .describe(
                 "Sends a prompt to a Claude model for single-turn evaluation. Returns a yes/no decision as JSON.",
               ),
-            /** Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context. */
+            /**
+             * Prompt to send to the model. Prompt must support yes/no type answers.
+             * Use $ARGUMENTS for dynamic input.
+             */
             prompt: z
               .string()
               .describe(
-                "Prompt text sent to the Claude model. $ARGUMENTS is replaced with hook context.",
+                "Prompt to send to the model. Prompt must support yes/no type answers. Use $ARGUMENTS for dynamic input.",
               ),
-            ...handlerProps.shape,
+            /** Model to use for the prompt. */
+            model: z
+              .enum(["opus", "sonnet", "haiku", "opus[4m]", "sonnet[4m]"])
+              .describe("Model to use for the prompt."),
+            /** Maximum execution time in milliseconds before the hook is killed. */
+            timeout: z
+              .number()
+              .int()
+              .positive()
+              .optional()
+              .describe(
+                "Maximum execution time in milliseconds before the hook is killed.",
+              ),
           })
           .strict(),
         z

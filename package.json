@@ -84,7 +84,8 @@
     "lib/**/*.mjs"
   ],
   "bin": {
-    "claude-hooks": "./bin/cli.mjs"
+    "claude-hooks": "./bin/cli.mjs",
+    "cch": "./bin/cli.mjs"
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",

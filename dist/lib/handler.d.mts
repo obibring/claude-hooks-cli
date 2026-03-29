@@ -72,6 +72,7 @@ export class HookHandler<E extends keyof HookIOMap> {
      * - `CLAUDE_ENV_FILE` — File path for persisting environment variables for
      *   subsequent Bash commands. Use append (`>>`) to preserve variables from
      *   other hooks. **Only available in SessionStart, CwdChanged, and FileChanged hooks.**
+     *   For other hook events, the return type is narrowed to `undefined`.
      *
      * - `CLAUDE_PLUGIN_ROOT` — Plugin's root directory, for scripts bundled with
      *   a plugin. **Only available in plugin hooks.** Not set in project or user hooks.
@@ -91,10 +92,11 @@ export class HookHandler<E extends keyof HookIOMap> {
      *   after 1.5s regardless of configured timeout. Now respects the hook's
      *   `timeout` value, or this env var if set. Since v2.1.74.
      *
-     * @param {import("../schemas/enums.mjs").ClaudeEnvVarName} name - One of the Claude Code environment variable names
-     * @returns {string | undefined}
+     * @template {import("../schemas/enums.mjs").ClaudeEnvVarName} N
+     * @param {N} name - One of the Claude Code environment variable names
+     * @returns {N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined) : string | undefined}
      */
-    getEnv(name: import("../schemas/enums.mjs").ClaudeEnvVarName): string | undefined;
+    getEnv<N extends import("../schemas/enums.mjs").ClaudeEnvVarName>(name: N): N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined) : string | undefined;
     /**
      * Exits silently with code 0 (no output — hook passes through).
      * Code after this call is unreachable.

@@ -724,20 +724,29 @@ handler.exit("success")
 
 ### API Reference
 
-#### `HookHandler.for(eventName)`
+#### `HookHandler.for(eventName, options?)`
 
 Creates a handler bound to a specific hook event. Returns a handler
 interface specific to the event — with only the methods and env vars
 that apply to that hook type. For example, tool-event hooks have
 `getToolInput()`, env-file hooks accept `"CLAUDE_ENV_FILE"` in
-`getEnv()`.
+`getEnv()` and have `getEnvFileVars()`.
+
+SessionStart, CwdChanged, and FileChanged hooks accept an optional
+second argument with custom `readFile` and `writeFile` functions.
+Other hook events reject the second argument at the type level.
 
 ```ts
 const handler = HookHandler.for("PreToolUse")
-// handler has getToolInput(), getEnv() without CLAUDE_ENV_FILE
+// handler has getToolInput(), no CLAUDE_ENV_FILE, no getEnvFileVars()
 
 const handler2 = HookHandler.for("SessionStart")
-// handler2 has getEnv("CLAUDE_ENV_FILE"), no getToolInput()
+// handler2 has getEnv("CLAUDE_ENV_FILE"), getEnvFileVars(), no getToolInput()
+
+const handler3 = HookHandler.for("CwdChanged", {
+  readFile: (path) => myCustomRead(path),
+})
+// handler3.getEnvFileVars() uses custom readFile
 ```
 
 #### `handler.parseInput(): Input`
@@ -810,6 +819,37 @@ Available variables:
 | `CLAUDE_SKILL_DIR`                        | Skill hooks only (since v2.1.69)       |
 | `CLAUDE_PLUGIN_DATA`                      | Plugin hooks only (since v2.1.78)      |
 | `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | All hooks                              |
+
+#### `handler.getEnvFileVars(options?): Record<string, string>`
+
+Reads and parses the `CLAUDE_ENV_FILE` into a key-value object. Only
+available on SessionStart, CwdChanged, and FileChanged handlers.
+
+Parses the file by splitting lines, stripping `#` comments, extracting
+`KEY=value` pairs, and unwrapping matched quotes. Later lines override
+earlier ones. Results are cached — call multiple times without
+penalty. Pass `{ force: true }` to re-read from disk.
+
+```ts
+const handler = HookHandler.for("SessionStart")
+handler.parseInput()
+
+const vars = handler.getEnvFileVars()
+console.log(vars.MY_VAR) // string or undefined
+
+// Force re-read:
+const fresh = handler.getEnvFileVars({ force: true })
+```
+
+You can inject a custom `readFile` function via the options parameter
+of `HookHandler.for()`:
+
+```ts
+const handler = HookHandler.for("SessionStart", {
+  readFile: (path) => myCustomRead(path),
+})
+const vars = handler.getEnvFileVars() // uses your readFile
+```
 
 #### `handler.getToolInput(toolName, input): ToolInput | null`
 

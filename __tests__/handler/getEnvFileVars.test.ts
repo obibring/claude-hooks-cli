@@ -164,4 +164,128 @@ describe("HookHandler.getEnvFileVars()", () => {
     expect(vars.FOO).toBe("bar")
     expect(vars.BAZ).toBe("qux")
   })
+
+  it("uses custom readFile option instead of fs", async () => {
+    const script = `
+      import { HookHandler } from './lib/handler.mjs';
+      const handler = HookHandler.for('SessionStart', {
+        readFile: (path) => 'CUSTOM_VAR=from_readFile\\nANOTHER=works',
+      });
+      handler.parseInput();
+      const vars = handler.getEnvFileVars();
+      process.stdout.write(JSON.stringify(vars));
+      handler.exit("success");
+    `
+    const input = JSON.stringify(buildInput(EVENT))
+    const result = await runScript(script, input, {
+      CLAUDE_ENV_FILE: "/fake/path/that/doesnt/exist",
+    })
+
+    expect(result.exitCode).toBe(0)
+    const vars = JSON.parse(result.stdout)
+    expect(vars.CUSTOM_VAR).toBe("from_readFile")
+    expect(vars.ANOTHER).toBe("works")
+  })
+
+  it("custom readFile receives the correct file path", async () => {
+    const expectedPath = "/my/custom/env/file"
+    const script = `
+      import { HookHandler } from './lib/handler.mjs';
+      const handler = HookHandler.for('SessionStart', {
+        readFile: (path) => {
+          // Echo the path back as a var so we can verify it
+          return 'RECEIVED_PATH=' + path;
+        },
+      });
+      handler.parseInput();
+      const vars = handler.getEnvFileVars();
+      process.stdout.write(JSON.stringify(vars));
+      handler.exit("success");
+    `
+    const input = JSON.stringify(buildInput(EVENT))
+    const result = await runScript(script, input, {
+      CLAUDE_ENV_FILE: expectedPath,
+    })
+
+    expect(result.exitCode).toBe(0)
+    const vars = JSON.parse(result.stdout)
+    expect(vars.RECEIVED_PATH).toBe(expectedPath)
+  })
+
+  it("custom readFile error returns empty object", async () => {
+    const script = `
+      import { HookHandler } from './lib/handler.mjs';
+      const handler = HookHandler.for('SessionStart', {
+        readFile: (path) => { throw new Error('read failed'); },
+      });
+      handler.parseInput();
+      const vars = handler.getEnvFileVars();
+      process.stdout.write(JSON.stringify(vars));
+      handler.exit("success");
+    `
+    const input = JSON.stringify(buildInput(EVENT))
+    const result = await runScript(script, input, {
+      CLAUDE_ENV_FILE: "/some/path",
+    })
+
+    expect(result.exitCode).toBe(0)
+    const vars = JSON.parse(result.stdout)
+    expect(vars).toEqual({})
+  })
+
+  it("caches result and custom readFile is only called once", async () => {
+    const script = `
+      import { HookHandler } from './lib/handler.mjs';
+      let callCount = 0;
+      const handler = HookHandler.for('SessionStart', {
+        readFile: (path) => {
+          callCount++;
+          return 'CALL_COUNT=' + callCount;
+        },
+      });
+      handler.parseInput();
+      const vars1 = handler.getEnvFileVars();
+      const vars2 = handler.getEnvFileVars();
+      process.stdout.write(JSON.stringify({ vars1, vars2, callCount }));
+      handler.exit("success");
+    `
+    const input = JSON.stringify(buildInput(EVENT))
+    const result = await runScript(script, input, {
+      CLAUDE_ENV_FILE: "/some/path",
+    })
+
+    expect(result.exitCode).toBe(0)
+    const data = JSON.parse(result.stdout)
+    expect(data.callCount).toBe(1)
+    expect(data.vars1.CALL_COUNT).toBe("1")
+    expect(data.vars2.CALL_COUNT).toBe("1")
+  })
+
+  it("force: true re-calls custom readFile", async () => {
+    const script = `
+      import { HookHandler } from './lib/handler.mjs';
+      let callCount = 0;
+      const handler = HookHandler.for('SessionStart', {
+        readFile: (path) => {
+          callCount++;
+          return 'CALL_COUNT=' + callCount;
+        },
+      });
+      handler.parseInput();
+      const vars1 = handler.getEnvFileVars();
+      const vars2 = handler.getEnvFileVars({ force: true });
+      process.stdout.write(JSON.stringify({ vars1, vars2, callCount }));
+      handler.exit("success");
+    `
+    const input = JSON.stringify(buildInput(EVENT))
+    const result = await runScript(script, input, {
+      CLAUDE_ENV_FILE: "/some/path",
+    })
+
+    expect(result.exitCode).toBe(0)
+    const data = JSON.parse(result.stdout)
+    expect(data.callCount).toBe(2)
+    expect(data.vars1.CALL_COUNT).toBe("1")
+    expect(data.vars2.CALL_COUNT).toBe("2")
+  })
 })

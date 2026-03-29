@@ -582,6 +582,305 @@ claude-hooks add \
   --non-interactive
 ```
 
+## Writing Custom Hooks in TypeScript
+
+This package exports a `HookHandler` class that gives you
+strongly-typed input parsing and output emission for hook scripts. The
+class is parameterized by the hook event name, so TypeScript knows
+exactly which input fields are available and which output fields are
+valid.
+
+### Step 1: Create and register the hook file
+
+Use `--create` to scaffold a new TypeScript hook and register it in
+one command:
+
+```bash
+claude-hooks add \
+  --event PreToolUse \
+  --type command \
+  --command "./hooks/block-dangerous-commands.ts" \
+  --matcher "Bash" \
+  --create \
+  --scope project \
+  --non-interactive
+```
+
+This creates `hooks/block-dangerous-commands.ts` with a starter
+template and adds the hook to `.claude/settings.json` with `npx tsx`
+as the runner.
+
+### Step 2: Write your hook using `HookHandler`
+
+Replace the generated template with typed handler code:
+
+```ts
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("PreToolUse")
+const input = handler.parseInput()
+
+// input is strongly typed — IDE autocomplete works for all fields:
+//   input.tool_name      ✓ string
+//   input.tool_input     ✓ Record<string, unknown>
+//   input.tool_use_id    ✓ string
+//   input.session_id     ✓ string
+//   input.nonExistent    ✗ TS error
+
+const command = input.tool_input.command as string | undefined
+
+if (command?.includes("rm -rf /")) {
+  // emitOutput is also strongly typed — only valid fields accepted:
+  handler.emitOutput({
+    hookSpecificOutput: {
+      permissionDecision: "deny",
+      permissionDecisionReason: "Blocked dangerous rm -rf / command",
+    },
+  })
+  // Code after emitOutput is unreachable (it calls process.exit)
+}
+
+// Pass through — let the tool call proceed
+handler.exit()
+```
+
+### API Reference
+
+#### `new HookHandler(eventName)`
+
+Creates a handler bound to a specific hook event. The event name
+determines the types of `parseInput()` and `emitOutput()`.
+
+```ts
+const handler = new HookHandler("Stop")
+```
+
+#### `handler.parseInput(): Input`
+
+Reads stdin synchronously, parses JSON, and validates it against the
+hook's zod input schema. Returns the strongly-typed input object.
+Exits with code 2 if stdin is empty, not valid JSON, or fails
+validation.
+
+```ts
+const input = handler.parseInput()
+// For "Stop": input.last_assistant_message, input.stop_hook_active
+// For "PreToolUse": input.tool_name, input.tool_input, input.tool_use_id
+```
+
+#### `handler.emitOutput(output): never`
+
+Writes JSON to stdout and exits with code 0. The output parameter is
+typed to only accept valid fields for the hook event. Code after this
+call is unreachable.
+
+```ts
+// PreToolUse — can set permission decision:
+handler.emitOutput({
+  hookSpecificOutput: { permissionDecision: "allow" },
+})
+
+// Stop — can block to re-engage Claude:
+handler.emitOutput({ decision: "block" })
+
+// Any hook — universal fields:
+handler.emitOutput({
+  additionalContext: "Extra info for Claude",
+  systemMessage: "Warning shown to user",
+})
+
+// Empty output is always valid:
+handler.emitOutput({})
+```
+
+#### `handler.emitBlockingError(message): never`
+
+Writes a message to stderr and exits with code 2. The message is fed
+back to the Claude model as an error.
+
+```ts
+handler.emitBlockingError("Operation not allowed in this directory")
+```
+
+#### `handler.exit(): never`
+
+Exits silently with code 0. The hook passes through without affecting
+Claude's behavior.
+
+```ts
+handler.exit()
+```
+
+### Full Examples
+
+#### Block `git push --force`
+
+```ts
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("PreToolUse")
+const input = handler.parseInput()
+
+if (input.tool_name === "Bash") {
+  const cmd = input.tool_input.command as string | undefined
+  if (cmd?.includes("push --force") || cmd?.includes("push -f")) {
+    handler.emitOutput({
+      hookSpecificOutput: {
+        permissionDecision: "deny",
+        permissionDecisionReason: "Force push is not allowed",
+      },
+    })
+  }
+}
+
+handler.exit()
+```
+
+Register it:
+
+```bash
+claude-hooks add \
+  --event PreToolUse \
+  --type command \
+  --command "./hooks/no-force-push.ts" \
+  --matcher "Bash" \
+  --if "Bash(git *)" \
+  --create \
+  --scope project \
+  --non-interactive
+```
+
+#### Log all completed tool calls
+
+```ts
+#!/usr/bin/env npx tsx
+import { appendFileSync } from "node:fs"
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("PostToolUse")
+const input = handler.parseInput()
+
+appendFileSync(
+  "/tmp/claude-tool-log.jsonl",
+  JSON.stringify({
+    timestamp: new Date().toISOString(),
+    tool: input.tool_name,
+    input: input.tool_input,
+  }) + "\n",
+)
+
+handler.exit()
+```
+
+Register it:
+
+```bash
+claude-hooks add \
+  --event PostToolUse \
+  --type command \
+  --command "./hooks/log-tools.ts" \
+  --async \
+  --status-message "Logging..." \
+  --create \
+  --scope project \
+  --non-interactive
+```
+
+#### Inject context when session starts
+
+```ts
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("SessionStart")
+const input = handler.parseInput()
+
+if (input.source === "startup") {
+  handler.emitOutput({
+    additionalContext: `Project uses bun as package manager. Node ${process.version}.`,
+  })
+}
+
+handler.exit()
+```
+
+Register it:
+
+```bash
+claude-hooks add \
+  --event SessionStart \
+  --type command \
+  --command "./hooks/inject-context.ts" \
+  --matcher "startup" \
+  --once \
+  --create \
+  --scope project \
+  --non-interactive
+```
+
+#### Modify user prompts
+
+```ts
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("UserPromptSubmit")
+const input = handler.parseInput()
+
+// Prefix all prompts with a reminder
+handler.emitOutput({
+  prompt: `[Remember: always use TypeScript, never JavaScript]\n\n${input.prompt}`,
+})
+```
+
+Register it:
+
+```bash
+claude-hooks add \
+  --event UserPromptSubmit \
+  --type command \
+  --command "./hooks/prompt-prefix.ts" \
+  --create \
+  --scope local \
+  --non-interactive
+```
+
+#### Auto-respond to MCP elicitations
+
+```ts
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("Elicitation")
+const input = handler.parseInput()
+
+if (input.mcp_server_name === "my-auth-server") {
+  handler.emitOutput({
+    hookSpecificOutput: {
+      action: "accept",
+      content: { token: process.env.MY_AUTH_TOKEN },
+    },
+  })
+}
+
+handler.exit()
+```
+
+Register it:
+
+```bash
+claude-hooks add \
+  --event Elicitation \
+  --type command \
+  --command "./hooks/auto-auth.ts" \
+  --matcher "my-auth-server" \
+  --create \
+  --scope user \
+  --non-interactive
+```
+
 ## Zod Schemas
 
 This package also exports Zod v4 schemas for all 26 hook events. Each
@@ -594,7 +893,7 @@ hook has its own file in `hooks/` exporting:
 - `<EventName>MatcherSchema` — validates the matcher field (or
   `undefined` if no matcher)
 
-```js
+```ts
 import { PreToolUseInputSchema } from "@obibring/claude-hooks-cli/hooks/PreToolUse.mjs"
 
 const input = PreToolUseInputSchema.parse(JSON.parse(stdinData))
@@ -604,11 +903,86 @@ const input = PreToolUseInputSchema.parse(JSON.parse(stdinData))
 
 Shared base schemas are in `schemas/`:
 
-```js
+```ts
 import { BaseHookInputSchema } from "@obibring/claude-hooks-cli/schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "@obibring/claude-hooks-cli/schemas/output-schemas.mjs"
 import { HookEventNameSchema } from "@obibring/claude-hooks-cli/schemas/enums.mjs"
 ```
+
+## Contributing
+
+### Setup
+
+```bash
+git clone https://github.com/obibring/claude-hooks-cli.git
+cd claude-hooks-cli
+bun install
+```
+
+### Development
+
+```bash
+bun run start         # Run the CLI
+bun run build         # Generate .d.mts declaration files
+bun run test          # Run all vitest tests
+bun run lint          # Format with prettier
+```
+
+### Project Structure
+
+```
+bin/cli.mjs              CLI entry point (Commander + @clack/prompts)
+lib/
+  handler.mjs            HookHandler class (runtime)
+  handler-types.d.mts    HookHandler type declarations (HookIOMap, class signature)
+  schema-map.mjs         Runtime event→schema registry
+  hook-metadata.mjs      Hook metadata for CLI interactive UI
+  settings-io.mjs        Settings file I/O (read/write JSON)
+  hooks-store.mjs        In-memory hook CRUD operations
+  hooks-manager.mjs      High-level hook management (I/O + store)
+  add-hook.mjs           Interactive add flow
+  remove-hook.mjs        Interactive remove flow
+  list-hooks.mjs         List display
+  test-hook.mjs          Synthetic input testing
+  command-resolver.mjs   Smart file path → runner resolution
+schemas/
+  enums.mjs              Enum schemas (event names, permission modes, etc.)
+  config-schemas.mjs     Shared handler property schemas
+  input-schemas.mjs      Base input schema + tool fields
+  output-schemas.mjs     Base output schema
+  matcher-schemas.mjs    Per-hook matcher schemas
+hooks/
+  <EventName>.mjs        Per-hook Config, Input, Output, Matcher schemas (26 files)
+  index.mjs              Barrel re-export
+docs/
+  <EventName>.md         Per-hook documentation (26 files)
+__tests__/handler/
+  <EventName>.test.ts    Per-hook handler tests (26 files)
+  test-utils.ts          Shared test utilities
+dist/                    Generated .d.mts declaration files
+```
+
+### Adding a New Hook Event
+
+When Claude Code adds a new hook event:
+
+1. Create `hooks/<EventName>.mjs` following the existing pattern
+2. Create `docs/<EventName>.md` with handler types, matcher,
+   input/output, and gotchas
+3. Add the event to `schemas/enums.mjs` `HookEventNameSchema`
+4. Add matcher schema to `schemas/matcher-schemas.mjs` if applicable
+5. Add the event to `lib/hook-metadata.mjs` `HOOK_METADATA` array
+6. Add input/output schemas to `lib/schema-map.mjs` `HOOK_SCHEMA_MAP`
+7. Add the type mapping to `lib/handler-types.d.mts` `HookIOMap`
+8. Add synthetic input to `lib/test-hook.mjs` `buildSyntheticInput`
+9. Re-export from `hooks/index.mjs` and `index.mjs`
+10. Add test fixture to `__tests__/handler/test-utils.ts` and create
+    `__tests__/handler/<EventName>.test.ts`
+11. Run `bun run build` and `bun run test`
+
+### Pre-commit
+
+Prettier runs automatically via husky + lint-staged on every commit.
 
 ## License
 

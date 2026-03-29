@@ -88,6 +88,8 @@ claude-hooks add [options]
 | `--status-message <msg>`  | Custom spinner message shown while hook runs                           |
 | `--if <condition>`        | Conditional execution using permission rule syntax                     |
 | `--create`                | Create the command file with a starter template if it doesn't exist    |
+| `--auto-prompt-suffix`    | Auto-append JSON response format instructions to prompt hooks          |
+| `--no-auto-prompt-suffix` | Do not append JSON response format instructions to prompt hooks        |
 | `-s, --scope <scope>`     | Settings file: `user`, `project`, or `local` (default: `project`)      |
 | `--non-interactive`       | Skip all prompts — use only provided flag values                       |
 
@@ -703,6 +705,62 @@ back to the Claude model as an error.
 handler.emitBlockingError("Operation not allowed in this directory")
 ```
 
+#### `handler.getEnv(name): string | undefined`
+
+Reads a Claude Code environment variable. The `name` parameter is
+strongly typed to the 7 valid env var names. Returns
+`string | undefined` for most variables, but `CLAUDE_ENV_FILE` returns
+`undefined` (with a descriptive error type) when called on hooks that
+don't receive it.
+
+```ts
+const projectDir = handler.getEnv("CLAUDE_PROJECT_DIR") // string | undefined — all hooks
+const envFile = handler.getEnv("CLAUDE_ENV_FILE") // string | undefined — only SessionStart, CwdChanged, FileChanged
+```
+
+Available variables:
+
+| Variable                                  | Availability                           |
+| ----------------------------------------- | -------------------------------------- |
+| `CLAUDE_PROJECT_DIR`                      | All hooks                              |
+| `CLAUDE_ENV_FILE`                         | SessionStart, CwdChanged, FileChanged  |
+| `CLAUDE_PLUGIN_ROOT`                      | Plugin hooks only                      |
+| `CLAUDE_CODE_REMOTE`                      | All hooks (set in remote environments) |
+| `CLAUDE_SKILL_DIR`                        | Skill hooks only (since v2.1.69)       |
+| `CLAUDE_PLUGIN_DATA`                      | Plugin hooks only (since v2.1.78)      |
+| `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` | All hooks                              |
+
+#### `handler.getToolInput(toolName, input): ToolInput | null`
+
+Returns the strongly-typed `tool_input` for the given tool name if
+`input.tool_name` matches, or `null` if it doesn't. Only available on
+tool-event hooks (PreToolUse, PostToolUse, PostToolUseFailure,
+PermissionRequest).
+
+```ts
+const handler = new HookHandler("PreToolUse")
+const input = handler.parseInput()
+
+const bash = handler.getToolInput("Bash", input)
+if (bash) {
+  // bash.command: string
+  // bash.description?: string
+  // bash.timeout?: number
+  // bash.run_in_background?: boolean
+}
+
+const edit = handler.getToolInput("Edit", input)
+if (edit) {
+  // edit.file_path: string
+  // edit.old_string: string
+  // edit.new_string: string
+  // edit.replace_all?: boolean
+}
+```
+
+Supported tools: `Bash`, `Write`, `Edit`, `Read`, `Glob`, `Grep`,
+`WebFetch`, `WebSearch`, `Agent`, `AskUserQuestion`.
+
 #### `handler.exit(): never`
 
 Exits silently with code 0. The hook passes through without affecting
@@ -723,9 +781,12 @@ import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 const handler = new HookHandler("PreToolUse")
 const input = handler.parseInput()
 
-if (input.tool_name === "Bash") {
-  const cmd = input.tool_input.command as string | undefined
-  if (cmd?.includes("push --force") || cmd?.includes("push -f")) {
+const bash = handler.getToolInput("Bash", input)
+if (bash) {
+  if (
+    bash.command.includes("push --force") ||
+    bash.command.includes("push -f")
+  ) {
     handler.emitOutput({
       hookSpecificOutput: {
         permissionDecision: "deny",
@@ -881,6 +942,68 @@ claude-hooks add \
   --non-interactive
 ```
 
+#### Prompt hook for code review
+
+Prompt hooks send a prompt to a Claude model and get a yes/no
+decision. The CLI auto-appends JSON response format instructions
+unless you use `--no-auto-prompt-suffix`.
+
+```bash
+claude-hooks add \
+  --event PreToolUse \
+  --type prompt \
+  --command "Review this tool call for security issues. Block if it could delete files, expose secrets, or run untrusted code. \$ARGUMENTS" \
+  --matcher "Bash|Edit|Write" \
+  --scope project \
+  --non-interactive
+```
+
+The stored prompt will include the auto-appended response format:
+
+```
+Review this tool call for security issues. Block if it could delete
+files, expose secrets, or run untrusted code. $ARGUMENTS
+
+Respond with JSON: {"ok": true} to allow stopping, or {"ok": false,
+"reason": "your explanation"} to continue working.
+```
+
+To write your own response instructions instead:
+
+```bash
+claude-hooks add \
+  --event PreToolUse \
+  --type prompt \
+  --command "Is this safe? Reply {\"ok\": true} or {\"ok\": false, \"reason\": \"why\"}. \$ARGUMENTS" \
+  --matcher "Bash" \
+  --no-auto-prompt-suffix \
+  --scope project \
+  --non-interactive
+```
+
+#### Use `getEnv` to read project directory
+
+```ts
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+const handler = new HookHandler("PreToolUse")
+const input = handler.parseInput()
+const projectDir = handler.getEnv("CLAUDE_PROJECT_DIR")
+
+const edit = handler.getToolInput("Edit", input)
+if (edit && projectDir && !edit.file_path.startsWith(projectDir)) {
+  handler.emitOutput({
+    hookSpecificOutput: {
+      permissionDecision: "deny",
+      permissionDecisionReason: `Cannot edit files outside project: ${projectDir}`,
+    },
+  })
+}
+
+handler.exit()
+```
+
 ## Zod Schemas
 
 This package also exports Zod v4 schemas for all 26 hook events. Each
@@ -923,7 +1046,8 @@ bun install
 
 ```bash
 bun run start         # Run the CLI
-bun run build         # Generate .d.mts declaration files
+bun run build         # Generate .d.mts declaration files + copy handler types
+bun run dev           # Build then watch for changes (tsc --watch)
 bun run test          # Run all vitest tests
 bun run lint          # Format with prettier
 ```
@@ -934,7 +1058,9 @@ bun run lint          # Format with prettier
 bin/cli.mjs              CLI entry point (Commander + @clack/prompts)
 lib/
   handler.mjs            HookHandler class (runtime)
-  handler-types.d.mts    HookHandler type declarations (HookIOMap, class signature)
+  handler.d.mts          Re-exports from handler-types.d.mts (overrides tsc output)
+  handler-types.d.mts    Hand-authored type declarations (HookIOMap, output interfaces,
+                         ToolInputMap, conditional types, class signature)
   schema-map.mjs         Runtime event→schema registry
   hook-metadata.mjs      Hook metadata for CLI interactive UI
   settings-io.mjs        Settings file I/O (read/write JSON)
@@ -958,6 +1084,8 @@ docs/
   <EventName>.md         Per-hook documentation (26 files)
 __tests__/handler/
   <EventName>.test.ts    Per-hook handler tests (26 files)
+  getEnv.test.ts         getEnv() tests for all 7 env vars
+  getToolInput.test.ts   getToolInput() tests for all 10 tools
   test-utils.ts          Shared test utilities
 dist/                    Generated .d.mts declaration files
 ```
@@ -973,7 +1101,9 @@ When Claude Code adds a new hook event:
 4. Add matcher schema to `schemas/matcher-schemas.mjs` if applicable
 5. Add the event to `lib/hook-metadata.mjs` `HOOK_METADATA` array
 6. Add input/output schemas to `lib/schema-map.mjs` `HOOK_SCHEMA_MAP`
-7. Add the type mapping to `lib/handler-types.d.mts` `HookIOMap`
+7. Add an output interface to `lib/handler-types.d.mts` (with JSDoc on
+   each property), add it to `HookIOMap`, and re-export from
+   `lib/handler.d.mts`
 8. Add synthetic input to `lib/test-hook.mjs` `buildSyntheticInput`
 9. Re-export from `hooks/index.mjs` and `index.mjs`
 10. Add test fixture to `__tests__/handler/test-utils.ts` and create

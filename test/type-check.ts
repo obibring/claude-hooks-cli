@@ -130,6 +130,18 @@ stop.getEnvFileVars()
 // @ts-expect-error — PreToolUse does not have getEnvFileVars
 preToolUse.getEnvFileVars()
 
+// ✓ writeEnvFile and appendToEnvFile work on env-file hooks
+sessionStart.writeEnvFile({ MY_VAR: "hello" })
+sessionStart.appendToEnvFile("MY_VAR", "hello")
+cwdChanged.writeEnvFile({ FOO: "bar" })
+fileChanged.appendToEnvFile("BAZ", "qux")
+
+// @ts-expect-error — Stop does not have writeEnvFile
+stop.writeEnvFile({ MY_VAR: "hello" })
+
+// @ts-expect-error — PreToolUse does not have appendToEnvFile
+preToolUse.appendToEnvFile("MY_VAR", "hello")
+
 // ✓ Env-file hooks accept options in HookHandler.for()
 const ssWithOpts = HookHandler.for("SessionStart", {
   readFile: (path: string) => "FOO=bar",

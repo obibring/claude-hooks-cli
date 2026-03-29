@@ -171,6 +171,47 @@ interface EnvFileHandler<E extends keyof HookIOMap> extends Omit<BaseHandler<E>,
    * ```
    */
   getEnvFileVars(options?: { force?: boolean }): Record<string, string>
+
+  /**
+   * Writes all environment variables to the CLAUDE_ENV_FILE, replacing its contents.
+   *
+   * Only available for SessionStart, CwdChanged, and FileChanged hooks.
+   * Uses the custom `writeFile` function from constructor options if provided,
+   * otherwise uses node:fs writeFileSync.
+   *
+   * Invalidates the cached env file vars so subsequent `getEnvFileVars()` calls
+   * re-read from disk.
+   *
+   * @example
+   * ```ts
+   * const handler = HookHandler.for("SessionStart")
+   * handler.writeEnvFile({ MY_VAR: "hello", OTHER: "world" })
+   * // CLAUDE_ENV_FILE now contains:
+   * // MY_VAR=hello
+   * // OTHER=world
+   * ```
+   */
+  writeEnvFile(vars: Record<string, string>): void
+
+  /**
+   * Appends a single environment variable to the CLAUDE_ENV_FILE.
+   *
+   * Only available for SessionStart, CwdChanged, and FileChanged hooks.
+   * Uses the custom `writeFile` function from constructor options if provided
+   * (reads existing content first, then writes the full content with the appended var),
+   * otherwise uses node:fs appendFileSync.
+   *
+   * Invalidates the cached env file vars so subsequent `getEnvFileVars()` calls
+   * re-read from disk.
+   *
+   * @example
+   * ```ts
+   * const handler = HookHandler.for("SessionStart")
+   * handler.appendToEnvFile("MY_VAR", "hello")
+   * handler.appendToEnvFile("OTHER", "world")
+   * ```
+   */
+  appendToEnvFile(variableName: string, value: string): void
 }
 
 /** Handler with getToolInput() for tool event hooks. */

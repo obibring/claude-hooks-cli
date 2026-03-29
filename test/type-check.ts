@@ -116,3 +116,73 @@ const envFile5:
 
 // All hooks can read CLAUDE_PROJECT_DIR
 const projectDir: string | undefined = stop.getEnv("CLAUDE_PROJECT_DIR") // ✓
+
+// =============================================================
+// getToolInput() tests
+// =============================================================
+
+async function testGetToolInput() {
+  const preHandler = new HookHandler("PreToolUse")
+  const preInput = preHandler.parseInput()
+
+  // ✓ Return type is BashToolInput | null — must null-check before accessing
+  const bashInput = preHandler.getToolInput("Bash", preInput)
+  if (bashInput) {
+    const cmd: string = bashInput.command
+    const desc: string | undefined = bashInput.description
+    const timeout: number | undefined = bashInput.timeout
+    const bg: boolean | undefined = bashInput.run_in_background
+  }
+
+  // ✓ Edit returns EditToolInput | null
+  const editInput = preHandler.getToolInput("Edit", preInput)
+  if (editInput) {
+    const filePath: string = editInput.file_path
+    const oldStr: string = editInput.old_string
+    const newStr: string = editInput.new_string
+    const replaceAll: boolean | undefined = editInput.replace_all
+  }
+
+  // ✓ Read returns ReadToolInput | null
+  const readInput = preHandler.getToolInput("Read", preInput)
+  if (readInput) {
+    const readPath: string = readInput.file_path
+    const offset: number | undefined = readInput.offset
+    const limit: number | undefined = readInput.limit
+  }
+
+  // ✓ Grep returns GrepToolInput | null
+  const grepInput = preHandler.getToolInput("Grep", preInput)
+  if (grepInput) {
+    const grepPattern: string = grepInput.pattern
+    const grepMode: "content" | "files_with_matches" | "count" | undefined =
+      grepInput.output_mode
+  }
+
+  // ✓ AskUserQuestion returns AskUserQuestionToolInput | null
+  const askInput = preHandler.getToolInput("AskUserQuestion", preInput)
+  if (askInput) {
+    const questions: Array<{ question: string }> = askInput.questions
+  }
+
+  // ✓ PostToolUse also works
+  const postHandler = new HookHandler("PostToolUse")
+  const postInput = postHandler.parseInput()
+  const writeInput = postHandler.getToolInput("Write", postInput)
+  if (writeInput) {
+    const writePath: string = writeInput.file_path
+    const writeContent: string = writeInput.content
+  }
+}
+
+// ✗ Stop is not a tool-event hook — getToolInput returns error string type
+async function testGetToolInputOnNonToolEvent() {
+  const stopHandler = new HookHandler("Stop")
+  const stopInput = stopHandler.parseInput()
+
+  // @ts-expect-error — Stop is not a tool-event hook, return type is an error string
+  const bashInput: { command: string } = stopHandler.getToolInput(
+    "Bash",
+    stopInput,
+  )
+}

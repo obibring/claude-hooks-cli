@@ -98,6 +98,27 @@ export class HookHandler<E extends keyof HookIOMap> {
      */
     getEnv<N extends import("../schemas/enums.mjs").ClaudeEnvVarName>(name: N): N extends "CLAUDE_ENV_FILE" ? (E extends "SessionStart" | "CwdChanged" | "FileChanged" ? string | undefined : undefined | `CLAUDE_ENV_FILE is not available in "${E & string}" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.`) : string | undefined;
     /**
+     * Returns the strongly-typed tool_input if the parsed input's `tool_name`
+     * matches the provided tool name, or `null` if it doesn't match.
+     *
+     * Use this to branch on tool names:
+     * ```js
+     * const bash = handler.getToolInput("Bash", input)
+     * if (bash) {
+     *   // bash.command is typed as string
+     * }
+     * ```
+     *
+     * Only meaningful on tool-event hooks (PreToolUse, PostToolUse,
+     * PostToolUseFailure, PermissionRequest).
+     *
+     * @template {keyof import("./handler-types.d.mts").ToolInputMap} T
+     * @param {T} toolName - The tool name to match against
+     * @param {HookIOMap[E]["input"]} input - The parsed input from parseInput()
+     * @returns {any}
+     */
+    getToolInput<T extends keyof import("./handler-types.d.mts").ToolInputMap>(toolName: T, input: HookIOMap[E]["input"]): any;
+    /**
      * Exits silently with code 0 (no output — hook passes through).
      * Code after this call is unreachable.
      *

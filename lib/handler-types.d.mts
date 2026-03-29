@@ -63,6 +63,141 @@ export interface HookIOMap {
 /** All valid hook event names. */
 export type HookEventName = keyof HookIOMap
 
+// ---- Tool input types for PreToolUse/PostToolUse/PostToolUseFailure/PermissionRequest ----
+
+/** Bash tool input — executes shell commands. */
+export interface BashToolInput {
+  /** The shell command to execute. */
+  command: string
+  /** Optional description of what the command does. */
+  description?: string
+  /** Optional timeout in milliseconds. */
+  timeout?: number
+  /** Whether to run the command in the background. */
+  run_in_background?: boolean
+}
+
+/** Write tool input — creates or overwrites a file. */
+export interface WriteToolInput {
+  /** Absolute path to the file to write. */
+  file_path: string
+  /** Content to write to the file. */
+  content: string
+}
+
+/** Edit tool input — replaces a string in an existing file. */
+export interface EditToolInput {
+  /** Absolute path to the file to edit. */
+  file_path: string
+  /** Text to find and replace. */
+  old_string: string
+  /** Replacement text. */
+  new_string: string
+  /** Whether to replace all occurrences. */
+  replace_all?: boolean
+}
+
+/** Read tool input — reads file contents. */
+export interface ReadToolInput {
+  /** Absolute path to the file to read. */
+  file_path: string
+  /** Optional line number to start reading from. */
+  offset?: number
+  /** Optional number of lines to read. */
+  limit?: number
+}
+
+/** Glob tool input — finds files matching a glob pattern. */
+export interface GlobToolInput {
+  /** Glob pattern to match files against (e.g. "**\/*.ts"). */
+  pattern: string
+  /** Optional directory to search in. Defaults to current working directory. */
+  path?: string
+}
+
+/** Grep tool input — searches file contents with regular expressions. */
+export interface GrepToolInput {
+  /** Regular expression pattern to search for. */
+  pattern: string
+  /** Optional file or directory to search in. */
+  path?: string
+  /** Optional glob pattern to filter files (e.g. "*.ts"). */
+  glob?: string
+  /** Output mode: "content", "files_with_matches", or "count". Defaults to "files_with_matches". */
+  output_mode?: "content" | "files_with_matches" | "count"
+  /** Case insensitive search. */
+  "-i"?: boolean
+  /** Enable multiline matching. */
+  multiline?: boolean
+}
+
+/** WebFetch tool input — fetches and processes web content. */
+export interface WebFetchToolInput {
+  /** URL to fetch content from. */
+  url: string
+  /** Prompt to run on the fetched content. */
+  prompt?: string
+}
+
+/** WebSearch tool input — searches the web. */
+export interface WebSearchToolInput {
+  /** Search query. */
+  query: string
+  /** Optional: only include results from these domains. */
+  allowed_domains?: string[]
+  /** Optional: exclude results from these domains. */
+  blocked_domains?: string[]
+}
+
+/** Agent tool input — spawns a subagent. */
+export interface AgentToolInput {
+  /** The task for the agent to perform. */
+  prompt: string
+  /** Short description of the task. */
+  description?: string
+  /** Type of specialized agent to use (e.g. "Explore"). */
+  subagent_type?: string
+  /** Optional model alias to override the default (e.g. "sonnet"). */
+  model?: string
+}
+
+/** AskUserQuestion tool input — asks the user one to four multiple-choice questions. */
+export interface AskUserQuestionToolInput {
+  /** Questions to present, each with a question string, short header, options array, and optional multiSelect flag. */
+  questions: Array<{
+    /** The question text. */
+    question: string
+    /** Short header for the question. */
+    header?: string
+    /** Options to choose from. */
+    options?: Array<{ label: string }>
+    /** Whether multiple options can be selected. */
+    multiSelect?: boolean
+  }>
+  /** Optional: maps question text to the selected option label. Supply via updatedInput to answer programmatically. */
+  answers?: Record<string, string>
+}
+
+/**
+ * Maps tool names to their strongly-typed tool_input shapes.
+ * Used by `getToolInput()` to return the correct type based on the tool name.
+ */
+export interface ToolInputMap {
+  Bash: BashToolInput
+  Write: WriteToolInput
+  Edit: EditToolInput
+  Read: ReadToolInput
+  Glob: GlobToolInput
+  Grep: GrepToolInput
+  WebFetch: WebFetchToolInput
+  WebSearch: WebSearchToolInput
+  Agent: AgentToolInput
+  AskUserQuestion: AskUserQuestionToolInput
+}
+
+/** Hook events that receive tool_name and tool_input. */
+type ToolEventHooks = "PreToolUse" | "PostToolUse" | "PostToolUseFailure" | "PermissionRequest"
+
 /** Hook events that have access to CLAUDE_ENV_FILE. */
 type EnvFileEvents = "SessionStart" | "CwdChanged" | "FileChanged"
 
@@ -157,6 +292,36 @@ export declare class HookHandler<E extends keyof HookIOMap> {
   getEnv<N extends import("../schemas/enums.mjs").ClaudeEnvVarName>(
     name: N,
   ): EnvVarReturnType<E, N>
+
+  /**
+   * Returns the strongly-typed tool_input if the input's `tool_name` matches,
+   * or `null` if it doesn't match.
+   *
+   * Use this to branch on tool names:
+   * ```ts
+   * const handler = new HookHandler("PreToolUse")
+   * const input = handler.parseInput()
+   *
+   * const bash = handler.getToolInput("Bash", input)
+   * if (bash) {
+   *   // bash.command is typed as string
+   *   if (bash.command.includes("rm -rf")) { ... }
+   * }
+   *
+   * const edit = handler.getToolInput("Edit", input)
+   * if (edit) {
+   *   // edit.file_path, edit.old_string, edit.new_string are typed
+   * }
+   * ```
+   *
+   * Only available on tool-event hooks: PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest.
+   */
+  getToolInput<T extends keyof ToolInputMap>(
+    toolName: T,
+    input: HookIOMap[E]["input"],
+  ): E extends ToolEventHooks
+    ? ToolInputMap[T] | null
+    : `getToolInput() is only available for tool-event hooks (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest). "${E & string}" is not a tool-event hook.`
 
   /**
    * Exits silently with code 0 (no output — hook passes through).

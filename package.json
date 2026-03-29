@@ -74,7 +74,9 @@
     "index.mjs",
     "index.cjs",
     "schemas/**/*.mjs",
+    "schemas/**/*.d.mts",
     "hooks/**/*.mjs",
+    "hooks/**/*.d.mts",
     "lib/settings-io.mjs",
     "lib/hooks-store.mjs",
     "lib/hooks-manager.mjs",
@@ -86,7 +88,10 @@
     "dist/**/*.d.mts",
     "dist/**/*.d.mts.map",
     "bin/cli.mjs",
-    "lib/**/*.mjs"
+    "lib/**/*.mjs",
+    "lib/**/*.d.mts",
+    "lib/**/*.d.cts",
+    "lib/**/*.cjs"
   ],
   "bin": {
     "claude-hooks": "./bin/cli.mjs",
@@ -94,7 +99,7 @@
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
-    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts",
+    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts && cp dist/hooks/*.d.mts hooks/ && cp dist/schemas/*.d.mts schemas/ && cp dist/lib/settings-io.d.mts lib/ && cp dist/lib/hooks-store.d.mts lib/ && cp dist/lib/hooks-manager.d.mts lib/ && cp dist/lib/schema-map.d.mts lib/",
     "dev": "bun run build && tsc --watch --preserveWatchOutput",
     "prepublishOnly": "bun run build",
     "test": "vitest run",

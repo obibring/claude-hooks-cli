@@ -44,6 +44,17 @@ type BaseEnvVars =
 /** Env vars available to SessionStart, CwdChanged, FileChanged (includes CLAUDE_ENV_FILE). */
 type EnvFileEnvVars = BaseEnvVars | "CLAUDE_ENV_FILE"
 
+/**
+ * Options for env-file hook handlers (SessionStart, CwdChanged, FileChanged).
+ * Allows injecting custom file I/O functions for testing or custom environments.
+ */
+export interface EnvFileHandlerOptions {
+  /** Custom function to read a file. If provided, used instead of node:fs readFileSync when reading the env file. */
+  readFile?: (filename: string) => string
+  /** Custom function to write a file. */
+  writeFile?: (filename: string, contents: string, options: { encoding: "utf-8" }) => void
+}
+
 // ---- Base handler interface (shared methods) ----
 
 /** Base interface for non-tool, non-env-file hooks. */
@@ -167,6 +178,39 @@ export interface SessionEndHookHandler extends BaseHandler<"SessionEnd"> {}
 export interface PreCompactHookHandler extends BaseHandler<"PreCompact"> {}
 
 // ---- Handler map: event name → handler type ----
+
+/**
+ * Maps each hook event name to the options type accepted by HookHandler.for().
+ * Only env-file hooks (SessionStart, CwdChanged, FileChanged) accept options.
+ */
+export interface HookHandlerOptionsMap {
+  PreToolUse: never
+  PermissionRequest: never
+  PostToolUse: never
+  PostToolUseFailure: never
+  UserPromptSubmit: never
+  Notification: never
+  Stop: never
+  SubagentStart: never
+  SubagentStop: never
+  PreCompact: never
+  PostCompact: never
+  SessionStart: EnvFileHandlerOptions
+  SessionEnd: never
+  Setup: never
+  TeammateIdle: never
+  TaskCreated: never
+  TaskCompleted: never
+  ConfigChange: never
+  WorktreeCreate: never
+  WorktreeRemove: never
+  InstructionsLoaded: never
+  Elicitation: never
+  ElicitationResult: never
+  StopFailure: never
+  CwdChanged: EnvFileHandlerOptions
+  FileChanged: EnvFileHandlerOptions
+}
 
 /** Maps each hook event name to its specific handler interface. */
 export interface HookHandlerMap {

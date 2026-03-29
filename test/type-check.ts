@@ -129,3 +129,18 @@ stop.getEnvFileVars()
 
 // @ts-expect-error — PreToolUse does not have getEnvFileVars
 preToolUse.getEnvFileVars()
+
+// ✓ Env-file hooks accept options in HookHandler.for()
+const ssWithOpts = HookHandler.for("SessionStart", {
+  readFile: (path: string) => "FOO=bar",
+})
+const cwdWithOpts = HookHandler.for("CwdChanged", {
+  readFile: (path: string) => "FOO=bar",
+  writeFile: (path: string, contents: string, opts: { encoding: "utf-8" }) => {},
+})
+
+// @ts-expect-error — PreToolUse does not accept options
+HookHandler.for("PreToolUse", { readFile: (p: string) => "" })
+
+// @ts-expect-error — Stop does not accept options
+HookHandler.for("Stop", { readFile: (p: string) => "" })

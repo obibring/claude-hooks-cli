@@ -53,6 +53,8 @@ export {
 
 export type {
   HookHandlerMap,
+  HookHandlerOptionsMap,
+  EnvFileHandlerOptions,
   PreToolUseHookHandler,
   PermissionRequestHookHandler,
   PostToolUseHookHandler,

@@ -390,17 +390,25 @@ export declare class HookHandler<E extends keyof HookIOMap> {
    * Returns a handler interface specific to the event — with only the methods
    * and env vars that apply to that hook type.
    *
+   * For SessionStart, CwdChanged, and FileChanged hooks, accepts an optional
+   * second argument with custom `readFile` and `writeFile` functions.
+   *
    * @example
    * ```ts
    * const handler = HookHandler.for("PreToolUse")
    * // handler has getToolInput(), getEnv() without CLAUDE_ENV_FILE
    *
-   * const handler2 = HookHandler.for("SessionStart")
-   * // handler2 has getEnv("CLAUDE_ENV_FILE"), no getToolInput()
+   * const handler2 = HookHandler.for("SessionStart", {
+   *   readFile: (path) => myCustomRead(path),
+   * })
+   * // handler2 has getEnv("CLAUDE_ENV_FILE"), getEnvFileVars(), no getToolInput()
    * ```
    */
   static for<E extends keyof import("./handlers/index.d.mts").HookHandlerMap>(
     event: E,
+    ...args: import("./handlers/index.d.mts").HookHandlerOptionsMap[E] extends never
+      ? []
+      : [options?: import("./handlers/index.d.mts").HookHandlerOptionsMap[E]]
   ): import("./handlers/index.d.mts").HookHandlerMap[E]
 
   /**

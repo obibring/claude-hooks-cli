@@ -14,9 +14,11 @@ import { markedTerminal } from "marked-terminal"
 
 marked.use(
   markedTerminal({
-    width: 100,
+    width: Math.min(process.stdout.columns || 100, 120),
     tableOptions: {
       wordWrap: true,
+      wrapOnWordBoundary: true,
+      colWidths: [15, 22, 50],
     },
   }),
 )

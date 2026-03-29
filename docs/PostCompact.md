@@ -2,29 +2,71 @@
 
 Runs **after** Claude Code completes a compact operation.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: "manual" | "auto"  // matched against trigger
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `trigger`. Valid values: `manual`, `auto`.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "PostCompact"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  trigger: "manual" | "auto"
+  compact_summary: string
+}
+```
 
-- `trigger` — `"manual"` or `"auto"`
-- `compact_summary` — the summary produced by compaction
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
 - **No `once` support**: Unlike PreCompact, PostCompact does NOT
   support `once: true`.
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **`compact_summary`**: Contains the compacted conversation summary —
   useful for logging or analysis.

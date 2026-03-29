@@ -2,27 +2,90 @@
 
 Runs when Claude Code finishes responding (the turn ends normally).
 
-## Handler Types
+## Config
 
-Supports all 4: `command`, `prompt`, `agent`, `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  hooks: Array<
+    | {
+        // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // prompt handler
+        type: "prompt"
+        prompt: string
+        model?:
+          | "opus"
+          | "sonnet"
+          | "haiku"
+          | "opus[4m]"
+          | "sonnet[4m]"
+        timeout?: number
+      }
+    | {
+        // agent handler
+        type: "agent"
+        prompt: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-**No matcher support** — always fires when Claude finishes responding.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "Stop"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  last_assistant_message: string
+  stop_hook_active: boolean
+}
+```
 
-- `last_assistant_message` — Claude's final response text
-- `stop_hook_active` — boolean indicating if this hook is currently
-  running
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields plus:
-
-- `decision`: `"block"` — can block and re-engage Claude
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+  decision?: "block"
+}
+```
 
 ## Gotchas
 

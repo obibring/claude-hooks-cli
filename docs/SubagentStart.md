@@ -2,31 +2,68 @@
 
 Runs when a subagent task starts.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // matched against agent_type
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `agent_type`. Values include built-in types (`Bash`,
-`Explore`, `Plan`) and custom agent names.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "SubagentStart"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+}
+```
 
-- `agent_id` — unique subagent identifier (required, not optional like
-  in base fields)
-- `agent_type` — agent type name (required, not optional like in base
-  fields)
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **`agent_id`/`agent_type` override base optionals**: The base common
   fields include optional `agent_id`/`agent_type`. In SubagentStart
   input, these are required strings.

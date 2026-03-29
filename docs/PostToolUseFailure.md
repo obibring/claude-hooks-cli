@@ -2,32 +2,87 @@
 
 Runs **after** a tool call fails.
 
-## Handler Types
+## Config
 
-Supports all 4: `command`, `prompt`, `agent`, `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // regex matched against tool_name
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+      }
+    | {  // prompt handler
+        type: "prompt"
+        prompt: string
+        model?: "opus" | "sonnet" | "haiku" | "opus[4m]" | "sonnet[4m]"
+        timeout?: number
+      }
+    | {  // agent handler
+        type: "agent"
+        prompt: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `tool_name`. Same regex pattern support as PreToolUse.
+## Input
 
-## Conditional Execution (`if`)
+The JSON object received on stdin:
 
-Supports the `if` field for per-handler conditional execution.
+```ts
+{
+  hook_event_name: "PostToolUseFailure"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  tool_name: string
+  tool_input: Record<string, unknown>
+  tool_use_id: string
+  error: string
+  is_interrupt: boolean
+}
+```
 
-## Input (stdin JSON)
+## Output
 
-Common fields plus:
+The JSON object to write to stdout:
 
-- `tool_name` — name of the tool that failed
-- `tool_input` — arguments that were passed to the tool
-- `tool_use_id` — unique identifier for this tool call
-- `error` — error message string
-- `is_interrupt` — boolean indicating if the failure was due to an
-  interrupt
-
-## Output (stdout JSON)
-
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 

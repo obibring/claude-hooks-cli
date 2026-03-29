@@ -2,32 +2,87 @@
 
 Runs **after** a tool call completes successfully.
 
-## Handler Types
+## Config
 
-Supports all 4: `command`, `prompt`, `agent`, `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // regex matched against tool_name
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+      }
+    | {  // prompt handler
+        type: "prompt"
+        prompt: string
+        model?: "opus" | "sonnet" | "haiku" | "opus[4m]" | "sonnet[4m]"
+        timeout?: number
+      }
+    | {  // agent handler
+        type: "agent"
+        prompt: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `tool_name`. Same regex pattern support as PreToolUse.
+## Input
 
-## Conditional Execution (`if`)
+The JSON object received on stdin:
 
-Supports the `if` field for per-handler conditional execution.
+```ts
+{
+  hook_event_name: "PostToolUse"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  tool_name: string
+  tool_input: Record<string, unknown>
+  tool_use_id: string
+  tool_response: unknown
+}
+```
 
-## Input (stdin JSON)
+## Output
 
-Common fields plus:
+The JSON object to write to stdout:
 
-- `tool_name` — name of the tool that was called
-- `tool_input` — arguments that were passed to the tool
-- `tool_use_id` — unique identifier for this tool call
-- `tool_response` — the tool's return value (shape varies by tool)
-
-## Output (stdout JSON)
-
-Universal fields plus:
-
-- `decision`: `"block"` — can block further execution
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+  decision?: "block"
+}
+```
 
 ## Gotchas
 

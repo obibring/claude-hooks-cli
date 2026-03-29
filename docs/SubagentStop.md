@@ -2,31 +2,83 @@
 
 Runs when a subagent task completes.
 
-## Handler Types
+## Config
 
-Supports all 4: `command`, `prompt`, `agent`, `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // matched against agent_type
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // prompt handler
+        type: "prompt"
+        prompt: string
+        model?: "opus" | "sonnet" | "haiku" | "opus[4m]" | "sonnet[4m]"
+        timeout?: number
+      }
+    | {  // agent handler
+        type: "agent"
+        prompt: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `agent_type`. Values include built-in types (`Bash`,
-`Explore`, `Plan`) and custom agent names.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "SubagentStop"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  last_assistant_message: string
+  agent_transcript_path: string
+  stop_hook_active: boolean
+}
+```
 
-- `agent_id` — unique subagent identifier (required)
-- `agent_type` — agent type name (required)
-- `last_assistant_message` — the subagent's final response text
-- `agent_transcript_path` — path to the subagent's transcript file
-- `stop_hook_active` — boolean indicating if a stop hook is already
-  running
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields plus:
-
-- `decision`: `"block"` — can block execution
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+  decision?: "block"
+}
+```
 
 ## Gotchas
 

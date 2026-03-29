@@ -3,31 +3,69 @@
 Runs when watched files change during a session. **Requires a
 matcher.**
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher: string // REQUIRED — pipe-separated basenames (e.g., ".envrc|.env")
+  hooks: Array<
+    | {
+        // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-**Required** — matches file basenames using pipe-separated values
-(e.g., `.envrc|.env`). Unlike other matchers, this is not optional —
-FileChanged hooks must specify which files to watch.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "FileChanged"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  file_path: string
+  event: string
+}
+```
 
-- `file_path` — full path to the changed file
-- `event` — type of file system event
+## Output
 
-## Environment Variables
+The JSON object to write to stdout:
 
-- `$CLAUDE_ENV_FILE` — path for persisting environment variables. Use
-  append (`>>`) to preserve variables from other hooks.
-
-## Output (stdout JSON)
-
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
@@ -36,7 +74,6 @@ Universal fields only. No hook-specific output.
   to watch. Without it, the hook won't fire.
 - **Pipe-separated basenames**: The matcher uses `|` as separator
   (e.g., `.envrc|.env`), NOT regex. This is unique to FileChanged.
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **`$CLAUDE_ENV_FILE`**: Only available in SessionStart, CwdChanged,
   and FileChanged hooks.
 - **Basenames only**: The matcher matches file basenames, not full

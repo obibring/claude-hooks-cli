@@ -3,35 +3,73 @@
 Runs **before** Claude Code performs a compact operation (context
 compression).
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: "manual" | "auto"  // matched against trigger
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        once?: boolean
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        once?: boolean
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `trigger`. Valid values: `manual`, `auto`.
+## Input
 
-## Supports `once: true`
+The JSON object received on stdin:
 
-When set, only fires once per session. Useful since compaction may
-happen multiple times.
+```ts
+{
+  hook_event_name: "PreCompact"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  trigger: "manual" | "auto"
+  custom_instructions?: string
+}
+```
 
-## Input (stdin JSON)
+## Output
 
-Common fields plus:
+The JSON object to write to stdout:
 
-- `trigger` — `"manual"` or `"auto"`
-- `custom_instructions` — optional string with custom compaction
-  instructions
-
-## Output (stdout JSON)
-
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
 - **`once` is for skills only**: Works in settings-based hooks and
   skill frontmatter, but NOT in agent frontmatter.
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **`custom_instructions`**: Optional — only present when the user
   provided custom compact instructions.

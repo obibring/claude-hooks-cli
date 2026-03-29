@@ -3,35 +3,76 @@
 Runs after a user responds to an MCP elicitation, before the response
 is sent back to the server.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // matched against mcp_server_name
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `mcp_server_name` — the name of the MCP server.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "ElicitationResult"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  mcp_server_name: string
+  user_response: unknown
+  message: string
+  elicitation_id: string
+}
+```
 
-- `mcp_server_name` — name of the MCP server
-- `user_response` — the user's response (shape varies)
-- `message` — the original prompt message
-- `elicitation_id` — unique identifier matching the original
-  Elicitation
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields plus `hookSpecificOutput`:
-
-- `action`: `"accept"`, `"decline"`, or `"cancel"` — can override the
-  user's response
-- `content` — replacement content (shape varies)
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+  hookSpecificOutput?: {
+    action?: "accept" | "decline" | "cancel"
+    content?: unknown
+  }
+}
+```
 
 ## Gotchas
 
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **Can override user response**: The hook can change or block the
   user's response before it reaches the MCP server.
 - **Paired with Elicitation**: Use the same `elicitation_id` to

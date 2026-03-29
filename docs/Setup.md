@@ -3,21 +3,53 @@
 Runs when Claude Code executes the `/setup` command for project
 initialization.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  hooks: Array<{
+    // command handler
+    type: "command"
+    command: string
+    timeout?: number
+    async?: boolean
+    asyncRewake?: boolean
+    statusMessage?: string
+  }>
+}
+```
 
-**No matcher support** — always fires.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields only. No hook-specific fields.
+```ts
+{
+  hook_event_name: "Setup"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+}
+```
 
-## Output (stdout JSON)
+## Output
 
-Universal fields only. No hook-specific output.
+The JSON object to write to stdout:
+
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 

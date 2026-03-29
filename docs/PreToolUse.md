@@ -3,42 +3,91 @@
 Runs **before** a tool call is executed. Can block, allow, or modify
 the tool call.
 
-## Handler Types
+## Config
 
-Supports all 4: `command`, `prompt`, `agent`, `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // regex matched against tool_name
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+      }
+    | {  // prompt handler
+        type: "prompt"
+        prompt: string
+        model?: "opus" | "sonnet" | "haiku" | "opus[4m]" | "sonnet[4m]"
+        timeout?: number
+      }
+    | {  // agent handler
+        type: "agent"
+        prompt: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        if?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `tool_name`. Accepts regex patterns. Supports built-in tools
-(`Bash`, `Read`, `Edit`, `Write`, `Glob`, `Grep`, `Agent`, `WebFetch`,
-`WebSearch`, `AskUserQuestion`, `ExitPlanMode`) and MCP tools
-(`mcp__<server>__<tool>`).
+## Input
 
-## Conditional Execution (`if`)
+The JSON object received on stdin:
 
-Supports the `if` field for per-handler conditional execution using
-permission rule syntax (e.g., `Bash(git *)`). When set, the hook
-process only spawns if the condition matches — not on every matcher
-match.
+```ts
+{
+  hook_event_name: "PreToolUse"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  tool_name: string
+  tool_input: Record<string, unknown>
+  tool_use_id: string
+}
+```
 
-## Input (stdin JSON)
+## Output
 
-Common fields plus:
+The JSON object to write to stdout:
 
-- `tool_name` — name of the tool about to be called
-- `tool_input` — object of arguments passed to the tool
-- `tool_use_id` — unique identifier for this tool call
-
-## Output (stdout JSON)
-
-Universal fields plus `hookSpecificOutput`:
-
-- `permissionDecision`: `"allow"`, `"deny"`, or `"ask"`
-- `permissionDecisionReason`: explanation string
-- `autoAllow`: if `true`, auto-approve future uses of this tool (since
-  v2.0.76)
-- `updatedInput`: modified tool input object (since v2.1.85, can
-  auto-respond to `AskUserQuestion`)
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+  hookSpecificOutput?: {
+    permissionDecision?: "allow" | "deny" | "ask"
+    permissionDecisionReason?: string
+    autoAllow?: boolean
+    updatedInput?: Record<string, unknown>
+  }
+}
+```
 
 ## Gotchas
 

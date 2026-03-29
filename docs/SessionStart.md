@@ -2,37 +2,58 @@
 
 Runs when Claude Code starts a new session or resumes an existing one.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: "startup" | "resume" | "clear" | "compact"  // matched against source
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        once?: boolean
+      }
+  >
+}
+```
 
-Matches `source`. Valid values: `startup`, `resume`, `clear`,
-`compact`.
+## Input
 
-## Supports `once: true`
+The JSON object received on stdin:
 
-When set, only fires once per session — useful to avoid re-triggering
-on resume.
+```ts
+{
+  hook_event_name: "SessionStart"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  model: string
+  source: "startup" | "resume" | "clear" | "compact"
+}
+```
 
-## Input (stdin JSON)
+## Output
 
-Common fields plus:
+The JSON object to write to stdout:
 
-- `model` — the Claude model being used
-- `source` — how the session started: `"startup"`, `"resume"`,
-  `"clear"`, or `"compact"`
-
-## Environment Variables
-
-- `$CLAUDE_ENV_FILE` — path for persisting environment variables for
-  subsequent Bash commands. Use append (`>>`) to preserve variables
-  from other hooks.
-
-## Output (stdout JSON)
-
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 

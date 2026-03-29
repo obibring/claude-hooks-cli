@@ -3,33 +3,73 @@
 Runs when the turn ends due to an API error (rate limit, auth failure,
 etc.).
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: "rate_limit" | "authentication_failed" | "billing_error" | "invalid_request" | "server_error" | "max_output_tokens" | "unknown"  // matched against error
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `error`. Valid values: `rate_limit`, `authentication_failed`,
-`billing_error`, `invalid_request`, `server_error`,
-`max_output_tokens`, `unknown`.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "StopFailure"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  error: "rate_limit" | "authentication_failed" | "billing_error" | "invalid_request" | "server_error" | "max_output_tokens" | "unknown"
+  error_details: unknown
+  last_assistant_message: string
+}
+```
 
-- `error` — error type enum value
-- `error_details` — additional error information (shape varies)
-- `last_assistant_message` — Claude's last response before the error
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
 - **Different from Stop**: `StopFailure` fires on API errors. `Stop`
   fires on normal turn completion. They never both fire for the same
   turn.
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **`error_details`**: Shape varies by error type — may contain rate
   limit timing, auth error codes, etc.

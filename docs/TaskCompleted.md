@@ -3,30 +3,92 @@
 Runs when a background task completes. **Requires experimental agent
 teams.**
 
-## Handler Types
+## Config
 
-Supports all 4: `command`, `prompt`, `agent`, `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  hooks: Array<
+    | {
+        // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // prompt handler
+        type: "prompt"
+        prompt: string
+        model?:
+          | "opus"
+          | "sonnet"
+          | "haiku"
+          | "opus[4m]"
+          | "sonnet[4m]"
+        timeout?: number
+      }
+    | {
+        // agent handler
+        type: "agent"
+        prompt: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-**No matcher support** — always fires.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "TaskCompleted"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  task_id: string
+  task_subject: string
+  task_description: string
+  teammate_name: string
+  team_name: string
+}
+```
 
-- `task_id` — unique task identifier
-- `task_subject` — task subject line
-- `task_description` — full task description
-- `teammate_name` — name of the teammate that completed the task
-- `team_name` — name of the team
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields. Also supports:
-
-- `continue: false` with `stopReason` — JSON decision control (since
-  v2.1.70)
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 

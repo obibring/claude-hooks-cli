@@ -3,32 +3,72 @@
 Runs when a teammate agent becomes idle. **Requires experimental agent
 teams.**
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  hooks: Array<
+    | {
+        // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-**No matcher support** — always fires.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "TeammateIdle"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  teammate_name: string
+  team_name: string
+}
+```
 
-- `teammate_name` — name of the idle teammate
-- `team_name` — name of the team
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields. Also supports JSON decision control:
-
-- `continue: false` with `stopReason` — stops execution
-- Exit code 2 with JSON output — blocking error (since v2.1.70)
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
 - **Experimental**: Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
   environment variable.
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **No matcher**: Cannot filter by teammate or team name via matcher —
   must filter in script.

@@ -3,34 +3,74 @@
 Runs when CLAUDE.md or `.claude/rules/*.md` files are loaded into
 context.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: "session_start" | "nested_traversal" | "path_glob_match" | "include" | "compact"  // matched against load_reason
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `load_reason`. Valid values: `session_start`,
-`nested_traversal`, `path_glob_match`, `include`, `compact`.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "InstructionsLoaded"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  file_path: string
+  memory_type: string
+  load_reason: "session_start" | "nested_traversal" | "path_glob_match" | "include" | "compact"
+  globs?: unknown
+  trigger_file_path?: string
+  parent_file_path?: string
+}
+```
 
-- `file_path` — path to the loaded instruction file
-- `memory_type` — type of memory/instruction
-- `load_reason` — why the file was loaded
-- `globs` — optional glob patterns that triggered the load
-- `trigger_file_path` — optional path to the file that triggered
-  loading
-- `parent_file_path` — optional path to the parent instruction file
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **Multiple load reasons**: The same file can be loaded for different
   reasons — `session_start` on initial load, `compact` on re-load
   after compaction, `include` when referenced by another file.

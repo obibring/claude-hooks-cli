@@ -2,33 +2,71 @@
 
 Runs when the working directory changes during a session.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  hooks: Array<
+    | {
+        // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-**No matcher support** — always fires.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "CwdChanged"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  old_cwd: string
+  new_cwd: string
+}
+```
 
-- `old_cwd` — previous working directory
-- `new_cwd` — new working directory
+## Output
 
-## Environment Variables
+The JSON object to write to stdout:
 
-- `$CLAUDE_ENV_FILE` — path for persisting environment variables. Use
-  append (`>>`) to preserve variables from other hooks.
-
-## Output (stdout JSON)
-
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **No matcher**: Cannot filter by directory path — must filter in
   your script.
 - **`$CLAUDE_ENV_FILE`**: Only available in SessionStart, CwdChanged,

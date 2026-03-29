@@ -3,30 +3,70 @@
 Runs when agent worktree isolation creates worktrees for custom VCS
 setup.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  hooks: Array<
+    | {
+        // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {
+        // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-**No matcher support** — always fires.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "WorktreeCreate"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  name: string
+}
+```
 
-- `name` — worktree name
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields only. Special exit behavior:
-
-- Non-zero exit code fails worktree creation
-- stdout provides the worktree path on success
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **Exit code matters**: Non-zero exit prevents the worktree from
   being created — different from most hooks where non-zero exit is
   just an error.

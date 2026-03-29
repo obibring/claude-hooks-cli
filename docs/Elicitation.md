@@ -2,39 +2,78 @@
 
 Runs when an MCP server requests user input during a tool call.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: string  // matched against mcp_server_name
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `mcp_server_name` — the name of the MCP server requesting
-input.
+## Input
 
-## Input (stdin JSON)
+The JSON object received on stdin:
 
-Common fields plus:
+```ts
+{
+  hook_event_name: "Elicitation"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  mcp_server_name: string
+  message: string
+  mode: string
+  url: string
+  elicitation_id: string
+  requested_schema: unknown
+}
+```
 
-- `mcp_server_name` — name of the MCP server
-- `message` — the prompt message to the user
-- `mode` — elicitation mode
-- `url` — URL associated with the elicitation
-- `elicitation_id` — unique identifier for this elicitation
-- `requested_schema` — JSON schema for the expected response (shape
-  varies)
+## Output
 
-## Output (stdout JSON)
+The JSON object to write to stdout:
 
-Universal fields plus `hookSpecificOutput`:
-
-- `action`: `"accept"`, `"decline"`, or `"cancel"` — controls the
-  elicitation response
-- `content` — response content (shape varies based on
-  `requested_schema`)
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+  hookSpecificOutput?: {
+    action?: "accept" | "decline" | "cancel"
+    content?: unknown
+  }
+}
+```
 
 ## Gotchas
 
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **Paired with ElicitationResult**: Elicitation fires before user
   input; ElicitationResult fires after.
 - **Same output shape as ElicitationResult**: Both use `action` +

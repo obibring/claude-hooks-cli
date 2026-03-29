@@ -2,28 +2,68 @@
 
 Runs when a Claude Code session ends.
 
-## Handler Types
+## Config
 
-**Command only** — does not support `prompt`, `agent`, or `http`.
+The settings.json configuration object for this hook:
 
-## Matcher
+```ts
+{
+  matcher?: "clear" | "resume" | "logout" | "prompt_input_exit" | "bypass_permissions_disabled" | "other"  // matched against reason
+  hooks: Array<
+    | {  // command handler
+        type: "command"
+        command: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        once?: boolean
+      }
+    | {  // http handler
+        type: "http"
+        url: string
+        timeout?: number
+        async?: boolean
+        asyncRewake?: boolean
+        statusMessage?: string
+        once?: boolean
+        headers?: Record<string, string>
+        allowedEnvVars?: string[]
+      }
+  >
+}
+```
 
-Matches `reason`. Valid values: `clear`, `resume`, `logout`,
-`prompt_input_exit`, `bypass_permissions_disabled`, `other`.
+## Input
 
-## Supports `once: true`
+The JSON object received on stdin:
 
-When set, only fires once per session.
+```ts
+{
+  hook_event_name: "SessionEnd"
+  session_id: string
+  transcript_path: string
+  cwd: string
+  permission_mode: "default" | "plan" | "acceptEdits" | "dontAsk" | "bypassPermissions"
+  agent_id?: string
+  agent_type?: string
+  reason: "clear" | "resume" | "logout" | "prompt_input_exit" | "bypass_permissions_disabled" | "other"
+}
+```
 
-## Input (stdin JSON)
+## Output
 
-Common fields plus:
+The JSON object to write to stdout:
 
-- `reason` — why the session ended
-
-## Output (stdout JSON)
-
-Universal fields only. No hook-specific output.
+```ts
+{
+  continue?: boolean
+  stopReason?: string
+  suppressOutput?: boolean
+  systemMessage?: string
+  additionalContext?: string
+}
+```
 
 ## Gotchas
 
@@ -31,6 +71,5 @@ Universal fields only. No hook-specific output.
   after 1.5s regardless of configured `timeout`. Now respects the
   hook's `timeout` value, or `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS`
   env var.
-- **Command-only**: Cannot use `prompt`, `agent`, or `http` handlers.
 - **Short-lived**: Keep SessionEnd hooks fast — the process is
   exiting.

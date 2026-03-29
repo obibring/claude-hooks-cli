@@ -336,6 +336,9 @@ When choosing a TS or JS file, the CLI:
 - Prefixes relative paths with `$CLAUDE_PROJECT_DIR` for correct
   resolution
 - Uses `npx -y tsx` for TypeScript, `node` for JavaScript
+- Generates the correct import style based on file extension:
+  `.ts`/`.mjs` use ESM `import`, `.cjs` uses `require()`, `.js` checks
+  the nearest `package.json` `"type"` field
 
 For hooks with enum matchers (Notification, SessionStart, etc.), you
 get a select menu instead of free text:
@@ -851,6 +854,35 @@ const handler = HookHandler.for("SessionStart", {
 const vars = handler.getEnvFileVars() // uses your readFile
 ```
 
+#### `handler.writeEnvFile(vars): void`
+
+Writes all environment variables to the `CLAUDE_ENV_FILE`, replacing
+its contents. Only available on SessionStart, CwdChanged, and
+FileChanged handlers. Uses custom `writeFile` from constructor options
+if provided, otherwise uses `node:fs`. Invalidates the cached env file
+vars.
+
+```ts
+const handler = HookHandler.for("SessionStart")
+handler.writeEnvFile({ MY_VAR: "hello", OTHER: "world" })
+// CLAUDE_ENV_FILE now contains:
+// MY_VAR=hello
+// OTHER=world
+```
+
+#### `handler.appendToEnvFile(variableName, value): void`
+
+Appends a single environment variable to the `CLAUDE_ENV_FILE`. Only
+available on SessionStart, CwdChanged, and FileChanged handlers. Uses
+custom `writeFile` from constructor options if provided, otherwise
+uses `node:fs`. Invalidates the cached env file vars.
+
+```ts
+const handler = HookHandler.for("SessionStart")
+handler.appendToEnvFile("MY_VAR", "hello")
+handler.appendToEnvFile("OTHER", "world")
+```
+
 #### `handler.getToolInput(toolName, input): ToolInput | null`
 
 Returns the strongly-typed `tool_input` for the given tool name if
@@ -1144,6 +1176,23 @@ import { BaseHookOutputSchema } from "@obibring/claude-hooks-cli/schemas/output-
 import { HookEventNameSchema } from "@obibring/claude-hooks-cli/schemas/enums.mjs"
 ```
 
+## CJS Support
+
+The handler module works with both ESM `import` and CJS `require()`.
+TypeScript types resolve correctly in both module systems:
+
+```ts
+// ESM
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
+
+// CJS
+const { HookHandler } = require("@obibring/claude-hooks-cli/handler")
+```
+
+Both provide full autocomplete and type checking for
+`HookHandler.for()`, `parseInput()`, `exit()`, `getEnv()`,
+`getToolInput()`, etc.
+
 ## Contributing
 
 ### Setup
@@ -1170,9 +1219,12 @@ bun run lint          # Format with prettier
 bin/cli.mjs              CLI entry point (Commander + @clack/prompts)
 lib/
   handler.mjs            HookHandler class (runtime)
-  handler.d.mts          Re-exports from handler-types.d.mts (overrides tsc output)
+  handler.d.mts          ESM type declarations (re-exports from handler-types.d.mts)
+  handler.d.cts          CJS type declarations (for require() consumers)
   handler-types.d.mts    Hand-authored type declarations (HookIOMap, output interfaces,
                          ToolInputMap, conditional types, class signature)
+  handlers/index.d.mts   Per-hook handler interfaces (26 subtypes with correct methods)
+  get-fs.cjs             Lazy node:fs loader for runtime compatibility
   schema-map.mjs         Runtime event→schema registry
   hook-metadata.mjs      Hook metadata for CLI interactive UI
   settings-io.mjs        Settings file I/O (read/write JSON)
@@ -1200,6 +1252,7 @@ docs/
 __tests__/handler/
   <EventName>.test.ts    Per-hook handler tests (26 files)
   getEnv.test.ts         getEnv() tests for all 7 env vars
+  getEnvFileVars.test.ts  getEnvFileVars/writeEnvFile/appendToEnvFile tests
   getToolInput.test.ts   getToolInput() tests for all 10 tools
   test-utils.ts          Shared test utilities
 dist/                    Generated .d.mts declaration files

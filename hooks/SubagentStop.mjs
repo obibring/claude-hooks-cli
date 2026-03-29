@@ -20,7 +20,14 @@ export const SubagentStopMatcherSchema = SubagentTypeMatcherSchema.describe(
 
 // --- Config ---
 
-const handlerProps = SharedHandlerPropsSchema
+const handlerProps = SharedHandlerPropsSchema.extend({
+  if: z
+    .string()
+    .optional()
+    .describe(
+      "Permission rule syntax to filter when this hook runs. Only evaluated on tool events (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest). On other events, a hook with if set never runs.",
+    ),
+})
 
 /** Supports all 4 handler types. Matcher matches agent_type. */
 export const SubagentStopConfigSchema = z.object({
@@ -50,33 +57,39 @@ export const SubagentStopConfigSchema = z.object({
           .strict(),
         z
           .object({
-            /** Sends a prompt to a Claude model for single-turn evaluation. Returns a yes/no decision as JSON. */
             type: z
               .literal("prompt")
               .describe(
                 "Sends a prompt to a Claude model for single-turn evaluation. Returns a yes/no decision as JSON.",
               ),
-            /**
-             * Prompt to send to the model. Prompt must support yes/no type answers.
-             * Use $ARGUMENTS for dynamic input.
-             */
             prompt: z
               .string()
               .describe(
                 "Prompt to send to the model. Prompt must support yes/no type answers. Use $ARGUMENTS for dynamic input.",
               ),
-            /** Model to use for the prompt. */
             model: z
               .enum(["opus", "sonnet", "haiku", "opus[4m]", "sonnet[4m]"])
-              .describe("Model to use for the prompt."),
-            /** Maximum execution time in milliseconds before the hook is killed. */
+              .describe("Model to use for the prompt.")
+              .optional(),
+            if: z
+              .string()
+              .optional()
+              .describe(
+                "Permission rule syntax to filter when this hook runs. Only evaluated on tool events (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest). On other events, a hook with if set never runs.",
+              ),
             timeout: z
               .number()
               .int()
               .positive()
               .optional()
               .describe(
-                "Maximum execution time in milliseconds before the hook is killed.",
+                "Seconds before canceling. Default: 30 for prompt hooks.",
+              ),
+            statusMessage: z
+              .string()
+              .optional()
+              .describe(
+                "Custom spinner message displayed while the hook runs.",
               ),
           })
           .strict(),

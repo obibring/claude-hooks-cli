@@ -69,8 +69,14 @@ files to `dist/lib/`.
 
 INSTRUCTION: Prompt-type hook handlers (`type: "prompt"`) do NOT use
 `SharedHandlerPropsSchema` or `...handlerProps.shape`. They have their
-own explicit fields: `type`, `prompt`, `model` (enum), and `timeout`.
-The `async`, `asyncRewake`, and `statusMessage` properties are NOT
-supported by prompt handlers — never add them. When creating or
-modifying prompt handler definitions in hook config schemas, always
-use the explicit field pattern from `hooks/Stop.mjs` as the reference.
+own explicit fields: `type`, `prompt`, `model` (enum), `if`,
+`timeout`, and `statusMessage`. The `async` and `asyncRewake`
+properties are NOT supported by prompt handlers — never add them. When
+creating or modifying prompt handler definitions in hook config
+schemas, always use the explicit field pattern from `hooks/Stop.mjs`
+as the reference.
+
+INSTRUCTION: The `if` field is available on ALL handler types
+(command, prompt, agent, http) on ALL hooks. However, it is only
+evaluated on tool events (PreToolUse, PostToolUse, PostToolUseFailure,
+PermissionRequest). On other events, a hook with `if` set never runs.

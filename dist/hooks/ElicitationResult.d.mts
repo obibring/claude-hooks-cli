@@ -8,6 +8,7 @@ export const ElicitationResultConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
     }, z.core.$strict>, z.ZodObject<{
@@ -17,6 +18,7 @@ export const ElicitationResultConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"http">;
         url: z.ZodURL;
     }, z.core.$strict>], "type">>;

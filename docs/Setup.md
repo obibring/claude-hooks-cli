@@ -7,8 +7,12 @@ initialization.
 
 The settings.json configuration object for this hook:
 
-No hook-specific config properties. No `matcher`, `if`, or `once`
-support. Default timeout is 30000ms (not 5000ms).
+No hook-specific config properties. No `matcher` or `once` support.
+Default timeout is 30000ms (not 5000ms).
+
+| Property | Type                | Description                                                                                                                 |
+| -------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `if`     | `string` (optional) | Condition expression; present on all handler types but only evaluated on tool events — a hook with `if` set never runs here |
 
 Supported handler types: command only.
 
@@ -18,10 +22,11 @@ Supported handler types: command only.
     // command handler
     type: "command"
     command: string
-    timeout?: number
+    timeout?: number // default: 600s
     async?: boolean
     asyncRewake?: boolean
     statusMessage?: string
+    if?: string
   }>
 }
 ```

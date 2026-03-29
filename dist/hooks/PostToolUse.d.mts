@@ -14,14 +14,16 @@ export const PostToolUseConfigSchema: z.ZodObject<{
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"prompt">;
         prompt: z.ZodString;
-        model: z.ZodEnum<{
+        model: z.ZodOptional<z.ZodEnum<{
             opus: "opus";
             sonnet: "sonnet";
             haiku: "haiku";
             "opus[4m]": "opus[4m]";
             "sonnet[4m]": "sonnet[4m]";
-        }>;
+        }>>;
+        if: z.ZodOptional<z.ZodString>;
         timeout: z.ZodOptional<z.ZodNumber>;
+        statusMessage: z.ZodOptional<z.ZodString>;
     }, z.core.$strict>, z.ZodObject<{
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;

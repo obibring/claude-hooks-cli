@@ -11,6 +11,10 @@ The settings.json configuration object for this hook:
 | `matcher` | `"startup" \| "resume" \| "clear" \| "compact"` (optional) | Enum matched against `source` |
 | `once`    | `boolean` (optional)                                       | Run only once per session     |
 
+| Property | Type                | Description                                                                                                                 |
+| -------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `if`     | `string` (optional) | Condition expression; present on all handler types but only evaluated on tool events — a hook with `if` set never runs here |
+
 Supported handler types: command only.
 
 ```ts
@@ -20,10 +24,11 @@ Supported handler types: command only.
     | {  // command handler
         type: "command"
         command: string
-        timeout?: number
+        timeout?: number   // default: 600s
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
+        if?: string
         once?: boolean
       }
   >

@@ -20,7 +20,14 @@ export const ElicitationMatcherSchema = _ElicitationMatcherSchema.describe(
 
 // --- Config ---
 
-const handlerProps = SharedHandlerPropsSchema
+const handlerProps = SharedHandlerPropsSchema.extend({
+  if: z
+    .string()
+    .optional()
+    .describe(
+      "Permission rule syntax to filter when this hook runs. Only evaluated on tool events (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest). On other events, a hook with if set never runs.",
+    ),
+})
 
 /** Command-only hook. Matcher matches mcp_server_name. */
 export const ElicitationConfigSchema = z.object({

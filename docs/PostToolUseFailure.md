@@ -6,10 +6,10 @@ Runs **after** a tool call fails.
 
 The settings.json configuration object for this hook:
 
-| Property  | Type                | Description                                                          |
-| --------- | ------------------- | -------------------------------------------------------------------- |
-| `matcher` | `string` (optional) | Regex matched against `tool_name`                                    |
-| `if`      | `string` (optional) | Condition expression; supported on command, agent, and http handlers |
+| Property  | Type                | Description                                          |
+| --------- | ------------------- | ---------------------------------------------------- |
+| `matcher` | `string` (optional) | Regex matched against `tool_name`                    |
+| `if`      | `string` (optional) | Condition expression; supported on all handler types |
 
 Supported handler types: command, prompt, agent, http (all 4).
 
@@ -20,7 +20,7 @@ Supported handler types: command, prompt, agent, http (all 4).
     | {  // command handler
         type: "command"
         command: string
-        timeout?: number
+        timeout?: number   // default: 600s
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
@@ -30,12 +30,14 @@ Supported handler types: command, prompt, agent, http (all 4).
         type: "prompt"
         prompt: string
         model?: "opus" | "sonnet" | "haiku" | "opus[4m]" | "sonnet[4m]"
-        timeout?: number
+        if?: string
+        timeout?: number   // default: 30s
+        statusMessage?: string
       }
     | {  // agent handler
         type: "agent"
         prompt: string
-        timeout?: number
+        timeout?: number   // default: 60s
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string

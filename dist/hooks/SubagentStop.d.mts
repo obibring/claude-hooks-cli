@@ -8,24 +8,28 @@ export const SubagentStopConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"prompt">;
         prompt: z.ZodString;
-        model: z.ZodEnum<{
+        model: z.ZodOptional<z.ZodEnum<{
             opus: "opus";
             sonnet: "sonnet";
             haiku: "haiku";
             "opus[4m]": "opus[4m]";
             "sonnet[4m]": "sonnet[4m]";
-        }>;
+        }>>;
+        if: z.ZodOptional<z.ZodString>;
         timeout: z.ZodOptional<z.ZodNumber>;
+        statusMessage: z.ZodOptional<z.ZodString>;
     }, z.core.$strict>, z.ZodObject<{
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"agent">;
         prompt: z.ZodString;
     }, z.core.$strict>, z.ZodObject<{
@@ -35,6 +39,7 @@ export const SubagentStopConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"http">;
         url: z.ZodURL;
     }, z.core.$strict>], "type">>;

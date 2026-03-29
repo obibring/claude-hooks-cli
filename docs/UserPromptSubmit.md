@@ -6,7 +6,11 @@ Runs when the user submits a prompt, **before** Claude processes it.
 
 The settings.json configuration object for this hook:
 
-No hook-specific config properties. No `matcher` or `if` support.
+No hook-specific config properties. No `matcher` support.
+
+| Property | Type                | Description                                                                                                                 |
+| -------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `if`     | `string` (optional) | Condition expression; present on all handler types but only evaluated on tool events — a hook with `if` set never runs here |
 
 Supported handler types: command, prompt, agent, http (all 4).
 
@@ -17,10 +21,11 @@ Supported handler types: command, prompt, agent, http (all 4).
         // command handler
         type: "command"
         command: string
-        timeout?: number
+        timeout?: number // default: 600s
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
+        if?: string
       }
     | {
         // prompt handler
@@ -32,16 +37,19 @@ Supported handler types: command, prompt, agent, http (all 4).
           | "haiku"
           | "opus[4m]"
           | "sonnet[4m]"
-        timeout?: number
+        if?: string
+        timeout?: number // default: 30s
+        statusMessage?: string
       }
     | {
         // agent handler
         type: "agent"
         prompt: string
-        timeout?: number
+        timeout?: number // default: 60s
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
+        if?: string
       }
     | {
         // http handler
@@ -51,6 +59,7 @@ Supported handler types: command, prompt, agent, http (all 4).
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
+        if?: string
         headers?: Record<string, string>
         allowedEnvVars?: string[]
       }
@@ -106,5 +115,7 @@ The JSON object to write to stdout (can be handled via
   hooks can only block or add context.
 - **No matcher**: Cannot filter by prompt content via matcher. To
   conditionally process, inspect `prompt` in your hook script.
-- **No `if` support**: The `if` field is only for tool event hooks
-  (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest).
+- **`if` present but not evaluated here**: The `if` field is available
+  on all handler types on all hooks, but it is only evaluated on tool
+  events (PreToolUse, PostToolUse, PostToolUseFailure,
+  PermissionRequest). A hook with `if` set never runs on this event.

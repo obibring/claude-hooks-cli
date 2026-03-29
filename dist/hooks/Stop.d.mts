@@ -7,6 +7,7 @@ export const StopConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
     }, z.core.$strict>, z.ZodObject<{
@@ -19,12 +20,15 @@ export const StopConfigSchema: z.ZodObject<{
             "opus[4m]": "opus[4m]";
             "sonnet[4m]": "sonnet[4m]";
         }>>;
+        if: z.ZodOptional<z.ZodString>;
         timeout: z.ZodOptional<z.ZodNumber>;
+        statusMessage: z.ZodOptional<z.ZodString>;
     }, z.core.$strict>, z.ZodObject<{
         timeout: z.ZodOptional<z.ZodNumber>;
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"agent">;
         prompt: z.ZodString;
     }, z.core.$strict>, z.ZodObject<{
@@ -34,6 +38,7 @@ export const StopConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         type: z.ZodLiteral<"http">;
         url: z.ZodURL;
     }, z.core.$strict>], "type">>;

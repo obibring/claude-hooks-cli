@@ -8,6 +8,10 @@ The settings.json configuration object for this hook:
 
 No hook-specific config properties. No `matcher` support.
 
+| Property | Type                | Description                                                                                                                 |
+| -------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `if`     | `string` (optional) | Condition expression; present on all handler types but only evaluated on tool events — a hook with `if` set never runs here |
+
 Supported handler types: command, http only.
 
 ```ts
@@ -17,10 +21,11 @@ Supported handler types: command, http only.
         // command handler
         type: "command"
         command: string
-        timeout?: number
+        timeout?: number // default: 600s
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
+        if?: string
       }
     | {
         // http handler
@@ -30,6 +35,7 @@ Supported handler types: command, http only.
         async?: boolean
         asyncRewake?: boolean
         statusMessage?: string
+        if?: string
         headers?: Record<string, string>
         allowedEnvVars?: string[]
       }

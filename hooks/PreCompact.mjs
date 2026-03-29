@@ -21,6 +21,12 @@ export const PreCompactMatcherSchema = CompactTriggerMatcherSchema.describe(
 // --- Config ---
 
 const handlerProps = SharedHandlerPropsSchema.extend({
+  if: z
+    .string()
+    .optional()
+    .describe(
+      "Permission rule syntax to filter when this hook runs. Only evaluated on tool events (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest). On other events, a hook with if set never runs.",
+    ),
   /** When true, this hook only fires once per session. Subsequent events are silently skipped. Only supported in settings-based hooks and skill frontmatter — not agent frontmatter. */
   once: z
     .boolean()

@@ -22,6 +22,7 @@ export const SessionEndConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         once: z.ZodOptional<z.ZodBoolean>;
         type: z.ZodLiteral<"command">;
         command: z.ZodString;
@@ -32,6 +33,7 @@ export const SessionEndConfigSchema: z.ZodObject<{
         async: z.ZodOptional<z.ZodBoolean>;
         asyncRewake: z.ZodOptional<z.ZodBoolean>;
         statusMessage: z.ZodOptional<z.ZodString>;
+        if: z.ZodOptional<z.ZodString>;
         once: z.ZodOptional<z.ZodBoolean>;
         type: z.ZodLiteral<"http">;
         url: z.ZodURL;

@@ -27,6 +27,9 @@ Or from the repo:
 bun run start
 ```
 
+The CLI is available as both `claude-hooks` and `cch` (short alias).
+All examples below use `cch`.
+
 ## Quick Start
 
 ### Interactive Mode
@@ -34,7 +37,7 @@ bun run start
 Just run the CLI with no arguments to get an interactive menu:
 
 ```bash
-claude-hooks
+cch
 ```
 
 ```
@@ -53,7 +56,7 @@ claude-hooks
 Every option can be passed as a CLI flag for fully automated use:
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type command \
   --command "./my-hook.sh" \
@@ -65,13 +68,13 @@ claude-hooks add \
 
 ## Commands
 
-### `claude-hooks add`
+### `cch add`
 
 Create a new hook configuration. Walks you through each required field
 one at a time, then presents an optional fields menu.
 
 ```bash
-claude-hooks add [options]
+cch add [options]
 ```
 
 **Options:**
@@ -96,7 +99,7 @@ claude-hooks add [options]
 #### Example: Add a command hook
 
 ```bash
-claude-hooks add \
+cch add \
   --event PostToolUse \
   --type command \
   --command "python3 ./hooks/log-tool-use.py" \
@@ -132,7 +135,7 @@ claude-hooks add \
 #### Example: Add an HTTP hook
 
 ```bash
-claude-hooks add \
+cch add \
   --event Stop \
   --type http \
   --command "https://my-webhook.example.com/claude-stop" \
@@ -164,7 +167,7 @@ claude-hooks add \
 #### Example: Add a prompt hook for code review
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type prompt \
   --command "Check if this tool call is safe. \$ARGUMENTS" \
@@ -180,19 +183,19 @@ wraps it in the correct runner:
 
 ```bash
 # TypeScript file → npx tsx "/path/to/hook.ts"
-claude-hooks add -e Stop -t command -c "./hooks/on-stop.ts" --non-interactive
+cch add -e Stop -t command -c "./hooks/on-stop.ts" --non-interactive
 
 # JavaScript file → node "/path/to/hook.mjs"
-claude-hooks add -e Stop -t command -c "./hooks/on-stop.mjs" --non-interactive
+cch add -e Stop -t command -c "./hooks/on-stop.mjs" --non-interactive
 
 # Python file → python3 "/path/to/hook.py"
-claude-hooks add -e Stop -t command -c "./hooks/on-stop.py" --non-interactive
+cch add -e Stop -t command -c "./hooks/on-stop.py" --non-interactive
 
 # Shell script → bash "/path/to/hook.sh"
-claude-hooks add -e Stop -t command -c "./hooks/on-stop.sh" --non-interactive
+cch add -e Stop -t command -c "./hooks/on-stop.sh" --non-interactive
 
 # Compound commands are left as-is
-claude-hooks add -e Stop -t command -c "echo done | tee /tmp/log" --non-interactive
+cch add -e Stop -t command -c "echo done | tee /tmp/log" --non-interactive
 ```
 
 #### Example: Create a new hook file with `--create`
@@ -203,7 +206,7 @@ needed, writes a language-appropriate template, and wires up the
 command with the correct runner.
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type command \
   --command "./hooks/validate-bash.ts" \
@@ -227,20 +230,48 @@ claude-hooks add \
 The created `hooks/validate-bash.ts` contains:
 
 ```ts
-import { readFileSync } from "node:fs"
+#!/usr/bin/env npx tsx
+import { HookHandler } from "@obibring/claude-hooks-cli/handler"
 
-const input = JSON.parse(readFileSync("/dev/stdin", "utf-8"))
+const handler = new HookHandler("PreToolUse")
 
-// Your hook logic here
-// console.log(JSON.stringify({ additionalContext: "..." }))
+/**
+ * Parse the hook input from stdin (synchronous, strongly typed):
+ *   const input = handler.parseInput()
+ *
+ * Emit output and exit with code 0:
+ *   handler.emitOutput({ additionalContext: "extra info for Claude" })
+ *
+ * Exit with a blocking error (code 2, message fed to model):
+ *   handler.emitBlockingError("Something went wrong")
+ *
+ * Read Claude Code environment variables:
+ *   const projectDir = handler.getEnv("CLAUDE_PROJECT_DIR")
+ *
+ * Get typed tool input (only for tool-event hooks):
+ *   const bash = handler.getToolInput("Bash", input)
+ *   if (bash) {
+ *     console.log(bash.command) // strongly typed
+ *   }
+ *
+ * Pass through (exit 0, no output):
+ *   handler.exit()
+ */
+
+const input = handler.parseInput()
+
+// TODO: Add your hook logic here, then call one of:
+//   handler.emitOutput({ ... })      — send output to Claude and exit (code 0)
+//   handler.emitBlockingError("...")  — block with error message (code 2)
+//   handler.exit()                    — pass through, no output (code 0)
 ```
 
-And the settings entry uses `npx tsx` to run it:
+And the settings entry uses `npx -y tsx` to run it:
 
 ```json
 {
   "type": "command",
-  "command": "npx tsx \"/absolute/path/to/hooks/validate-bash.ts\""
+  "command": "npx -y tsx \"$CLAUDE_PROJECT_DIR/hooks/validate-bash.ts\""
 }
 ```
 
@@ -259,25 +290,31 @@ confirm before the file is created.
 #### Interactive Add Walkthrough
 
 When run without `--non-interactive`, the add flow guides you step by
-step:
+step. The event selector supports type-to-filter:
 
 ```
 ┌  Add a Claude Code hook
 │
-◆  Select a hook event:
-│  ● PreToolUse          - Runs before tool calls (can block them)
-│  ○ PermissionRequest   - Runs when Claude Code requests permission from the user
-│  ○ PostToolUse         - Runs after tool calls complete successfully
-│  ○ ...26 total events
+◆  Select a hook event (type to filter):
+│  ● PreToolUse          (Runs before tool calls — can block/modify)
+│  ○ PostToolUse         (Runs after tool calls complete successfully)
+│  ○ ...26 total events, sorted alphabetically
 │
 ◆  Select handler type:
-│  ● Command  - Runs a shell command. Receives JSON on stdin, returns JSON on stdout.
-│  ○ Prompt   - Sends a prompt to a Claude model for single-turn evaluation.
-│  ○ Agent    - Spawns a subagent with multi-turn tool access.
-│  ○ HTTP     - POSTs JSON to a URL and receives a JSON response.
+│  ● Command  - Runs a shell command
+│  ○ Prompt   - Single-turn Claude model evaluation
+│  ○ Agent    - Multi-turn subagent with tool access
+│  ○ HTTP     - POSTs JSON to a URL
 │
-◆  Enter the command to run (or path to a .ts/.js/.py/.sh file):
+◆  What kind of command do you want to run?
+│  ● TypeScript file      (Runs with npx -y tsx)
+│  ○ JavaScript file      (Runs with node)
+│  ○ Custom command        (Enter a shell command directly)
+│
+◆  Enter the path to your TypeScript file:
 │  ./hooks/validate-bash.ts
+│
+◆  Created PreToolUse hook file at ./hooks/validate-bash.ts
 │
 ◆  Configure optional fields (or Done to finish):
 │  ● Done — save this hook
@@ -287,20 +324,18 @@ step:
 │  ○ Status Message      - Custom spinner message shown while hook runs
 │  ○ If Condition        - Only spawn hook when this permission rule matches
 │
-│  (selecting "Matcher" shows matcher-specific guidance)
-│
-│  ℹ  Matcher for PreToolUse:
-│     Matches on: tool_name
-│     Regex pattern matching tool names. Built-in tools: Bash, Read, Edit,
-│     Write, Glob, Grep, Agent, WebFetch, WebSearch, AskUserQuestion,
-│     ExitPlanMode. MCP tools: mcp__<server>__<tool>
-│
-◆  Enter matcher pattern (matches tool_name):
-│  Bash
-│
 ◆  Added PreToolUse hook to project settings
 └  Done
 ```
+
+When choosing a TS or JS file, the CLI:
+
+- Creates the file with a `HookHandler` template if it doesn't exist
+- Warns and asks to overwrite/change path/keep if the file already
+  exists
+- Prefixes relative paths with `$CLAUDE_PROJECT_DIR` for correct
+  resolution
+- Uses `npx -y tsx` for TypeScript, `node` for JavaScript
 
 For hooks with enum matchers (Notification, SessionStart, etc.), you
 get a select menu instead of free text:
@@ -320,13 +355,13 @@ etc.), the handler type step is skipped automatically:
 ℹ  Handler type: command (only supported type for Notification)
 ```
 
-### `claude-hooks list`
+### `cch list`
 
 Show all configured hooks in a settings file.
 
 ```bash
-claude-hooks list [options]
-claude-hooks ls [options]    # alias
+cch list [options]
+cch ls [options]    # alias
 ```
 
 **Options:**
@@ -338,7 +373,7 @@ claude-hooks ls [options]    # alias
 #### Example
 
 ```bash
-claude-hooks list --scope user
+cch list --scope user
 ```
 
 ```
@@ -354,14 +389,14 @@ claude-hooks list --scope user
      [http] → https://my-webhook.example.com/stop
 ```
 
-### `claude-hooks remove`
+### `cch remove`
 
 Remove a hook from settings. Interactive by default — shows a
 selection list.
 
 ```bash
-claude-hooks remove [options]
-claude-hooks rm [options]    # alias
+cch remove [options]
+cch rm [options]    # alias
 ```
 
 **Options:**
@@ -376,7 +411,7 @@ claude-hooks rm [options]    # alias
 #### Example: Interactive removal
 
 ```bash
-claude-hooks remove --scope project
+cch remove --scope project
 ```
 
 ```
@@ -395,21 +430,21 @@ claude-hooks remove --scope project
 #### Example: Non-interactive removal
 
 ```bash
-claude-hooks remove \
+cch remove \
   --event PreToolUse \
   --index 0 \
   --scope project \
   --non-interactive
 ```
 
-### `claude-hooks test`
+### `cch test`
 
 Test a hook by running its command handlers with synthetic input.
 Builds a realistic JSON object matching the hook's expected stdin
 format and pipes it to the command.
 
 ```bash
-claude-hooks test [options]
+cch test [options]
 ```
 
 **Options:**
@@ -421,7 +456,7 @@ claude-hooks test [options]
 #### Example
 
 ```bash
-claude-hooks test --scope user
+cch test --scope user
 ```
 
 ```
@@ -454,6 +489,46 @@ claude-hooks test --scope user
 
 Non-command handlers (`prompt`, `agent`, `http`) are skipped during
 testing since they require the Claude Code runtime.
+
+### `cch docs`
+
+View documentation for any hook event, rendered with colors and
+formatting in the terminal. Interactive mode lets you search by
+typing.
+
+```bash
+cch docs [options]
+```
+
+**Options:**
+
+| Flag            | Description                                        |
+| --------------- | -------------------------------------------------- |
+| `--hook <hook>` | Hook event name (required in non-interactive mode) |
+
+#### Example: Interactive
+
+```bash
+cch docs
+```
+
+```
+┌  Hook Documentation
+│
+◆  Select a hook event (type to filter):
+│  ● PreToolUse  (Runs before tool calls — can block/modify)
+│  ○ ...
+└
+```
+
+#### Example: Non-interactive
+
+```bash
+cch docs --hook PreToolUse
+```
+
+Prints the full documentation for PreToolUse with colored headings,
+formatted tables, and syntax-highlighted code blocks.
 
 ## Settings Scopes
 
@@ -521,7 +596,7 @@ All 26 supported hook events:
 ### CI/CD: Block dangerous git operations
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type command \
   --command 'bash -c '\''read -r input; echo "$input" | python3 -c "import sys,json; d=json.load(sys.stdin); cmd=d.get(\"tool_input\",{}).get(\"command\",\"\"); exit(2 if any(x in cmd for x in [\"push --force\",\"reset --hard\",\"clean -fd\"]) else 0)"'\''' \
@@ -534,7 +609,7 @@ claude-hooks add \
 ### Sound notification on session start
 
 ```bash
-claude-hooks add \
+cch add \
   --event SessionStart \
   --type command \
   --command "afplay /System/Library/Sounds/Glass.aiff" \
@@ -548,7 +623,7 @@ claude-hooks add \
 ### Webhook on task completion (agent teams)
 
 ```bash
-claude-hooks add \
+cch add \
   --event TaskCompleted \
   --type http \
   --command "https://hooks.slack.com/services/T.../B.../xxx" \
@@ -561,7 +636,7 @@ claude-hooks add \
 ### Watch .env files for changes
 
 ```bash
-claude-hooks add \
+cch add \
   --event FileChanged \
   --type command \
   --command "bash -c 'echo \"env file changed\" >> /tmp/claude-env-changes.log'" \
@@ -574,7 +649,7 @@ claude-hooks add \
 ### Prompt-based code review gate
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type prompt \
   --command "Review this Edit for security issues. Block if it introduces SQL injection, XSS, or command injection. \$ARGUMENTS" \
@@ -598,7 +673,7 @@ Use `--create` to scaffold a new TypeScript hook and register it in
 one command:
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type command \
   --command "./hooks/block-dangerous-commands.ts" \
@@ -802,7 +877,7 @@ handler.exit()
 Register it:
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type command \
   --command "./hooks/no-force-push.ts" \
@@ -838,7 +913,7 @@ handler.exit()
 Register it:
 
 ```bash
-claude-hooks add \
+cch add \
   --event PostToolUse \
   --type command \
   --command "./hooks/log-tools.ts" \
@@ -870,7 +945,7 @@ handler.exit()
 Register it:
 
 ```bash
-claude-hooks add \
+cch add \
   --event SessionStart \
   --type command \
   --command "./hooks/inject-context.ts" \
@@ -899,7 +974,7 @@ handler.emitOutput({
 Register it:
 
 ```bash
-claude-hooks add \
+cch add \
   --event UserPromptSubmit \
   --type command \
   --command "./hooks/prompt-prefix.ts" \
@@ -932,7 +1007,7 @@ handler.exit()
 Register it:
 
 ```bash
-claude-hooks add \
+cch add \
   --event Elicitation \
   --type command \
   --command "./hooks/auto-auth.ts" \
@@ -949,7 +1024,7 @@ decision. The CLI auto-appends JSON response format instructions
 unless you use `--no-auto-prompt-suffix`.
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type prompt \
   --command "Review this tool call for security issues. Block if it could delete files, expose secrets, or run untrusted code. \$ARGUMENTS" \
@@ -971,7 +1046,7 @@ Respond with JSON: {"ok": true} to allow stopping, or {"ok": false,
 To write your own response instructions instead:
 
 ```bash
-claude-hooks add \
+cch add \
   --event PreToolUse \
   --type prompt \
   --command "Is this safe? Reply {\"ok\": true} or {\"ok\": false, \"reason\": \"why\"}. \$ARGUMENTS" \
@@ -1046,7 +1121,7 @@ bun install
 
 ```bash
 bun run start         # Run the CLI
-bun run build         # Generate .d.mts declaration files + copy handler types
+bun run build         # Generate docs map, .d.mts declarations, copy handler types
 bun run dev           # Build then watch for changes (tsc --watch)
 bun run test          # Run all vitest tests
 bun run lint          # Format with prettier
@@ -1071,6 +1146,9 @@ lib/
   list-hooks.mjs         List display
   test-hook.mjs          Synthetic input testing
   command-resolver.mjs   Smart file path → runner resolution
+  docs-map.mjs           Auto-generated hook name → docs string mapping
+scripts/
+  build-docs-map.mjs     Generates lib/docs-map.mjs from docs/*.md
 schemas/
   enums.mjs              Enum schemas (event names, permission modes, etc.)
   config-schemas.mjs     Shared handler property schemas

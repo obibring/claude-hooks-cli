@@ -12,7 +12,14 @@ import { HOOK_DOCS_MAP } from "../lib/docs-map.mjs"
 import { marked } from "marked"
 import { markedTerminal } from "marked-terminal"
 
-marked.use(markedTerminal())
+marked.use(
+  markedTerminal({
+    width: 100,
+    tableOptions: {
+      wordWrap: true,
+    },
+  }),
+)
 
 const program = new Command()
 

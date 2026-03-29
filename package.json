@@ -88,7 +88,7 @@
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
-    "build": "tsc",
+    "build": "tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts",
     "prepublishOnly": "bun run build",
     "test": "vitest run",
     "lint": "prettier --write .",

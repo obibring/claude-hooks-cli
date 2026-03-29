@@ -1,5 +1,21 @@
 // Re-export all types from the hand-authored declarations.
-// This file ensures that importing from handler.mjs resolves to the
-// precise generic signatures (including conditional return types)
-// rather than the looser types tsc infers from the JSDoc in handler.mjs.
-export { HookHandler, HookIOMap, HookEventName, type EnvVarReturnType } from "./handler-types.d.mts"
+// This file overrides tsc-generated handler.d.mts in dist/ via the build
+// copy step, ensuring imports of handler.mjs resolve to the precise
+// generic signatures (including conditional return types and ToolInputMap).
+export {
+  HookHandler,
+  HookIOMap,
+  HookEventName,
+  ToolInputMap,
+  BashToolInput,
+  WriteToolInput,
+  EditToolInput,
+  ReadToolInput,
+  GlobToolInput,
+  GrepToolInput,
+  WebFetchToolInput,
+  WebSearchToolInput,
+  AgentToolInput,
+  AskUserQuestionToolInput,
+  type EnvVarReturnType,
+} from "./handler-types.d.mts"

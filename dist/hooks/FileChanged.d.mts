@@ -44,6 +44,7 @@ export const FileChangedInputSchema: z.ZodObject<{
 }, z.core.$strip>;
 /** @typedef {z.infer<typeof FileChangedInputSchema>} FileChangedInput */
 export const FileChangedOutputSchema: z.ZodObject<{
+    watchPaths: z.ZodOptional<z.ZodArray<z.ZodString>>;
     continue: z.ZodOptional<z.ZodBoolean>;
     stopReason: z.ZodOptional<z.ZodString>;
     suppressOutput: z.ZodOptional<z.ZodBoolean>;

@@ -30,3 +30,37 @@ have to hand-edit JSON.
 | Node target     | >=18                                                                     |
 | No build step   | Runs directly via `node bin/cli.mjs` or shebang                          |
 | Formatting      | Prettier via `bun run lint`. Pre-commit hook runs lint-staged via husky. |
+
+## HookHandler Dual-File Rule
+
+INSTRUCTION: When modifying `lib/handler.mjs`, you MUST also update
+`lib/handler-types.d.mts` and `lib/handler.d.mts` to match. These
+three files are coupled:
+
+- `lib/handler.mjs` — Runtime implementation (JSDoc types, runs in
+  Node)
+- `lib/handler-types.d.mts` — Hand-authored TS declarations
+  (HookIOMap, output interfaces, conditional types, ToolInputMap,
+  class signature). This is the source of truth for all advanced types
+  that JSDoc cannot express.
+- `lib/handler.d.mts` — Re-exports from handler-types.d.mts. Must list
+  every exported type/interface.
+
+When adding a method to the HookHandler class:
+
+1. Add the runtime implementation in `handler.mjs` with JSDoc
+2. Add the precise TS signature in `handler-types.d.mts` (with
+   generics, conditional types, etc.)
+3. If the method introduces new exported types, add them to
+   `handler.d.mts` re-exports
+
+When adding/modifying output types:
+
+1. Add/update the interface in `handler-types.d.mts` (with JSDoc on
+   each property for hover docs)
+2. Update the `HookIOMap` output entry to reference the interface (not
+   `z.infer<>`)
+3. Add to `handler.d.mts` re-exports
+
+The build step (`bun run build`) runs `tsc` then copies both `.d.mts`
+files to `dist/lib/`.

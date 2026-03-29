@@ -1,63 +1,209 @@
 import type { z } from "zod/v4"
 
-import type { PreToolUseInputSchema, PreToolUseOutputSchema } from "../hooks/PreToolUse.mjs"
-import type { PermissionRequestInputSchema, PermissionRequestOutputSchema } from "../hooks/PermissionRequest.mjs"
-import type { PostToolUseInputSchema, PostToolUseOutputSchema } from "../hooks/PostToolUse.mjs"
-import type { PostToolUseFailureInputSchema, PostToolUseFailureOutputSchema } from "../hooks/PostToolUseFailure.mjs"
-import type { UserPromptSubmitInputSchema, UserPromptSubmitOutputSchema } from "../hooks/UserPromptSubmit.mjs"
-import type { NotificationInputSchema, NotificationOutputSchema } from "../hooks/Notification.mjs"
-import type { StopInputSchema, StopOutputSchema } from "../hooks/Stop.mjs"
-import type { SubagentStartInputSchema, SubagentStartOutputSchema } from "../hooks/SubagentStart.mjs"
-import type { SubagentStopInputSchema, SubagentStopOutputSchema } from "../hooks/SubagentStop.mjs"
-import type { PreCompactInputSchema, PreCompactOutputSchema } from "../hooks/PreCompact.mjs"
-import type { PostCompactInputSchema, PostCompactOutputSchema } from "../hooks/PostCompact.mjs"
-import type { SessionStartInputSchema, SessionStartOutputSchema } from "../hooks/SessionStart.mjs"
-import type { SessionEndInputSchema, SessionEndOutputSchema } from "../hooks/SessionEnd.mjs"
-import type { SetupInputSchema, SetupOutputSchema } from "../hooks/Setup.mjs"
-import type { TeammateIdleInputSchema, TeammateIdleOutputSchema } from "../hooks/TeammateIdle.mjs"
-import type { TaskCreatedInputSchema, TaskCreatedOutputSchema } from "../hooks/TaskCreated.mjs"
-import type { TaskCompletedInputSchema, TaskCompletedOutputSchema } from "../hooks/TaskCompleted.mjs"
-import type { ConfigChangeInputSchema, ConfigChangeOutputSchema } from "../hooks/ConfigChange.mjs"
-import type { WorktreeCreateInputSchema, WorktreeCreateOutputSchema } from "../hooks/WorktreeCreate.mjs"
-import type { WorktreeRemoveInputSchema, WorktreeRemoveOutputSchema } from "../hooks/WorktreeRemove.mjs"
-import type { InstructionsLoadedInputSchema, InstructionsLoadedOutputSchema } from "../hooks/InstructionsLoaded.mjs"
-import type { ElicitationInputSchema, ElicitationOutputSchema } from "../hooks/Elicitation.mjs"
-import type { ElicitationResultInputSchema, ElicitationResultOutputSchema } from "../hooks/ElicitationResult.mjs"
-import type { StopFailureInputSchema, StopFailureOutputSchema } from "../hooks/StopFailure.mjs"
-import type { CwdChangedInputSchema, CwdChangedOutputSchema } from "../hooks/CwdChanged.mjs"
-import type { FileChangedInputSchema, FileChangedOutputSchema } from "../hooks/FileChanged.mjs"
+import type { PreToolUseInputSchema } from "../hooks/PreToolUse.mjs"
+import type { PermissionRequestInputSchema } from "../hooks/PermissionRequest.mjs"
+import type { PostToolUseInputSchema } from "../hooks/PostToolUse.mjs"
+import type { PostToolUseFailureInputSchema } from "../hooks/PostToolUseFailure.mjs"
+import type { UserPromptSubmitInputSchema } from "../hooks/UserPromptSubmit.mjs"
+import type { NotificationInputSchema } from "../hooks/Notification.mjs"
+import type { StopInputSchema } from "../hooks/Stop.mjs"
+import type { SubagentStartInputSchema } from "../hooks/SubagentStart.mjs"
+import type { SubagentStopInputSchema } from "../hooks/SubagentStop.mjs"
+import type { PreCompactInputSchema } from "../hooks/PreCompact.mjs"
+import type { PostCompactInputSchema } from "../hooks/PostCompact.mjs"
+import type { SessionStartInputSchema } from "../hooks/SessionStart.mjs"
+import type { SessionEndInputSchema } from "../hooks/SessionEnd.mjs"
+import type { SetupInputSchema } from "../hooks/Setup.mjs"
+import type { TeammateIdleInputSchema } from "../hooks/TeammateIdle.mjs"
+import type { TaskCreatedInputSchema } from "../hooks/TaskCreated.mjs"
+import type { TaskCompletedInputSchema } from "../hooks/TaskCompleted.mjs"
+import type { ConfigChangeInputSchema } from "../hooks/ConfigChange.mjs"
+import type { WorktreeCreateInputSchema } from "../hooks/WorktreeCreate.mjs"
+import type { WorktreeRemoveInputSchema } from "../hooks/WorktreeRemove.mjs"
+import type { InstructionsLoadedInputSchema } from "../hooks/InstructionsLoaded.mjs"
+import type { ElicitationInputSchema } from "../hooks/Elicitation.mjs"
+import type { ElicitationResultInputSchema } from "../hooks/ElicitationResult.mjs"
+import type { StopFailureInputSchema } from "../hooks/StopFailure.mjs"
+import type { CwdChangedInputSchema } from "../hooks/CwdChanged.mjs"
+import type { FileChangedInputSchema } from "../hooks/FileChanged.mjs"
+
+// ---- Output interfaces with JSDoc hover docs ----
+
+/** Universal output fields available to all hooks. */
+export interface BaseHookOutput {
+  /** Set to false to stop Claude entirely. The stopReason message will be displayed. If omitted or true, Claude continues normally. */
+  continue?: boolean
+  /** Message displayed to the user when continue is false. Example: "Hook blocked execution: unsafe operation detected." */
+  stopReason?: string
+  /** When true, hides this hook's stdout from verbose mode output. Useful for hooks that return JSON control data you don't want cluttering the terminal. */
+  suppressOutput?: boolean
+  /** Warning or info message shown to the user in the Claude Code UI. Does not affect Claude's behavior — purely for user visibility. */
+  systemMessage?: string
+  /** Context string injected into Claude's conversation. Claude will see this as additional information when formulating its next response. */
+  additionalContext?: string
+}
+
+/** PreToolUse hookSpecificOutput fields. */
+export interface PreToolUseHookSpecificOutput {
+  /** Controls whether the tool call proceeds. "allow" lets it run, "deny" blocks it, "ask" falls through to the user permission prompt. */
+  permissionDecision?: "allow" | "deny" | "ask"
+  /** Explanation shown to the model when permissionDecision is "deny". Helps Claude understand why the tool was blocked. */
+  permissionDecisionReason?: string
+  /** When true, auto-approves all future uses of this tool for the rest of the session. Since v2.0.76. */
+  autoAllow?: boolean
+  /** Modified tool input that replaces the original. For AskUserQuestion, can include {question, answer} to auto-respond. Since v2.1.85. */
+  updatedInput?: Record<string, unknown>
+}
+
+/** PreToolUse output — can control permission decisions and modify tool input. */
+export interface PreToolUseOutput extends BaseHookOutput {
+  /** Hook-specific output for PreToolUse. Controls permission decisions and can modify tool input. */
+  hookSpecificOutput?: PreToolUseHookSpecificOutput
+}
+
+/** PermissionRequest decision object. */
+export interface PermissionRequestDecision {
+  /** Permission decision. "allow" grants the permission, "deny" blocks it. */
+  behavior: "allow" | "deny"
+}
+
+/** PermissionRequest output — can allow or deny the permission request. */
+export interface PermissionRequestOutput extends BaseHookOutput {
+  /** Hook-specific output for PermissionRequest. Contains the permission decision. */
+  hookSpecificOutput?: { /** The permission decision. */ decision?: PermissionRequestDecision }
+}
+
+/** PostToolUse output — can block Claude from continuing. */
+export interface PostToolUseOutput extends BaseHookOutput {
+  /** Set to "block" to stop Claude from continuing after this tool call. */
+  decision?: "block"
+}
+
+/** PostToolUseFailure output — base fields only. */
+export interface PostToolUseFailureOutput extends BaseHookOutput {}
+
+/** UserPromptSubmit output — can modify the user's prompt before Claude processes it. */
+export interface UserPromptSubmitOutput extends BaseHookOutput {
+  /** Modified prompt text that replaces the original. Claude will see this instead of what the user typed. */
+  prompt?: string
+}
+
+/** Notification output — base fields only. */
+export interface NotificationOutput extends BaseHookOutput {}
+
+/** Stop output — can block to re-engage Claude. */
+export interface StopOutput extends BaseHookOutput {
+  /** Set to "block" to re-engage Claude for another turn after it finished responding. */
+  decision?: "block"
+}
+
+/** SubagentStart output — base fields only. */
+export interface SubagentStartOutput extends BaseHookOutput {}
+
+/** SubagentStop output — can block execution after subagent completion. */
+export interface SubagentStopOutput extends BaseHookOutput {
+  /** Set to "block" to stop execution after subagent completion. */
+  decision?: "block"
+}
+
+/** PreCompact output — base fields only. */
+export interface PreCompactOutput extends BaseHookOutput {}
+/** PostCompact output — base fields only. */
+export interface PostCompactOutput extends BaseHookOutput {}
+/** SessionStart output — base fields only. */
+export interface SessionStartOutput extends BaseHookOutput {}
+/** SessionEnd output — base fields only. */
+export interface SessionEndOutput extends BaseHookOutput {}
+/** Setup output — base fields only. */
+export interface SetupOutput extends BaseHookOutput {}
+/** TeammateIdle output — base fields only. */
+export interface TeammateIdleOutput extends BaseHookOutput {}
+/** TaskCreated output — base fields only. */
+export interface TaskCreatedOutput extends BaseHookOutput {}
+/** TaskCompleted output — base fields only. */
+export interface TaskCompletedOutput extends BaseHookOutput {}
+
+/** ConfigChange output — can block execution after config change. */
+export interface ConfigChangeOutput extends BaseHookOutput {
+  /** Set to "block" to stop execution after config change. */
+  decision?: "block"
+}
+
+/** WorktreeCreate output — base fields only. */
+export interface WorktreeCreateOutput extends BaseHookOutput {}
+/** WorktreeRemove output — base fields only. */
+export interface WorktreeRemoveOutput extends BaseHookOutput {}
+/** InstructionsLoaded output — base fields only. */
+export interface InstructionsLoadedOutput extends BaseHookOutput {}
+
+/** Elicitation hookSpecificOutput fields. */
+export interface ElicitationHookSpecificOutput {
+  /** Controls the elicitation response. "accept" sends the content, "decline" rejects, "cancel" aborts. */
+  action?: "accept" | "decline" | "cancel"
+  /** Response content to send back (shape depends on requested_schema). */
+  content?: unknown
+}
+
+/** Elicitation output — can control MCP elicitation responses. */
+export interface ElicitationOutput extends BaseHookOutput {
+  /** Hook-specific output for Elicitation. Controls the response sent back to the MCP server. */
+  hookSpecificOutput?: ElicitationHookSpecificOutput
+}
+
+/** ElicitationResult hookSpecificOutput fields. */
+export interface ElicitationResultHookSpecificOutput {
+  /** Override the user's response. "accept" sends replacement content, "decline" rejects, "cancel" aborts. */
+  action?: "accept" | "decline" | "cancel"
+  /** Replacement response content. */
+  content?: unknown
+}
+
+/** ElicitationResult output — can override the user's elicitation response. */
+export interface ElicitationResultOutput extends BaseHookOutput {
+  /** Hook-specific output for ElicitationResult. Can override the user's response before it reaches the MCP server. */
+  hookSpecificOutput?: ElicitationResultHookSpecificOutput
+}
+
+/** StopFailure output — base fields only. */
+export interface StopFailureOutput extends BaseHookOutput {}
+/** CwdChanged output — base fields only. */
+export interface CwdChangedOutput extends BaseHookOutput {}
+/** FileChanged output — base fields only. */
+export interface FileChangedOutput extends BaseHookOutput {}
+
+// ---- HookIOMap ----
 
 /**
  * Maps each hook event name to its strongly-typed Input and Output types.
  * Used by `HookHandler<E>` to resolve the correct types based on the event name.
  */
 export interface HookIOMap {
-  PreToolUse: { input: z.infer<typeof PreToolUseInputSchema>; output: z.infer<typeof PreToolUseOutputSchema> }
-  PermissionRequest: { input: z.infer<typeof PermissionRequestInputSchema>; output: z.infer<typeof PermissionRequestOutputSchema> }
-  PostToolUse: { input: z.infer<typeof PostToolUseInputSchema>; output: z.infer<typeof PostToolUseOutputSchema> }
-  PostToolUseFailure: { input: z.infer<typeof PostToolUseFailureInputSchema>; output: z.infer<typeof PostToolUseFailureOutputSchema> }
-  UserPromptSubmit: { input: z.infer<typeof UserPromptSubmitInputSchema>; output: z.infer<typeof UserPromptSubmitOutputSchema> }
-  Notification: { input: z.infer<typeof NotificationInputSchema>; output: z.infer<typeof NotificationOutputSchema> }
-  Stop: { input: z.infer<typeof StopInputSchema>; output: z.infer<typeof StopOutputSchema> }
-  SubagentStart: { input: z.infer<typeof SubagentStartInputSchema>; output: z.infer<typeof SubagentStartOutputSchema> }
-  SubagentStop: { input: z.infer<typeof SubagentStopInputSchema>; output: z.infer<typeof SubagentStopOutputSchema> }
-  PreCompact: { input: z.infer<typeof PreCompactInputSchema>; output: z.infer<typeof PreCompactOutputSchema> }
-  PostCompact: { input: z.infer<typeof PostCompactInputSchema>; output: z.infer<typeof PostCompactOutputSchema> }
-  SessionStart: { input: z.infer<typeof SessionStartInputSchema>; output: z.infer<typeof SessionStartOutputSchema> }
-  SessionEnd: { input: z.infer<typeof SessionEndInputSchema>; output: z.infer<typeof SessionEndOutputSchema> }
-  Setup: { input: z.infer<typeof SetupInputSchema>; output: z.infer<typeof SetupOutputSchema> }
-  TeammateIdle: { input: z.infer<typeof TeammateIdleInputSchema>; output: z.infer<typeof TeammateIdleOutputSchema> }
-  TaskCreated: { input: z.infer<typeof TaskCreatedInputSchema>; output: z.infer<typeof TaskCreatedOutputSchema> }
-  TaskCompleted: { input: z.infer<typeof TaskCompletedInputSchema>; output: z.infer<typeof TaskCompletedOutputSchema> }
-  ConfigChange: { input: z.infer<typeof ConfigChangeInputSchema>; output: z.infer<typeof ConfigChangeOutputSchema> }
-  WorktreeCreate: { input: z.infer<typeof WorktreeCreateInputSchema>; output: z.infer<typeof WorktreeCreateOutputSchema> }
-  WorktreeRemove: { input: z.infer<typeof WorktreeRemoveInputSchema>; output: z.infer<typeof WorktreeRemoveOutputSchema> }
-  InstructionsLoaded: { input: z.infer<typeof InstructionsLoadedInputSchema>; output: z.infer<typeof InstructionsLoadedOutputSchema> }
-  Elicitation: { input: z.infer<typeof ElicitationInputSchema>; output: z.infer<typeof ElicitationOutputSchema> }
-  ElicitationResult: { input: z.infer<typeof ElicitationResultInputSchema>; output: z.infer<typeof ElicitationResultOutputSchema> }
-  StopFailure: { input: z.infer<typeof StopFailureInputSchema>; output: z.infer<typeof StopFailureOutputSchema> }
-  CwdChanged: { input: z.infer<typeof CwdChangedInputSchema>; output: z.infer<typeof CwdChangedOutputSchema> }
-  FileChanged: { input: z.infer<typeof FileChangedInputSchema>; output: z.infer<typeof FileChangedOutputSchema> }
+  PreToolUse: { input: z.infer<typeof PreToolUseInputSchema>; output: PreToolUseOutput }
+  PermissionRequest: { input: z.infer<typeof PermissionRequestInputSchema>; output: PermissionRequestOutput }
+  PostToolUse: { input: z.infer<typeof PostToolUseInputSchema>; output: PostToolUseOutput }
+  PostToolUseFailure: { input: z.infer<typeof PostToolUseFailureInputSchema>; output: PostToolUseFailureOutput }
+  UserPromptSubmit: { input: z.infer<typeof UserPromptSubmitInputSchema>; output: UserPromptSubmitOutput }
+  Notification: { input: z.infer<typeof NotificationInputSchema>; output: NotificationOutput }
+  Stop: { input: z.infer<typeof StopInputSchema>; output: StopOutput }
+  SubagentStart: { input: z.infer<typeof SubagentStartInputSchema>; output: SubagentStartOutput }
+  SubagentStop: { input: z.infer<typeof SubagentStopInputSchema>; output: SubagentStopOutput }
+  PreCompact: { input: z.infer<typeof PreCompactInputSchema>; output: PreCompactOutput }
+  PostCompact: { input: z.infer<typeof PostCompactInputSchema>; output: PostCompactOutput }
+  SessionStart: { input: z.infer<typeof SessionStartInputSchema>; output: SessionStartOutput }
+  SessionEnd: { input: z.infer<typeof SessionEndInputSchema>; output: SessionEndOutput }
+  Setup: { input: z.infer<typeof SetupInputSchema>; output: SetupOutput }
+  TeammateIdle: { input: z.infer<typeof TeammateIdleInputSchema>; output: TeammateIdleOutput }
+  TaskCreated: { input: z.infer<typeof TaskCreatedInputSchema>; output: TaskCreatedOutput }
+  TaskCompleted: { input: z.infer<typeof TaskCompletedInputSchema>; output: TaskCompletedOutput }
+  ConfigChange: { input: z.infer<typeof ConfigChangeInputSchema>; output: ConfigChangeOutput }
+  WorktreeCreate: { input: z.infer<typeof WorktreeCreateInputSchema>; output: WorktreeCreateOutput }
+  WorktreeRemove: { input: z.infer<typeof WorktreeRemoveInputSchema>; output: WorktreeRemoveOutput }
+  InstructionsLoaded: { input: z.infer<typeof InstructionsLoadedInputSchema>; output: InstructionsLoadedOutput }
+  Elicitation: { input: z.infer<typeof ElicitationInputSchema>; output: ElicitationOutput }
+  ElicitationResult: { input: z.infer<typeof ElicitationResultInputSchema>; output: ElicitationResultOutput }
+  StopFailure: { input: z.infer<typeof StopFailureInputSchema>; output: StopFailureOutput }
+  CwdChanged: { input: z.infer<typeof CwdChangedInputSchema>; output: CwdChangedOutput }
+  FileChanged: { input: z.infer<typeof FileChangedInputSchema>; output: FileChangedOutput }
 }
 
 /** All valid hook event names. */

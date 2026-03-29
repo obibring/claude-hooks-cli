@@ -75,10 +75,38 @@ interface BaseHandler<E extends keyof HookIOMap> {
   exit(status: "error", message: string): never
 }
 
-/** Handler with CLAUDE_ENV_FILE access. */
+/** Handler with CLAUDE_ENV_FILE access and getEnvFileVars(). */
 interface EnvFileHandler<E extends keyof HookIOMap> extends Omit<BaseHandler<E>, "getEnv"> {
   /** Reads a Claude Code environment variable. Includes CLAUDE_ENV_FILE for this hook event. */
   getEnv(name: EnvFileEnvVars): string | undefined
+
+  /**
+   * Reads and parses the CLAUDE_ENV_FILE into a key-value object.
+   *
+   * Only available for SessionStart, CwdChanged, and FileChanged hooks — these
+   * are the only events where Claude Code sets the CLAUDE_ENV_FILE env var.
+   *
+   * Parses the file by splitting lines, stripping comments (`#` and inline `#`),
+   * extracting `VAR_NAME=value` pairs, and unwrapping matched quotes from values.
+   * Subsequent lines with the same key override earlier ones.
+   *
+   * Results are cached — call multiple times without performance penalty.
+   * Pass `{ force: true }` to re-read the file from disk (result is still
+   * cached for subsequent non-force calls).
+   *
+   * Returns an empty object if CLAUDE_ENV_FILE is not set or the file doesn't exist.
+   *
+   * @example
+   * ```ts
+   * const handler = HookHandler.for("SessionStart")
+   * const vars = handler.getEnvFileVars()
+   * console.log(vars.MY_VAR) // string or undefined
+   *
+   * // Force re-read from disk:
+   * const fresh = handler.getEnvFileVars({ force: true })
+   * ```
+   */
+  getEnvFileVars(options?: { force?: boolean }): Record<string, string>
 }
 
 /** Handler with getToolInput() for tool event hooks. */

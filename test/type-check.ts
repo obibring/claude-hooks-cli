@@ -118,3 +118,14 @@ const envFile2: string | undefined = cwdChanged.getEnv("CLAUDE_ENV_FILE")
 // ✓ FileChanged CAN access CLAUDE_ENV_FILE
 const fileChanged = HookHandler.for("FileChanged")
 const envFile3: string | undefined = fileChanged.getEnv("CLAUDE_ENV_FILE")
+
+// ✓ getEnvFileVars() works on env-file hooks
+const envVars1: Record<string, string> = sessionStart.getEnvFileVars()
+const envVars2: Record<string, string> = cwdChanged.getEnvFileVars({ force: true })
+const envVars3: Record<string, string> = fileChanged.getEnvFileVars()
+
+// @ts-expect-error — Stop does not have getEnvFileVars
+stop.getEnvFileVars()
+
+// @ts-expect-error — PreToolUse does not have getEnvFileVars
+preToolUse.getEnvFileVars()

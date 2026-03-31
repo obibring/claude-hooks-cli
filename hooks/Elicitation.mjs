@@ -4,6 +4,14 @@ import {
   HttpExtraPropsSchema,
   SharedHandlerPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 import { ElicitationActionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { ElicitationMatcherSchema as _ElicitationMatcherSchema } from "../schemas/matcher-schemas.mjs"
@@ -124,3 +132,80 @@ export const ElicitationOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof ElicitationOutputSchema>} ElicitationOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: { type: "string", description: "MCP server name to filter on." },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  mcp_server_name: {
+    type: "string",
+    description: "Name of the MCP server requesting user input.",
+    required: true,
+  },
+  message: {
+    type: "string",
+    description: "The prompt message shown to the user.",
+    required: true,
+  },
+  mode: { type: "string", description: "Elicitation mode.", required: true },
+  url: {
+    type: "string",
+    description: "URL associated with the elicitation.",
+    required: true,
+  },
+  elicitation_id: {
+    type: "string",
+    description: "Unique identifier for this elicitation request.",
+    required: true,
+  },
+  requested_schema: {
+    type: "object",
+    description: "JSON schema describing the expected response format.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  hookSpecificOutput: {
+    type: "object",
+    description: "Elicitation-specific output fields.",
+    fields: {
+      action: {
+        type: "enum",
+        description: "Controls the elicitation response.",
+        values: ["accept", "decline", "cancel"],
+        strict: true,
+      },
+      content: {
+        type: "object",
+        description: "Response content to send back.",
+      },
+    },
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("Elicitation", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("Elicitation", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

@@ -6,6 +6,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -84,3 +92,32 @@ export const CwdChangedInputSchema = BaseHookInputSchema.extend({
 export const CwdChangedOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof CwdChangedOutputSchema>} CwdChangedOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  old_cwd: {
+    type: "string",
+    description: "Previous working directory path.",
+    required: true,
+  },
+  new_cwd: {
+    type: "string",
+    description: "New working directory path.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("CwdChanged", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("CwdChanged", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

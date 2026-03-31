@@ -8,6 +8,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -118,3 +126,81 @@ export const InstructionsLoadedInputSchema = BaseHookInputSchema.extend({
 export const InstructionsLoadedOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof InstructionsLoadedOutputSchema>} InstructionsLoadedOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Load reason to filter on.",
+    values: [
+      "session_start",
+      "nested_traversal",
+      "path_glob_match",
+      "include",
+      "compact",
+    ],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  file_path: {
+    type: "string",
+    description: "Path to the loaded instruction file.",
+    required: true,
+  },
+  memory_type: {
+    type: "string",
+    description: "Type of memory/instruction being loaded.",
+    required: true,
+  },
+  load_reason: {
+    type: "enum",
+    description: "Why the instruction file was loaded.",
+    values: [
+      "session_start",
+      "nested_traversal",
+      "path_glob_match",
+      "include",
+      "compact",
+    ],
+    strict: true,
+    required: true,
+  },
+  globs: {
+    type: "object",
+    description:
+      "Glob patterns that triggered the load (only for path_glob_match).",
+  },
+  trigger_file_path: {
+    type: "string",
+    description: "Path to the file that triggered loading.",
+  },
+  parent_file_path: {
+    type: "string",
+    description: "Path to the parent instruction file (for include reason).",
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("InstructionsLoaded", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("InstructionsLoaded", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

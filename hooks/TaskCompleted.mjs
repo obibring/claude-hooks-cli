@@ -6,6 +6,16 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -150,3 +160,57 @@ export const TaskCompletedInputSchema = BaseHookInputSchema.extend({
 export const TaskCompletedOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof TaskCompletedOutputSchema>} TaskCompletedOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  task_id: {
+    type: "string",
+    description: "Unique identifier for the completed task.",
+    required: true,
+  },
+  task_subject: {
+    type: "string",
+    description: "Subject line of the completed task.",
+    required: true,
+  },
+  task_description: {
+    type: "string",
+    description: "Full description of the completed task.",
+    required: true,
+  },
+  teammate_name: {
+    type: "string",
+    description: "Name of the teammate that completed the task.",
+    required: true,
+  },
+  team_name: {
+    type: "string",
+    description: "Name of the agent team.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("TaskCompleted", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("TaskCompleted", "prompt", {
+    settings: { ...PROMPT_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("TaskCompleted", "agent", {
+    settings: { ...AGENT_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("TaskCompleted", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

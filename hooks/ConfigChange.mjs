@@ -11,6 +11,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -106,3 +114,73 @@ export const ConfigChangeOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof ConfigChangeOutputSchema>} ConfigChangeOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Config source to filter on.",
+    values: [
+      "user_settings",
+      "project_settings",
+      "local_settings",
+      "policy_settings",
+      "skills",
+    ],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  file_path: {
+    type: "string",
+    description: "Absolute path to the changed configuration file.",
+    required: true,
+  },
+  source: {
+    type: "enum",
+    description: "Which configuration source changed.",
+    values: [
+      "user_settings",
+      "project_settings",
+      "local_settings",
+      "policy_settings",
+      "skills",
+    ],
+    strict: true,
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  decision: {
+    type: "enum",
+    description: 'Set to "block" to block the config change.',
+    values: ["block"],
+    strict: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("ConfigChange", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("ConfigChange", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

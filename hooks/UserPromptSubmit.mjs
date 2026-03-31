@@ -6,6 +6,16 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -148,3 +158,47 @@ export const UserPromptSubmitOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof UserPromptSubmitOutputSchema>} UserPromptSubmitOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  prompt: {
+    type: "string",
+    description:
+      "The user's submitted prompt text, before Claude processes it.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  prompt: {
+    type: "string",
+    description:
+      "Modified prompt text that replaces the original. Claude will see this instead of what the user typed.",
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("UserPromptSubmit", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("UserPromptSubmit", "prompt", {
+    settings: { ...PROMPT_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("UserPromptSubmit", "agent", {
+    settings: { ...AGENT_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("UserPromptSubmit", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })

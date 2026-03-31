@@ -10,6 +10,18 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  TOOL_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  TOOL_MATCHER_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -163,3 +175,65 @@ export const PostToolUseFailureInputSchema = BaseHookInputSchema.extend({
 export const PostToolUseFailureOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof PostToolUseFailureOutputSchema>} PostToolUseFailureOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  ...TOOL_INPUT_FIELDS,
+  tool_use_id: {
+    type: "string",
+    description: "Unique identifier for this tool call invocation.",
+    required: true,
+  },
+  error: {
+    type: "string",
+    description: "Error message from the failed tool call.",
+    required: true,
+  },
+  is_interrupt: {
+    type: "boolean",
+    description:
+      "True if the failure was caused by a user interrupt rather than a tool error.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("PostToolUseFailure", "command", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("PostToolUseFailure", "prompt", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...PROMPT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("PostToolUseFailure", "agent", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...AGENT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("PostToolUseFailure", "http", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

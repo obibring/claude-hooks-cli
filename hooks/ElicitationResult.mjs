@@ -8,6 +8,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -113,3 +121,71 @@ export const ElicitationResultOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof ElicitationResultOutputSchema>} ElicitationResultOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: { type: "string", description: "MCP server name to filter on." },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  mcp_server_name: {
+    type: "string",
+    description: "Name of the MCP server.",
+    required: true,
+  },
+  user_response: {
+    type: "object",
+    description: "The user's response to the elicitation.",
+    required: true,
+  },
+  message: {
+    type: "string",
+    description: "The original prompt message.",
+    required: true,
+  },
+  elicitation_id: {
+    type: "string",
+    description: "Unique identifier matching the original Elicitation.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  hookSpecificOutput: {
+    type: "object",
+    description: "ElicitationResult-specific output fields.",
+    fields: {
+      action: {
+        type: "enum",
+        description: "Override the user response action.",
+        values: ["accept", "decline", "cancel"],
+        strict: true,
+      },
+      content: { type: "object", description: "Replacement response content." },
+    },
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("ElicitationResult", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("ElicitationResult", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

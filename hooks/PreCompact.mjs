@@ -8,6 +8,15 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  ONCE_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -104,3 +113,52 @@ export const PreCompactInputSchema = BaseHookInputSchema.extend({
 export const PreCompactOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof PreCompactOutputSchema>} PreCompactOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Compact trigger to filter on.",
+    values: ["manual", "auto"],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  trigger: {
+    type: "enum",
+    description: "What triggered the compaction.",
+    values: ["manual", "auto"],
+    strict: true,
+    required: true,
+  },
+  custom_instructions: {
+    type: "string",
+    description: "Custom compaction instructions provided by the user, if any.",
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("PreCompact", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+      ...ONCE_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("PreCompact", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+      ...ONCE_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

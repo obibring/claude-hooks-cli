@@ -4,6 +4,14 @@ import {
   HttpExtraPropsSchema,
   SharedHandlerPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { FileChangedMatcherSchema as _FileChangedMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
@@ -110,3 +118,59 @@ export const FileChangedOutputSchema = z.object({
 })
 
 /** @typedef {z.infer<typeof FileChangedOutputSchema>} FileChangedOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "string",
+    description:
+      'REQUIRED pipe-separated basenames to watch. Example: ".envrc|.env".',
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  file_path: {
+    type: "string",
+    description: "Full path to the changed file.",
+    required: true,
+  },
+  event: {
+    type: "string",
+    description: 'Type of file system event (e.g. "change").',
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  watchPaths: {
+    type: "array",
+    description:
+      "Array of absolute paths. Replaces the current dynamic watch list.",
+    items: { type: "string", description: "Absolute file path to watch." },
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("FileChanged", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("FileChanged", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

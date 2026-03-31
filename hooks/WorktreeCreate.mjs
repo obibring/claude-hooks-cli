@@ -6,6 +6,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -83,3 +91,27 @@ export const WorktreeCreateInputSchema = BaseHookInputSchema.extend({
 export const WorktreeCreateOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof WorktreeCreateOutputSchema>} WorktreeCreateOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  name: {
+    type: "string",
+    description: "Name for the worktree being created.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("WorktreeCreate", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("WorktreeCreate", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

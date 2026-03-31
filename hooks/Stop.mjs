@@ -7,6 +7,16 @@ import {
 import { BlockDecisionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -151,3 +161,53 @@ export const StopOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof StopOutputSchema>} StopOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  last_assistant_message: {
+    type: "string",
+    description: "Claude's final response text for this turn.",
+    required: true,
+  },
+  stop_hook_active: {
+    type: "boolean",
+    description:
+      "True if a stop hook is already running. Check this to avoid recursion.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  decision: {
+    type: "enum",
+    description: 'Set to "block" to re-engage Claude for another turn.',
+    values: ["block"],
+    strict: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("Stop", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("Stop", "prompt", {
+    settings: { ...PROMPT_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("Stop", "agent", {
+    settings: { ...AGENT_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("Stop", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: _output,
+  })

@@ -1,13 +1,21 @@
 import { z } from "zod/v4"
 
+import {
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  hookSchemaBuilder,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
+import {
+  HttpExtraPropsSchema,
+  SharedHandlerPropsSchema,
+} from "../schemas/config-schemas.mjs"
 import { StopFailureErrorSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { StopFailureMatcherSchema as _StopFailureMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
-import {
-  SharedHandlerPropsSchema,
-  HttpExtraPropsSchema,
-} from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -104,3 +112,72 @@ export const StopFailureInputSchema = BaseHookInputSchema.extend({
 export const StopFailureOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof StopFailureOutputSchema>} StopFailureOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Error type to filter on.",
+    values: [
+      "rate_limit",
+      "authentication_failed",
+      "billing_error",
+      "invalid_request",
+      "server_error",
+      "max_output_tokens",
+      "unknown",
+    ],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  error: {
+    type: "enum",
+    description: "The API error type that caused the failure.",
+    values: [
+      "rate_limit",
+      "authentication_failed",
+      "billing_error",
+      "invalid_request",
+      "server_error",
+      "max_output_tokens",
+      "unknown",
+    ],
+    strict: true,
+    required: true,
+  },
+  error_details: {
+    type: "object",
+    description: "Additional error details.",
+    required: true,
+  },
+  last_assistant_message: {
+    type: "string",
+    description: "Claude's last response text before the error.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("StopFailure", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("StopFailure", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

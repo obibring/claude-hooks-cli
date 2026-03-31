@@ -80,3 +80,22 @@ INSTRUCTION: The `if` field is available on ALL handler types
 (command, prompt, agent, http) on ALL hooks. However, it is only
 evaluated on tool events (PreToolUse, PostToolUse, PostToolUseFailure,
 PermissionRequest). On other events, a hook with `if` set never runs.
+
+## Hook Schema Builder Rule
+
+INSTRUCTION: Every `hooks/<EventName>.mjs` file MUST register its
+field definitions with `hookSchemaBuilder.addHookType()` at the bottom
+of the file, after the Zod schema exports. This is how the
+`HOOK_SCHEMA_MAP` gets built — the build script imports all hooks via
+`hooks/index.mjs` to trigger the registrations.
+
+When adding or modifying hook fields:
+
+1. Update the Zod schema (Config/Input/Output) as before
+2. Update the `hookSchemaBuilder.addHookType()` call in the same file
+   to match
+3. Use `type: "enum"` with `values` array and `strict: boolean` for
+   any field with a fixed set of valid values. `strict: true` means
+   only the enum values are accepted; `strict: false` means free-form
+   strings are also allowed alongside the enum values.
+4. Run `bun run build` to regenerate `lib/hook-schema-map.mjs`

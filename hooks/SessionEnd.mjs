@@ -8,6 +8,15 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  ONCE_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -99,3 +108,62 @@ export const SessionEndInputSchema = BaseHookInputSchema.extend({
 export const SessionEndOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof SessionEndOutputSchema>} SessionEndOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Session end reason to filter on.",
+    values: [
+      "clear",
+      "resume",
+      "logout",
+      "prompt_input_exit",
+      "bypass_permissions_disabled",
+      "other",
+    ],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  reason: {
+    type: "enum",
+    description: "Why the session ended.",
+    values: [
+      "clear",
+      "resume",
+      "logout",
+      "prompt_input_exit",
+      "bypass_permissions_disabled",
+      "other",
+    ],
+    strict: true,
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("SessionEnd", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+      ...ONCE_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("SessionEnd", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+      ...ONCE_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

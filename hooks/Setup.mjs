@@ -3,6 +3,13 @@ import { z } from "zod/v4"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 import { SharedHandlerPropsSchema } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -61,3 +68,11 @@ export const SetupInputSchema = BaseHookInputSchema.extend({
 export const SetupOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof SetupOutputSchema>} SetupOutput */
+
+// --- Schema Builder Registration ---
+
+hookSchemaBuilder.addHookType("Setup", "command", {
+  settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+  input: { ...BASE_INPUT_FIELDS },
+  output: { ...BASE_OUTPUT_FIELDS },
+})

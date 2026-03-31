@@ -8,6 +8,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -99,3 +107,62 @@ export const NotificationInputSchema = BaseHookInputSchema.extend({
 export const NotificationOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof NotificationOutputSchema>} NotificationOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Notification type to filter on.",
+    values: [
+      "permission_prompt",
+      "idle_prompt",
+      "auth_success",
+      "elicitation_dialog",
+    ],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  notification_type: {
+    type: "enum",
+    description: "Type of notification being sent.",
+    values: [
+      "permission_prompt",
+      "idle_prompt",
+      "auth_success",
+      "elicitation_dialog",
+    ],
+    strict: true,
+    required: true,
+  },
+  message: {
+    type: "string",
+    description: "Notification message body.",
+    required: true,
+  },
+  title: { type: "string", description: "Notification title.", required: true },
+}
+
+hookSchemaBuilder
+  .addHookType("Notification", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("Notification", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

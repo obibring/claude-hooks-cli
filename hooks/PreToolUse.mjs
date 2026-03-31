@@ -11,6 +11,18 @@ import {
 } from "../schemas/input-schemas.mjs"
 import { ToolNameMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  TOOL_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  TOOL_MATCHER_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -187,3 +199,85 @@ export const PreToolUseOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof PreToolUseOutputSchema>} PreToolUseOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  ...TOOL_INPUT_FIELDS,
+  tool_use_id: {
+    type: "string",
+    description: "Unique identifier for this specific tool call invocation.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  hookSpecificOutput: {
+    type: "object",
+    description: "PreToolUse-specific output fields.",
+    fields: {
+      permissionDecision: {
+        type: "enum",
+        description: "Controls whether the tool call proceeds.",
+        values: ["allow", "deny", "ask"],
+        strict: true,
+      },
+      permissionDecisionReason: {
+        type: "string",
+        description:
+          'Explanation shown to the model when permissionDecision is "deny".',
+      },
+      autoAllow: {
+        type: "boolean",
+        description:
+          "When true, auto-approves all future uses of this tool for the rest of the session.",
+      },
+      updatedInput: {
+        type: "object",
+        description:
+          "Modified tool input that replaces the original. For AskUserQuestion, can include {question, answer} to auto-respond.",
+      },
+    },
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("PreToolUse", "command", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PreToolUse", "prompt", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...PROMPT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PreToolUse", "agent", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...AGENT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PreToolUse", "http", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

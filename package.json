@@ -92,6 +92,16 @@
         "types": "./dist/lib/api.d.mts",
         "default": "./lib/api.mjs"
       }
+    },
+    "./hook-schema": {
+      "import": {
+        "types": "./lib/hook-schema-map.d.mts",
+        "default": "./lib/hook-schema-map.mjs"
+      },
+      "require": {
+        "types": "./lib/hook-schema-map.d.mts",
+        "default": "./lib/hook-schema-map.mjs"
+      }
     }
   },
   "files": [
@@ -123,7 +133,7 @@
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
-    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts && cp dist/hooks/*.d.mts hooks/ && cp dist/schemas/*.d.mts schemas/ && cp dist/lib/settings-io.d.mts lib/ && cp dist/lib/hooks-store.d.mts lib/ && cp dist/lib/hooks-manager.d.mts lib/ && cp dist/lib/schema-map.d.mts lib/ && cp lib/api-types.d.mts dist/lib/api-types.d.mts && cp lib/api.d.mts dist/lib/api.d.mts",
+    "build": "node scripts/build-docs-map.mjs && node scripts/build-hook-schema.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts && cp dist/hooks/*.d.mts hooks/ && cp dist/schemas/*.d.mts schemas/ && cp dist/lib/settings-io.d.mts lib/ && cp dist/lib/hooks-store.d.mts lib/ && cp dist/lib/hooks-manager.d.mts lib/ && cp dist/lib/schema-map.d.mts lib/ && cp lib/api-types.d.mts dist/lib/api-types.d.mts && cp lib/api.d.mts dist/lib/api.d.mts && cp lib/hook-schema-map.d.mts dist/lib/hook-schema-map.d.mts",
     "dev": "bun run build && tsc --watch --preserveWatchOutput",
     "prepublishOnly": "bun run build",
     "test": "vitest run",

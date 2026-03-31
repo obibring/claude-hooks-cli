@@ -8,6 +8,16 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -170,3 +180,91 @@ export const SubagentStopOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof SubagentStopOutputSchema>} SubagentStopOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "string",
+    description:
+      'Agent type to filter on. Built-in: "Bash", "Explore", "Plan", or a custom agent name.',
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  agent_id: {
+    type: "string",
+    description: "Unique identifier for the completed subagent.",
+    required: true,
+  },
+  agent_type: {
+    type: "string",
+    description: "Type of the completed agent.",
+    required: true,
+  },
+  last_assistant_message: {
+    type: "string",
+    description: "The subagent's final response text.",
+    required: true,
+  },
+  agent_transcript_path: {
+    type: "string",
+    description: "Path to the subagent's full transcript JSON file.",
+    required: true,
+  },
+  stop_hook_active: {
+    type: "boolean",
+    description: "True if a stop hook is already running.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  decision: {
+    type: "enum",
+    description: 'Set to "block" to stop execution after subagent completion.',
+    values: ["block"],
+    strict: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("SubagentStop", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("SubagentStop", "prompt", {
+    settings: {
+      ..._matcherField,
+      ...PROMPT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("SubagentStop", "agent", {
+    settings: {
+      ..._matcherField,
+      ...AGENT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("SubagentStop", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

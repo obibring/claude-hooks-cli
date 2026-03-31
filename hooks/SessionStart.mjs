@@ -5,6 +5,14 @@ import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { SessionStartMatcherSchema as _SessionStartMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 import { SharedHandlerPropsSchema } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  ONCE_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -86,3 +94,42 @@ export const SessionStartInputSchema = BaseHookInputSchema.extend({
 export const SessionStartOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof SessionStartOutputSchema>} SessionStartOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Session start source to filter on.",
+    values: ["startup", "resume", "clear", "compact"],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input2 = {
+  ...BASE_INPUT_FIELDS,
+  model: {
+    type: "string",
+    description: 'The Claude model being used (e.g. "claude-opus-4-6").',
+    required: true,
+  },
+  source: {
+    type: "enum",
+    description: "How the session started.",
+    values: ["startup", "resume", "clear", "compact"],
+    strict: true,
+    required: true,
+  },
+}
+
+hookSchemaBuilder.addHookType("SessionStart", "command", {
+  settings: {
+    ..._matcherField,
+    ...COMMAND_SETTINGS_FIELDS,
+    ...IF_SETTINGS_FIELD,
+    ...ONCE_SETTINGS_FIELD,
+  },
+  input: _input2,
+  output: { ...BASE_OUTPUT_FIELDS },
+})

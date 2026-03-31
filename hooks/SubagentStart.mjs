@@ -7,6 +7,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -99,3 +107,49 @@ export const SubagentStartInputSchema = BaseHookInputSchema.extend({
 export const SubagentStartOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof SubagentStartOutputSchema>} SubagentStartOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "string",
+    description:
+      'Agent type to filter on. Built-in: "Bash", "Explore", "Plan", or a custom agent name.',
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  agent_id: {
+    type: "string",
+    description: "Unique identifier for this subagent instance.",
+    required: true,
+  },
+  agent_type: {
+    type: "string",
+    description:
+      'Type of agent starting. Built-in: "Bash", "Explore", "Plan", or a custom agent name.',
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("SubagentStart", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("SubagentStart", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

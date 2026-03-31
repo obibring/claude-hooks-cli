@@ -6,6 +6,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -88,3 +96,32 @@ export const TeammateIdleInputSchema = BaseHookInputSchema.extend({
 export const TeammateIdleOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof TeammateIdleOutputSchema>} TeammateIdleOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  teammate_name: {
+    type: "string",
+    description: "Name of the teammate agent that became idle.",
+    required: true,
+  },
+  team_name: {
+    type: "string",
+    description: "Name of the agent team.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("TeammateIdle", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("TeammateIdle", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

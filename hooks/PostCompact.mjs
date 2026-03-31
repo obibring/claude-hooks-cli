@@ -8,6 +8,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -96,3 +104,51 @@ export const PostCompactInputSchema = BaseHookInputSchema.extend({
 export const PostCompactOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof PostCompactOutputSchema>} PostCompactOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _matcherField = {
+  matcher: {
+    type: "enum",
+    description: "Compact trigger to filter on.",
+    values: ["manual", "auto"],
+    strict: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  trigger: {
+    type: "enum",
+    description: "What triggered the compaction.",
+    values: ["manual", "auto"],
+    strict: true,
+    required: true,
+  },
+  compact_summary: {
+    type: "string",
+    description: "The summary text produced by the compaction operation.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("PostCompact", "command", {
+    settings: {
+      ..._matcherField,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("PostCompact", "http", {
+    settings: {
+      ..._matcherField,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

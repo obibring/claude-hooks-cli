@@ -11,6 +11,18 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  TOOL_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  PROMPT_SETTINGS_FIELDS,
+  AGENT_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  TOOL_MATCHER_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -163,3 +175,70 @@ export const PostToolUseOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof PostToolUseOutputSchema>} PostToolUseOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  ...TOOL_INPUT_FIELDS,
+  tool_use_id: {
+    type: "string",
+    description: "Unique identifier for this tool call invocation.",
+    required: true,
+  },
+  tool_response: {
+    type: "object",
+    description: "The tool's return value. Shape varies by tool.",
+    required: true,
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  decision: {
+    type: "enum",
+    description:
+      'Set to "block" to stop Claude from continuing after this tool call.',
+    values: ["block"],
+    strict: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("PostToolUse", "command", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PostToolUse", "prompt", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...PROMPT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PostToolUse", "agent", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...AGENT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PostToolUse", "http", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

@@ -1,5 +1,21 @@
 import { z } from "zod/v4"
 
+import {
+  AGENT_SETTINGS_FIELDS,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  hookSchemaBuilder,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  PROMPT_SETTINGS_FIELDS,
+  TOOL_INPUT_FIELDS,
+  TOOL_MATCHER_FIELD,
+} from "../lib/hook-schema-builder.mjs"
+import {
+  HttpExtraPropsSchema,
+  SharedHandlerPropsSchema,
+} from "../schemas/config-schemas.mjs"
 import { PermissionRequestDecisionBehaviorSchema } from "../schemas/enums.mjs"
 import {
   BaseHookInputSchema,
@@ -7,10 +23,6 @@ import {
 } from "../schemas/input-schemas.mjs"
 import { ToolNameMatcherSchema } from "../schemas/matcher-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
-import {
-  SharedHandlerPropsSchema,
-  HttpExtraPropsSchema,
-} from "../schemas/config-schemas.mjs"
 
 // --- Matcher ---
 
@@ -169,3 +181,75 @@ export const PermissionRequestOutputSchema = BaseHookOutputSchema.extend({
 })
 
 /** @typedef {z.infer<typeof PermissionRequestOutputSchema>} PermissionRequestOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  ...TOOL_INPUT_FIELDS,
+  permission_suggestions: {
+    type: "object",
+    description: "Suggestions for the permission prompt. Shape varies.",
+  },
+}
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _output = {
+  ...BASE_OUTPUT_FIELDS,
+  hookSpecificOutput: {
+    type: "object",
+    description: "PermissionRequest-specific output fields.",
+    fields: {
+      decision: {
+        type: "object",
+        description: "Permission decision object.",
+        fields: {
+          behavior: {
+            type: "enum",
+            description: 'Permission decision. "allow" grants, "deny" blocks.',
+            values: ["allow", "deny"],
+            strict: true,
+          },
+        },
+      },
+    },
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("PermissionRequest", "command", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...COMMAND_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PermissionRequest", "prompt", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...PROMPT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PermissionRequest", "agent", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...AGENT_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })
+  .addHookType("PermissionRequest", "http", {
+    settings: {
+      ...TOOL_MATCHER_FIELD,
+      ...HTTP_SETTINGS_FIELDS,
+      ...IF_SETTINGS_FIELD,
+    },
+    input: _input,
+    output: _output,
+  })

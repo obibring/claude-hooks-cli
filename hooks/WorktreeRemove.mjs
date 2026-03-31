@@ -6,6 +6,14 @@ import {
   SharedHandlerPropsSchema,
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
+import {
+  hookSchemaBuilder,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+} from "../lib/hook-schema-builder.mjs"
 
 // --- Matcher ---
 
@@ -84,3 +92,27 @@ export const WorktreeRemoveInputSchema = BaseHookInputSchema.extend({
 export const WorktreeRemoveOutputSchema = BaseHookOutputSchema
 
 /** @typedef {z.infer<typeof WorktreeRemoveOutputSchema>} WorktreeRemoveOutput */
+
+// --- Schema Builder Registration ---
+
+/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+const _input = {
+  ...BASE_INPUT_FIELDS,
+  worktree_path: {
+    type: "string",
+    description: "Absolute path to the worktree being removed.",
+    required: true,
+  },
+}
+
+hookSchemaBuilder
+  .addHookType("WorktreeRemove", "command", {
+    settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })
+  .addHookType("WorktreeRemove", "http", {
+    settings: { ...HTTP_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
+    input: _input,
+    output: { ...BASE_OUTPUT_FIELDS },
+  })

@@ -7,7 +7,7 @@ import {
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
@@ -15,7 +15,7 @@ import {
   AGENT_SETTINGS_FIELDS,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -162,7 +162,7 @@ export const TaskCreatedOutputSchema = BaseHookOutputSchema
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   task_id: {
@@ -192,7 +192,7 @@ const _input = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("TaskCreated", "command", {
     settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
     input: _input,

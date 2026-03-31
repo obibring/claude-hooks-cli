@@ -7,7 +7,7 @@ import {
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
@@ -15,7 +15,7 @@ import {
   AGENT_SETTINGS_FIELDS,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -161,7 +161,7 @@ export const UserPromptSubmitOutputSchema = BaseHookOutputSchema.extend({
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   prompt: {
@@ -171,7 +171,7 @@ const _input = {
     required: true,
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _output = {
   ...BASE_OUTPUT_FIELDS,
   prompt: {
@@ -181,7 +181,7 @@ const _output = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("UserPromptSubmit", "command", {
     settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
     input: _input,

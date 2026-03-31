@@ -5,13 +5,13 @@ import {
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
-  hookSchemaBuilder,
+  hookFormBuilder,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
   PROMPT_SETTINGS_FIELDS,
   TOOL_INPUT_FIELDS,
   TOOL_MATCHER_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 import {
   HttpExtraPropsSchema,
   SharedHandlerPropsSchema,
@@ -184,7 +184,7 @@ export const PermissionRequestOutputSchema = BaseHookOutputSchema.extend({
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   ...TOOL_INPUT_FIELDS,
@@ -193,7 +193,7 @@ const _input = {
     description: "Suggestions for the permission prompt. Shape varies.",
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _output = {
   ...BASE_OUTPUT_FIELDS,
   hookSpecificOutput: {
@@ -216,7 +216,7 @@ const _output = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("PermissionRequest", "command", {
     settings: {
       ...TOOL_MATCHER_FIELD,

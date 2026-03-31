@@ -1,11 +1,7 @@
-/** Valid field types for hook schema field definitions. */
-export type FieldType =
-  | "string"
-  | "number"
-  | "boolean"
-  | "object"
-  | "array"
-  | "enum"
+import type { z } from "zod/v4"
+
+/** Valid field types for hook form field definitions. */
+export type FieldType = "string" | "number" | "boolean" | "object" | "array" | "enum"
 
 /** Describes a single field in a hook's settings, input, or output. */
 export interface FieldDefinition {
@@ -15,6 +11,8 @@ export interface FieldDefinition {
   description: string
   /** When `true`, this field is required (must be present in the object). */
   required?: boolean
+  /** Zod schema that validates the field's value at runtime. */
+  schema?: z.ZodType
   /** Nested field definitions. Only used when `type` is `"object"`. */
   fields?: Record<string, FieldDefinition>
   /** Item definition for array elements. Only used when `type` is `"array"`. */
@@ -39,10 +37,10 @@ export interface HookTypeDefinition {
 }
 
 /** Complete map: hook name → handler type → field definitions. */
-export type HookSchemaMap = Record<string, Record<string, HookTypeDefinition>>
+export type HookFormMap = Record<string, Record<string, HookTypeDefinition>>
 
-/** Singleton builder for constructing the hook schema map. */
-export declare const hookSchemaBuilder: {
+/** Singleton builder for querying hook form definitions. */
+export declare const hookFormBuilder: {
   /**
    * Registers a handler type definition for a hook event.
    * @param hookName - Hook event name (e.g. `"PreToolUse"`)
@@ -53,10 +51,17 @@ export declare const hookSchemaBuilder: {
     hookName: string,
     handlerType: "command" | "prompt" | "agent" | "http",
     definition: HookTypeDefinition,
-  ): typeof hookSchemaBuilder
+  ): typeof hookFormBuilder
 
-  /** Returns the complete schema map with all registered hooks. */
-  build(): HookSchemaMap
+  /** Returns an array of all registered hook event names. */
+  getHookNames(): string[]
+
+  /**
+   * Returns the full definition for a hook: a record mapping handler types
+   * to their settings/input/output field maps.
+   * Returns `undefined` if the hook is not registered.
+   */
+  getHookDefinition(hookName: string): Record<string, HookTypeDefinition> | undefined
 }
 
 /** Base input fields present on every hook event. */

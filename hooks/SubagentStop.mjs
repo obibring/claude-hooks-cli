@@ -9,7 +9,7 @@ import {
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
@@ -17,7 +17,7 @@ import {
   AGENT_SETTINGS_FIELDS,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -183,7 +183,7 @@ export const SubagentStopOutputSchema = BaseHookOutputSchema.extend({
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _matcherField = {
   matcher: {
     type: "string",
@@ -191,7 +191,7 @@ const _matcherField = {
       'Agent type to filter on. Built-in: "Bash", "Explore", "Plan", or a custom agent name.',
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   agent_id: {
@@ -220,7 +220,7 @@ const _input = {
     required: true,
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _output = {
   ...BASE_OUTPUT_FIELDS,
   decision: {
@@ -231,7 +231,7 @@ const _output = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("SubagentStop", "command", {
     settings: {
       ..._matcherField,

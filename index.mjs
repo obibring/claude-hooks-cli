@@ -61,11 +61,8 @@ export {
 // Re-export buildSyntheticInput for test utilities
 export { buildSyntheticInput } from "./lib/synthetic-input.mjs"
 
-// Re-export hook schema map (auto-generated)
-export { HOOK_SCHEMA_MAP } from "./lib/hook-schema-map.mjs"
-
-// Re-export hook schema builder for consumers
-export { hookSchemaBuilder } from "./lib/hook-schema-builder.mjs"
+// Re-export hook form builder for consumers
+export { hookFormBuilder } from "./lib/hook-form-builder.mjs"
 
 // Re-export all per-hook schemas (Config, Input, Output, Matcher for each event).
 // Hook files may re-export matcher schemas that are also in schemas/ — TS

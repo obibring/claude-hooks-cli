@@ -4,10 +4,10 @@ import {
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
-  hookSchemaBuilder,
+  hookFormBuilder,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 import {
   HttpExtraPropsSchema,
   SharedHandlerPropsSchema,
@@ -115,7 +115,7 @@ export const StopFailureOutputSchema = BaseHookOutputSchema
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _matcherField = {
   matcher: {
     type: "enum",
@@ -132,7 +132,7 @@ const _matcherField = {
     strict: true,
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   error: {
@@ -162,7 +162,7 @@ const _input = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("StopFailure", "command", {
     settings: {
       ..._matcherField,

@@ -11,7 +11,7 @@ import {
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   TOOL_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
@@ -21,7 +21,7 @@ import {
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
   TOOL_MATCHER_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -178,7 +178,7 @@ export const PostToolUseFailureOutputSchema = BaseHookOutputSchema
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   ...TOOL_INPUT_FIELDS,
@@ -200,7 +200,7 @@ const _input = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("PostToolUseFailure", "command", {
     settings: {
       ...TOOL_MATCHER_FIELD,

@@ -1176,97 +1176,77 @@ import { BaseHookOutputSchema } from "@obibring/claude-hooks-cli/schemas/output-
 import { HookEventNameSchema } from "@obibring/claude-hooks-cli/schemas/enums.mjs"
 ```
 
-## Hook Schema Map
+## Hook Form Builder
 
-This package exports a pre-built `HOOK_SCHEMA_MAP` object that
-describes every hook event's settings, input, and output fields for
-each handler type. This is useful for building UIs, validators, or
-documentation tools.
+This package exports a `hookFormBuilder` singleton that describes
+every hook event's settings, input, and output fields for each handler
+type. Each field includes a Zod schema for runtime validation. Useful
+for building UIs, form generators, and validators.
 
 ```ts
-import { HOOK_SCHEMA_MAP } from "@obibring/claude-hooks-cli/hook-schema"
-// or
-import { HOOK_SCHEMA_MAP } from "@obibring/claude-hooks-cli"
+import { hookFormBuilder } from "@obibring/claude-hooks-cli"
+// Import hooks to trigger registrations (side effects)
+import "@obibring/claude-hooks-cli/hooks"
 ```
 
-### Structure
+### Querying
 
-```
-HOOK_SCHEMA_MAP[hookName][handlerType].settings  // configurable fields in settings.json
-HOOK_SCHEMA_MAP[hookName][handlerType].input     // JSON fields received on stdin
-HOOK_SCHEMA_MAP[hookName][handlerType].output    // JSON fields written to stdout
+```ts
+hookFormBuilder.getHookNames() // ["PreToolUse", "Stop", ..., "FileChanged"]
+
+const def = hookFormBuilder.getHookDefinition("PreToolUse")
+// def.command.settings / def.command.input / def.command.output
+// def.prompt.settings / ...
 ```
 
-Each field is a `FieldDefinition`:
+### FieldDefinition
 
 ```ts
 interface FieldDefinition {
   type: "string" | "number" | "boolean" | "object" | "array" | "enum"
   description: string
   required?: boolean
-  fields?: Record<string, FieldDefinition> // nested fields (type: "object")
-  items?: FieldDefinition // array item type (type: "array")
+  schema?: z.ZodType // Zod schema for runtime validation
+  fields?: Record<string, FieldDefinition> // nested (type: "object")
+  items?: FieldDefinition // array items (type: "array")
   values?: string[] // allowed values (type: "enum")
-  strict?: boolean // true = only enum values; false = enums + free-form strings
+  strict?: boolean // true = enum only; false = enum + free-form
 }
 ```
 
-### Example: inspecting PreToolUse
+### Example
 
 ```ts
-const preToolUse = HOOK_SCHEMA_MAP.PreToolUse
+const def = hookFormBuilder.getHookDefinition("PreToolUse")
 
-// Which handler types does PreToolUse support?
-Object.keys(preToolUse) // ["command", "prompt", "agent", "http"]
-
-// What settings can a command handler have?
-Object.keys(preToolUse.command.settings)
+Object.keys(def) // ["command", "prompt", "agent", "http"]
+Object.keys(def.command.settings)
 // ["matcher", "command", "timeout", "async", "asyncRewake", "statusMessage", "if"]
 
-// What fields does the hook receive on stdin?
-Object.keys(preToolUse.command.input)
-// ["hook_event_name", "session_id", ..., "tool_name", "tool_input", "tool_use_id"]
-
-// Inspect an enum field
-preToolUse.command.input.permission_mode
-// { type: "enum", values: ["default", "plan", "acceptEdits", "dontAsk", "bypassPermissions"],
-//   strict: true, required: true, description: "Active permission mode." }
-
-// Inspect a nested output field
-preToolUse.command.output.hookSpecificOutput.fields.permissionDecision
-// { type: "enum", values: ["allow", "deny", "ask"], strict: true,
-//   description: "Controls whether the tool call proceeds." }
+// Enum field with embedded Zod schema
+def.command.input.permission_mode.schema.parse("default") // ok
+def.command.input.permission_mode.schema.parse("invalid") // throws ZodError
 ```
 
-### How it's built
-
-Each `hooks/<EventName>.mjs` file registers its field definitions with
-the `hookSchemaBuilder` singleton using
-`hookSchemaBuilder.addHookType(hookName, handlerType, { settings, input, output })`.
-During `bun run build`, the build script imports all hooks (triggering
-the registrations), calls `hookSchemaBuilder.build()`, and writes the
-result to `lib/hook-schema-map.mjs` with auto-generated TypeScript
-declarations.
-
-### Extending with the builder
-
-You can use the builder directly if you need to register custom hooks:
+### Extending
 
 ```ts
+import { z } from "zod/v4"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   COMMAND_SETTINGS_FIELDS,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
 } from "@obibring/claude-hooks-cli"
 
-hookSchemaBuilder.addHookType("MyCustomHook", "command", {
+hookFormBuilder.addHookType("MyCustomHook", "command", {
   settings: { ...COMMAND_SETTINGS_FIELDS },
   input: {
     ...BASE_INPUT_FIELDS,
     myField: {
       type: "string",
-      description: "Custom field",
+      description: "Custom",
+      schema: z.string(),
       required: true,
     },
   },
@@ -1445,8 +1425,7 @@ import {
   getHookMeta,
   HANDLER_TYPE_INFO,
   HOOK_DOCS_MAP,
-  HOOK_SCHEMA_MAP,
-  hookSchemaBuilder,
+  hookFormBuilder,
   resolveCommand,
   parseCommandAsFile,
   createCommandFile,
@@ -1455,22 +1434,21 @@ import {
 
 ### Sub-path exports
 
-| Import Path                              | What It Provides                                            |
-| ---------------------------------------- | ----------------------------------------------------------- |
-| `@obibring/claude-hooks-cli`             | Everything (ClaudeProject, schemas, functions, handler)     |
-| `@obibring/claude-hooks-cli/api`         | ClaudeProject class + all API functions                     |
-| `@obibring/claude-hooks-cli/handler`     | HookHandler class (for hook script authors)                 |
-| `@obibring/claude-hooks-cli/schemas`     | Zod enum/base schemas                                       |
-| `@obibring/claude-hooks-cli/schemas/*`   | Individual schema files                                     |
-| `@obibring/claude-hooks-cli/hooks`       | Per-event Config/Input/Output schemas                       |
-| `@obibring/claude-hooks-cli/hooks/*`     | Individual hook schema files                                |
-| `@obibring/claude-hooks-cli/settings`    | `getSettingsPath`, `readSettings`, `writeSettings`          |
-| `@obibring/claude-hooks-cli/store`       | `getHooksObject`, `addHook`, `removeHook`, `listHooks`      |
-| `@obibring/claude-hooks-cli/manager`     | `getHooks`, `saveHook`, `deleteHook`                        |
-| `@obibring/claude-hooks-cli/metadata`    | `HOOK_METADATA`, `getHookMeta`, `HOOK_EVENT_NAMES`          |
-| `@obibring/claude-hooks-cli/commands`    | `resolveCommand`, `parseCommandAsFile`, `createCommandFile` |
-| `@obibring/claude-hooks-cli/docs`        | `HOOK_DOCS_MAP`                                             |
-| `@obibring/claude-hooks-cli/hook-schema` | `HOOK_SCHEMA_MAP` (per-hook field definitions)              |
+| Import Path                            | What It Provides                                            |
+| -------------------------------------- | ----------------------------------------------------------- |
+| `@obibring/claude-hooks-cli`           | Everything (ClaudeProject, schemas, functions, handler)     |
+| `@obibring/claude-hooks-cli/api`       | ClaudeProject class + all API functions                     |
+| `@obibring/claude-hooks-cli/handler`   | HookHandler class (for hook script authors)                 |
+| `@obibring/claude-hooks-cli/schemas`   | Zod enum/base schemas                                       |
+| `@obibring/claude-hooks-cli/schemas/*` | Individual schema files                                     |
+| `@obibring/claude-hooks-cli/hooks`     | Per-event Config/Input/Output schemas                       |
+| `@obibring/claude-hooks-cli/hooks/*`   | Individual hook schema files                                |
+| `@obibring/claude-hooks-cli/settings`  | `getSettingsPath`, `readSettings`, `writeSettings`          |
+| `@obibring/claude-hooks-cli/store`     | `getHooksObject`, `addHook`, `removeHook`, `listHooks`      |
+| `@obibring/claude-hooks-cli/manager`   | `getHooks`, `saveHook`, `deleteHook`                        |
+| `@obibring/claude-hooks-cli/metadata`  | `HOOK_METADATA`, `getHookMeta`, `HOOK_EVENT_NAMES`          |
+| `@obibring/claude-hooks-cli/commands`  | `resolveCommand`, `parseCommandAsFile`, `createCommandFile` |
+| `@obibring/claude-hooks-cli/docs`      | `HOOK_DOCS_MAP`                                             |
 
 ## CJS Support
 
@@ -1503,7 +1481,7 @@ bun install
 
 ```bash
 bun run start         # Run the CLI
-bun run build         # Generate docs map, hook schema map, .d.mts declarations
+bun run build         # Generate docs map, .d.mts declarations
 bun run dev           # Build then watch for changes (tsc --watch)
 bun run test          # Run all vitest tests
 bun run lint          # Format with prettier
@@ -1532,9 +1510,8 @@ lib/
   test-hook.mjs          Synthetic input testing
   command-resolver.mjs   Smart file path → runner resolution
   docs-map.mjs           Auto-generated hook name → docs string mapping
-  hook-schema-builder.mjs  Builder class + shared field fragments for hook schema
-  hook-schema-map.mjs    Auto-generated per-hook field definitions (settings/input/output)
-  hook-schema-map.d.mts  Auto-generated TypeScript types for the schema map
+  hook-form-builder.mjs   Builder class + shared field fragments for hook forms
+  hook-form-builder.d.mts Hand-authored TS declarations for the builder
   api.mjs                Programmatic API (ClaudeProject class + standalone functions)
   api.d.mts              API type declarations (re-exports)
   api-types.d.mts        API type definitions (ClaudeProject, SkillFrontmatter, etc.)
@@ -1543,7 +1520,6 @@ lib/
   run-command.mjs        Shell command runner (stdin piping, timeout)
 scripts/
   build-docs-map.mjs     Generates lib/docs-map.mjs from docs/*.md
-  build-hook-schema.mjs  Generates lib/hook-schema-map.mjs + .d.mts from builder registrations
 schemas/
   enums.mjs              Enum schemas (event names, permission modes, etc.)
   config-schemas.mjs     Shared handler property schemas
@@ -1571,7 +1547,7 @@ dist/                    Generated .d.mts declaration files
 When Claude Code adds a new hook event:
 
 1. Create `hooks/<EventName>.mjs` following the existing pattern
-2. In the same file, add `hookSchemaBuilder.addHookType(...)` calls at
+2. In the same file, add `hookFormBuilder.addHookType(...)` calls at
    the bottom to register the hook's field definitions for each
    handler type it supports. Use `type: "enum"` with `values` and
    `strict` for any field that has a fixed set of valid values.
@@ -1580,7 +1556,7 @@ When Claude Code adds a new hook event:
 4. Add the event to `schemas/enums.mjs` `HookEventNameSchema`
 5. Add matcher schema to `schemas/matcher-schemas.mjs` if applicable
 6. Add the event to `lib/hook-metadata.mjs` `HOOK_METADATA` array
-7. Add the event to `lib/hook-schema-builder.mjs`
+7. Add the event to `lib/hook-form-builder.mjs`
    `BASE_INPUT_FIELDS.hook_event_name.values`
 8. Add input/output schemas to `lib/schema-map.mjs` `HOOK_SCHEMA_MAP`
 9. Add an output interface to `lib/handler-types.d.mts` (with JSDoc on

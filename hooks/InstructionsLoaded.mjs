@@ -9,13 +9,13 @@ import {
   HttpExtraPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -129,7 +129,7 @@ export const InstructionsLoadedOutputSchema = BaseHookOutputSchema
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _matcherField = {
   matcher: {
     type: "enum",
@@ -144,7 +144,7 @@ const _matcherField = {
     strict: true,
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   file_path: {
@@ -185,7 +185,7 @@ const _input = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("InstructionsLoaded", "command", {
     settings: {
       ..._matcherField,

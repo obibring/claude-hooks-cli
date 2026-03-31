@@ -5,13 +5,13 @@ import {
   SharedHandlerPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
   HTTP_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 import { ElicitationActionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { ElicitationMatcherSchema as _ElicitationMatcherSchema } from "../schemas/matcher-schemas.mjs"
@@ -135,11 +135,11 @@ export const ElicitationOutputSchema = BaseHookOutputSchema.extend({
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _matcherField = {
   matcher: { type: "string", description: "MCP server name to filter on." },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input = {
   ...BASE_INPUT_FIELDS,
   mcp_server_name: {
@@ -169,7 +169,7 @@ const _input = {
     required: true,
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _output = {
   ...BASE_OUTPUT_FIELDS,
   hookSpecificOutput: {
@@ -190,7 +190,7 @@ const _output = {
   },
 }
 
-hookSchemaBuilder
+hookFormBuilder
   .addHookType("Elicitation", "command", {
     settings: {
       ..._matcherField,

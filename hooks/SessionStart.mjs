@@ -6,13 +6,13 @@ import { SessionStartMatcherSchema as _SessionStartMatcherSchema } from "../sche
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 import { SharedHandlerPropsSchema } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
   ONCE_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -97,7 +97,7 @@ export const SessionStartOutputSchema = BaseHookOutputSchema
 
 // --- Schema Builder Registration ---
 
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _matcherField = {
   matcher: {
     type: "enum",
@@ -106,7 +106,7 @@ const _matcherField = {
     strict: true,
   },
 }
-/** @satisfies {import("../lib/hook-schema-builder.mjs").FieldMap} */
+/** @satisfies {import("../lib/hook-form-builder.mjs").FieldMap} */
 const _input2 = {
   ...BASE_INPUT_FIELDS,
   model: {
@@ -123,7 +123,7 @@ const _input2 = {
   },
 }
 
-hookSchemaBuilder.addHookType("SessionStart", "command", {
+hookFormBuilder.addHookType("SessionStart", "command", {
   settings: {
     ..._matcherField,
     ...COMMAND_SETTINGS_FIELDS,

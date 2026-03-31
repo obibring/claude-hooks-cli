@@ -4,12 +4,12 @@ import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
 import { SharedHandlerPropsSchema } from "../schemas/config-schemas.mjs"
 import {
-  hookSchemaBuilder,
+  hookFormBuilder,
   BASE_INPUT_FIELDS,
   BASE_OUTPUT_FIELDS,
   COMMAND_SETTINGS_FIELDS,
   IF_SETTINGS_FIELD,
-} from "../lib/hook-schema-builder.mjs"
+} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -71,7 +71,7 @@ export const SetupOutputSchema = BaseHookOutputSchema
 
 // --- Schema Builder Registration ---
 
-hookSchemaBuilder.addHookType("Setup", "command", {
+hookFormBuilder.addHookType("Setup", "command", {
   settings: { ...COMMAND_SETTINGS_FIELDS, ...IF_SETTINGS_FIELD },
   input: { ...BASE_INPUT_FIELDS },
   output: { ...BASE_OUTPUT_FIELDS },

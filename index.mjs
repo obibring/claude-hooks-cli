@@ -19,6 +19,44 @@ export {
 } from "./lib/hooks-store.mjs"
 export { getHooks, saveHook, deleteHook } from "./lib/hooks-manager.mjs"
 
+// Re-export hook metadata for programmatic use
+export {
+  HOOK_METADATA,
+  getHookMeta,
+  HOOK_EVENT_NAMES,
+  HANDLER_TYPE_INFO,
+} from "./lib/hook-metadata.mjs"
+
+// Re-export command resolver utilities
+export {
+  resolveCommand,
+  parseCommandAsFile,
+  createCommandFile,
+} from "./lib/command-resolver.mjs"
+
+// Re-export documentation map
+export { HOOK_DOCS_MAP } from "./lib/docs-map.mjs"
+
+// Re-export programmatic API
+export {
+  claudeHooks,
+  addHookConfig,
+  buildHookCommand,
+  installHook,
+  uninstallHook,
+  listHookEntries,
+  getHooksForProjectDir,
+  saveHookToProjectDir,
+  removeHookFromProjectDir,
+  testHook,
+  getDocs,
+  getAvailableDocs,
+  scaffoldHookFile,
+} from "./lib/api.mjs"
+
+// Re-export buildSyntheticInput for test utilities
+export { buildSyntheticInput } from "./lib/synthetic-input.mjs"
+
 // Re-export all per-hook schemas (Config, Input, Output, Matcher for each event).
 // Hook files may re-export matcher schemas that are also in schemas/ — TS
 // resolves these to the same binding so the duplicate export is harmless at

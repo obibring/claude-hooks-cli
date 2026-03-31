@@ -123,7 +123,7 @@
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
-    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts && cp lib/api-types.d.mts dist/lib/api-types.d.mts && cp lib/api.d.mts dist/lib/api.d.mts && cp lib/hook-form-builder.d.mts dist/lib/hook-form-builder.d.mts",
+    "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts && cp lib/api-types.d.mts dist/lib/api-types.d.mts && cp lib/api.d.mts dist/lib/api.d.mts && cp lib/hook-form-builder.d.mts dist/lib/hook-form-builder.d.mts && cp lib/claude-md.d.mts dist/lib/claude-md.d.mts",
     "dev": "bun run build && tsc --watch --preserveWatchOutput",
     "prepublishOnly": "bun run build",
     "test": "vitest run",

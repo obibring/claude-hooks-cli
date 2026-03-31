@@ -66,3 +66,6 @@ export { hookFormBuilder } from "./lib/hook-form-builder.mjs"
 
 // Re-export HookSchemas map (hook name → { Config, Input, Output, Matcher?, HookSpecificOutput? })
 export { HookSchemas } from "./hooks/index.mjs"
+
+// Re-export ClaudeMd parser
+export { ClaudeMd } from "./lib/claude-md.mjs"

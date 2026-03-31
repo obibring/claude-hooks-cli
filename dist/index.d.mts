@@ -4,6 +4,7 @@ export { HOOK_DOCS_MAP } from "./lib/docs-map.mjs";
 export { buildSyntheticInput } from "./lib/synthetic-input.mjs";
 export { hookFormBuilder } from "./lib/hook-form-builder.mjs";
 export { HookSchemas } from "./hooks/index.mjs";
+export { ClaudeMd } from "./lib/claude-md.mjs";
 export { getSettingsPath, readSettings, writeSettings } from "./lib/settings-io.mjs";
 export { addHook, getHooksObject, listHooks, removeHook } from "./lib/hooks-store.mjs";
 export { deleteHook, getHooks, saveHook } from "./lib/hooks-manager.mjs";

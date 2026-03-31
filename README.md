@@ -1150,22 +1150,36 @@ handler.exit("success")
 
 ## Zod Schemas
 
-This package also exports Zod v4 schemas for all 26 hook events. Each
-hook has its own file in `hooks/` exporting:
+All 26 hook events' Zod schemas are accessible via the `HookSchemas`
+object, which maps hook names to
+`{ Config, Input, Output, Matcher, HookSpecificOutput? }`:
 
-- `<EventName>ConfigSchema` — validates the settings.json config
-  object
-- `<EventName>InputSchema` — validates the stdin JSON input
-- `<EventName>OutputSchema` — validates the stdout JSON output
-- `<EventName>MatcherSchema` — validates the matcher field (or
-  `undefined` if no matcher)
+```ts
+import { HookSchemas } from "@obibring/claude-hooks-cli"
+
+// Validate PreToolUse input
+const input = HookSchemas.PreToolUse.Input.parse(
+  JSON.parse(stdinData),
+)
+// input.hook_event_name is narrowed to "PreToolUse"
+// input.tool_name, input.tool_input, input.tool_use_id are typed
+
+// Access any hook's schemas
+HookSchemas.Stop.Config // settings.json config schema
+HookSchemas.Stop.Input // stdin JSON schema
+HookSchemas.Stop.Output // stdout JSON schema
+HookSchemas.Stop.Matcher // undefined (Stop has no matcher)
+HookSchemas.PreToolUse.Matcher // Zod schema for tool_name regex
+
+// Hooks with hook-specific output
+HookSchemas.PreToolUse.HookSpecificOutput // permissionDecision, etc.
+HookSchemas.Elicitation.HookSpecificOutput // action, content
+```
+
+Individual hook schemas are also available via direct imports:
 
 ```ts
 import { PreToolUseInputSchema } from "@obibring/claude-hooks-cli/hooks/PreToolUse.mjs"
-
-const input = PreToolUseInputSchema.parse(JSON.parse(stdinData))
-// input.hook_event_name is narrowed to "PreToolUse"
-// input.tool_name, input.tool_input, input.tool_use_id are typed
 ```
 
 Shared base schemas are in `schemas/`:
@@ -1425,6 +1439,7 @@ import {
   getHookMeta,
   HANDLER_TYPE_INFO,
   HOOK_DOCS_MAP,
+  HookSchemas,
   hookFormBuilder,
   resolveCommand,
   parseCommandAsFile,
@@ -1441,7 +1456,7 @@ import {
 | `@obibring/claude-hooks-cli/handler`   | HookHandler class (for hook script authors)                 |
 | `@obibring/claude-hooks-cli/schemas`   | Zod enum/base schemas                                       |
 | `@obibring/claude-hooks-cli/schemas/*` | Individual schema files                                     |
-| `@obibring/claude-hooks-cli/hooks`     | Per-event Config/Input/Output schemas                       |
+| `@obibring/claude-hooks-cli/hooks`     | `HookSchemas` object (hook name → schemas)                  |
 | `@obibring/claude-hooks-cli/hooks/*`   | Individual hook schema files                                |
 | `@obibring/claude-hooks-cli/settings`  | `getSettingsPath`, `readSettings`, `writeSettings`          |
 | `@obibring/claude-hooks-cli/store`     | `getHooksObject`, `addHook`, `removeHook`, `listHooks`      |
@@ -1527,8 +1542,8 @@ schemas/
   output-schemas.mjs     Base output schema
   matcher-schemas.mjs    Per-hook matcher schemas
 hooks/
-  <EventName>.mjs        Per-hook schemas + schema builder registrations (26 files)
-  index.mjs              Barrel re-export
+  <EventName>.mjs        Per-hook schemas + form builder registrations (26 files)
+  index.mjs              HookSchemas object (hook name → { Config, Input, Output, Matcher? })
 docs/
   <EventName>.md         Per-hook documentation (26 files)
 __tests__/api/

@@ -53,4 +53,38 @@ describe("programmatic API exports from index.mjs", () => {
     expect(typeof mod.HOOK_DOCS_MAP).toBe("object")
     expect(Object.keys(mod.HOOK_DOCS_MAP).length).toBeGreaterThan(0)
   })
+
+  it("exports HookSchemas with all 26 hooks", async () => {
+    const mod = await import("../../index.mjs")
+    expect(mod.HookSchemas).toBeDefined()
+    expect(Object.keys(mod.HookSchemas)).toHaveLength(26)
+  })
+
+  it("HookSchemas entries have Config, Input, Output schemas", async () => {
+    const { HookSchemas } = await import("../../index.mjs")
+    for (const [name, schemas] of Object.entries(HookSchemas) as any) {
+      expect(schemas.Config).toBeDefined()
+      expect(schemas.Input).toBeDefined()
+      expect(schemas.Output).toBeDefined()
+      expect(schemas.Config.parse).toBeTypeOf("function")
+      expect(schemas.Input.parse).toBeTypeOf("function")
+      expect(schemas.Output.parse).toBeTypeOf("function")
+    }
+  })
+
+  it("HookSchemas.PreToolUse has HookSpecificOutput", async () => {
+    const { HookSchemas } = await import("../../index.mjs")
+    expect(HookSchemas.PreToolUse.HookSpecificOutput).toBeDefined()
+    expect(HookSchemas.PreToolUse.HookSpecificOutput.parse).toBeTypeOf("function")
+  })
+
+  it("HookSchemas.PreToolUse.Matcher is defined", async () => {
+    const { HookSchemas } = await import("../../index.mjs")
+    expect(HookSchemas.PreToolUse.Matcher).toBeDefined()
+  })
+
+  it("HookSchemas.Stop.Matcher is undefined (no matcher)", async () => {
+    const { HookSchemas } = await import("../../index.mjs")
+    expect(HookSchemas.Stop.Matcher).toBeUndefined()
+  })
 })

@@ -22,6 +22,7 @@
     "lib/hooks-manager.mjs",
     "lib/schema-map.mjs",
     "lib/handler-types.d.mts",
-    "index.mjs"
+    "index.mjs",
+    "browser.mjs"
   ]
 }

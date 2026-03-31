@@ -3,7 +3,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
 
-describe("ClaudeHooks class", () => {
+describe("ClaudeProject class", () => {
   let tempDir: string
 
   beforeEach(() => {
@@ -19,36 +19,36 @@ describe("ClaudeHooks class", () => {
   // --- Constructor validation ---
 
   it("constructor accepts an existing directory", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     expect(hooks.dir).toBe(tempDir)
   })
 
   it("constructor throws for non-existent path", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    expect(() => new ClaudeHooks("/non/existent/path")).toThrow(/does not exist/i)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    expect(() => new ClaudeProject("/non/existent/path")).toThrow(/does not exist/i)
   })
 
   it("constructor throws for a file path (not directory)", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
+    const { ClaudeProject } = await import("../../lib/api.mjs")
     const filePath = join(tempDir, ".claude", "settings.json")
-    expect(() => new ClaudeHooks(filePath)).toThrow(/not a directory/i)
+    expect(() => new ClaudeProject(filePath)).toThrow(/not a directory/i)
   })
 
   // --- hasClaudeDirectory ---
 
   it("hasClaudeDirectory returns true when .claude exists", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     expect(hooks.hasClaudeDirectory()).toBe(true)
   })
 
   it("hasClaudeDirectory returns false when .claude does not exist", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
+    const { ClaudeProject } = await import("../../lib/api.mjs")
     const emptyDir = join(tmpdir(), `cch-empty-${Date.now()}`)
     mkdirSync(emptyDir, { recursive: true })
     try {
-      const hooks = new ClaudeHooks(emptyDir)
+      const hooks = new ClaudeProject(emptyDir)
       expect(hooks.hasClaudeDirectory()).toBe(false)
     } finally {
       rmSync(emptyDir, { recursive: true, force: true })
@@ -58,8 +58,8 @@ describe("ClaudeHooks class", () => {
   // --- Instance methods exist ---
 
   it("exposes all instance methods", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
 
     expect(hooks.addHookConfig).toBeTypeOf("function")
     expect(hooks.install).toBeTypeOf("function")
@@ -78,23 +78,23 @@ describe("ClaudeHooks class", () => {
   // --- Static properties ---
 
   it("metadata is a static property", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    expect(ClaudeHooks.metadata).toBeDefined()
-    expect(ClaudeHooks.metadata.events).toBeDefined()
-    expect(ClaudeHooks.metadata.getEvent).toBeTypeOf("function")
-    expect(ClaudeHooks.metadata.eventNames).toBeDefined()
-    expect(ClaudeHooks.metadata.handlerTypes).toBeDefined()
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    expect(ClaudeProject.metadata).toBeDefined()
+    expect(ClaudeProject.metadata.events).toBeDefined()
+    expect(ClaudeProject.metadata.getEvent).toBeTypeOf("function")
+    expect(ClaudeProject.metadata.eventNames).toBeDefined()
+    expect(ClaudeProject.metadata.handlerTypes).toBeDefined()
   })
 
   it("SkillFrontmatterSchema is a static property", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    expect(ClaudeHooks.SkillFrontmatterSchema).toBeDefined()
-    expect(ClaudeHooks.SkillFrontmatterSchema.parse).toBeTypeOf("function")
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    expect(ClaudeProject.SkillFrontmatterSchema).toBeDefined()
+    expect(ClaudeProject.SkillFrontmatterSchema.parse).toBeTypeOf("function")
   })
 
   it("metadata is not on instances", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     // metadata should be on the class, not on instances (it's static)
     expect((hooks as any).metadata).toBeUndefined()
   })
@@ -102,8 +102,8 @@ describe("ClaudeHooks class", () => {
   // --- Static metadata behavior ---
 
   it("metadata.getEvent returns hook metadata for PreToolUse", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const meta = ClaudeHooks.metadata.getEvent("PreToolUse")
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const meta = ClaudeProject.metadata.getEvent("PreToolUse")
 
     expect(meta).toBeDefined()
     expect(meta!.name).toBe("PreToolUse")
@@ -112,15 +112,15 @@ describe("ClaudeHooks class", () => {
   })
 
   it("metadata.eventNames has 26 entries", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    expect(ClaudeHooks.metadata.eventNames.length).toBe(26)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    expect(ClaudeProject.metadata.eventNames.length).toBe(26)
   })
 
   // --- Functional behavior through instance ---
 
   it("getDocs through instance works", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     const docs = hooks.getDocs("PreToolUse")
 
     expect(docs).not.toBeNull()
@@ -129,8 +129,8 @@ describe("ClaudeHooks class", () => {
   })
 
   it("buildSyntheticInput through instance works", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     const input = hooks.buildSyntheticInput("Stop")
 
     expect(input.hook_event_name).toBe("Stop")
@@ -140,8 +140,8 @@ describe("ClaudeHooks class", () => {
   // --- settingsPath property ---
 
   it("settingsPath resolves to .claude/settings.json", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     expect(hooks.settingsPath).toBe(join(tempDir, ".claude", "settings.json"))
   })
 })

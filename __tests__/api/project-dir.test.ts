@@ -270,12 +270,12 @@ describe("project directory API", () => {
     })
   })
 
-  // --- End-to-end via ClaudeHooks class ---
+  // --- End-to-end via ClaudeProject class ---
 
-  describe("ClaudeHooks class", () => {
+  describe("ClaudeProject class", () => {
     it("exposes getHooks, install, and uninstall methods", async () => {
-      const { ClaudeHooks } = await import("../../lib/api.mjs")
-      const hooks = new ClaudeHooks(tempDir)
+      const { ClaudeProject } = await import("../../lib/api.mjs")
+      const hooks = new ClaudeProject(tempDir)
 
       expect(hooks.getHooks).toBeTypeOf("function")
       expect(hooks.install).toBeTypeOf("function")
@@ -283,8 +283,8 @@ describe("project directory API", () => {
     })
 
     it("round-trips install, getHooks, and uninstall via class", async () => {
-      const { ClaudeHooks } = await import("../../lib/api.mjs")
-      const hooks = new ClaudeHooks(tempDir)
+      const { ClaudeProject } = await import("../../lib/api.mjs")
+      const hooks = new ClaudeProject(tempDir)
 
       await hooks.install({
         event: "PostToolUse",

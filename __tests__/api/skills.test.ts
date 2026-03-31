@@ -445,9 +445,9 @@ describe("discoverSkills", () => {
     expect(pluginSkills).toHaveLength(0)
   })
 
-  it("is accessible on ClaudeHooks instances", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
-    const hooks = new ClaudeHooks(tempDir)
+  it("is accessible on ClaudeProject instances", async () => {
+    const { ClaudeProject } = await import("../../lib/api.mjs")
+    const hooks = new ClaudeProject(tempDir)
     expect(hooks.discoverSkills).toBeTypeOf("function")
   })
 

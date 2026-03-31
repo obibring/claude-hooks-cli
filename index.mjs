@@ -39,7 +39,7 @@ export { HOOK_DOCS_MAP } from "./lib/docs-map.mjs"
 
 // Re-export programmatic API
 export {
-  ClaudeHooks,
+  ClaudeProject,
   addHookConfig,
   buildHookCommand,
   installHook,

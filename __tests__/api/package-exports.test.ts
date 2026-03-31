@@ -2,11 +2,11 @@ import { describe, it, expect } from "vitest"
 import { tmpdir } from "node:os"
 
 describe("package root exports", () => {
-  it("exports ClaudeHooks class from root", async () => {
+  it("exports ClaudeProject class from root", async () => {
     const mod = await import("../../index.mjs")
-    expect(mod.ClaudeHooks).toBeDefined()
-    expect(mod.ClaudeHooks).toBeTypeOf("function")
-    const hooks = new mod.ClaudeHooks(tmpdir())
+    expect(mod.ClaudeProject).toBeDefined()
+    expect(mod.ClaudeProject).toBeTypeOf("function")
+    const hooks = new mod.ClaudeProject(tmpdir())
     expect(hooks.install).toBeTypeOf("function")
   })
 

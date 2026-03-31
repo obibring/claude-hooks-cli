@@ -185,12 +185,12 @@ describe("SkillFrontmatterSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  it("is accessible on ClaudeHooks instances and class", async () => {
-    const { ClaudeHooks } = await import("../../lib/api.mjs")
+  it("is accessible on ClaudeProject instances and class", async () => {
+    const { ClaudeProject } = await import("../../lib/api.mjs")
     const { tmpdir } = await import("node:os")
-    const hooks = new ClaudeHooks(tmpdir())
+    const hooks = new ClaudeProject(tmpdir())
     expect(hooks.validateSkillFrontmatter).toBeTypeOf("function")
-    expect(ClaudeHooks.SkillFrontmatterSchema).toBeDefined()
+    expect(ClaudeProject.SkillFrontmatterSchema).toBeDefined()
   })
 
   it("is exported from the package root", async () => {

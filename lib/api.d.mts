@@ -318,4 +318,4 @@ export declare function validateSkillFrontmatter(
 /** Zod schema for validating skill frontmatter. `name` and `description` are required. */
 export declare const SkillFrontmatterSchema: import("zod/v4").z.ZodObject<any>
 
-export { ClaudeHooks } from "./api-types.d.mts"
+export { ClaudeProject } from "./api-types.d.mts"

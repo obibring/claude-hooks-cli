@@ -346,14 +346,14 @@ export interface ClaudeHooksSettings {
  *
  * @example
  * ```js
- * import { ClaudeHooks } from "@obibring/claude-hooks-cli/api"
+ * import { ClaudeProject } from "@obibring/claude-hooks-cli/api"
  *
- * const hooks = new ClaudeHooks("/path/to/my-project")
+ * const hooks = new ClaudeProject("/path/to/my-project")
  * await hooks.install({ event: "PreToolUse", type: "command", command: "echo" })
  * const { hooks: entries } = await hooks.getHooks()
  * ```
  */
-export declare class ClaudeHooks {
+export declare class ClaudeProject {
   /**
    * @param dir - Absolute path to the project directory. Must exist and be a directory.
    * @throws {Error} If the path does not exist or is not a directory.

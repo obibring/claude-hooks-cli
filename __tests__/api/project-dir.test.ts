@@ -270,39 +270,37 @@ describe("project directory API", () => {
     })
   })
 
-  // --- End-to-end via facade ---
+  // --- End-to-end via ClaudeHooks class ---
 
-  describe("claudeHooks facade", () => {
-    it("exposes all project directory methods", async () => {
-      const { claudeHooks } = await import("../../lib/api.mjs")
+  describe("ClaudeHooks class", () => {
+    it("exposes getHooks, install, and uninstall methods", async () => {
+      const { ClaudeHooks } = await import("../../lib/api.mjs")
+      const hooks = new ClaudeHooks(tempDir)
 
-      expect(claudeHooks.getHooksForProjectDir).toBeTypeOf("function")
-      expect(claudeHooks.saveHookToProjectDir).toBeTypeOf("function")
-      expect(claudeHooks.removeHookFromProjectDir).toBeTypeOf("function")
+      expect(hooks.getHooks).toBeTypeOf("function")
+      expect(hooks.install).toBeTypeOf("function")
+      expect(hooks.uninstall).toBeTypeOf("function")
     })
 
-    it("round-trips save, list, and remove via facade", async () => {
-      const { claudeHooks } = await import("../../lib/api.mjs")
+    it("round-trips install, getHooks, and uninstall via class", async () => {
+      const { ClaudeHooks } = await import("../../lib/api.mjs")
+      const hooks = new ClaudeHooks(tempDir)
 
-      await claudeHooks.saveHookToProjectDir(tempDir, {
+      await hooks.install({
         event: "PostToolUse",
         type: "command",
         command: "echo post",
         matcher: "Bash",
       })
 
-      const { hooks } = await claudeHooks.getHooksForProjectDir(tempDir)
-      expect(hooks).toHaveLength(1)
-      expect(hooks[0].eventName).toBe("PostToolUse")
+      const { hooks: entries } = await hooks.getHooks()
+      expect(entries).toHaveLength(1)
+      expect(entries[0].eventName).toBe("PostToolUse")
 
-      const { removed } = await claudeHooks.removeHookFromProjectDir(
-        tempDir,
-        "PostToolUse",
-        0,
-      )
+      const { removed } = await hooks.uninstall("PostToolUse", 0)
       expect(removed).toBe(true)
 
-      const after = await claudeHooks.getHooksForProjectDir(tempDir)
+      const after = await hooks.getHooks()
       expect(after.hooks).toHaveLength(0)
     })
   })

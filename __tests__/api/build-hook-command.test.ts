@@ -52,10 +52,12 @@ describe("buildHookCommand", () => {
     expect(() => buildHookCommand("tsx", "   ")).toThrow(/filePath.*required/i)
   })
 
-  it("is accessible on the claudeHooks facade", async () => {
-    const { claudeHooks } = await import("../../lib/api.mjs")
-    expect(claudeHooks.buildHookCommand).toBeTypeOf("function")
-    const cmd = claudeHooks.buildHookCommand("tsx", "hooks/check.ts")
+  it("is accessible on ClaudeHooks instances", async () => {
+    const { ClaudeHooks } = await import("../../lib/api.mjs")
+    const { tmpdir } = await import("node:os")
+    const hooks = new ClaudeHooks(tmpdir())
+    expect(hooks.buildHookCommand).toBeTypeOf("function")
+    const cmd = hooks.buildHookCommand("tsx", "hooks/check.ts")
     expect(cmd).toBe('npx -y tsx "$CLAUDE_PROJECT_DIR/hooks/check.ts"')
   })
 

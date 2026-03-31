@@ -1,10 +1,13 @@
 import { describe, it, expect } from "vitest"
+import { tmpdir } from "node:os"
 
 describe("package root exports", () => {
-  it("exports claudeHooks from root", async () => {
+  it("exports ClaudeHooks class from root", async () => {
     const mod = await import("../../index.mjs")
-    expect(mod.claudeHooks).toBeDefined()
-    expect(mod.claudeHooks.install).toBeTypeOf("function")
+    expect(mod.ClaudeHooks).toBeDefined()
+    expect(mod.ClaudeHooks).toBeTypeOf("function")
+    const hooks = new mod.ClaudeHooks(tmpdir())
+    expect(hooks.install).toBeTypeOf("function")
   })
 
   it("exports all API functions individually from root", async () => {

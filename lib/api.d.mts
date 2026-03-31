@@ -8,11 +8,16 @@ export type {
   TestHookResult,
   ScaffoldOptions,
   ScaffoldResult,
-  ClaudeHooks,
   ClaudeHooksMetadata,
   ClaudeHooksSettings,
   HookMeta,
   HandlerTypeInfo,
+  SkillFrontmatter,
+  SkillReference,
+  SkillDefinition,
+  DiscoverSkillsOptions,
+  ValidateSkillOptions,
+  ValidateSkillResult,
 } from "./api-types.d.mts"
 
 /**
@@ -255,17 +260,62 @@ export declare function buildSyntheticInput(
 ): Record<string, unknown>
 
 /**
- * The main programmatic API facade for claude-hooks-cli.
- * Groups all hook management, testing, documentation, scaffolding, metadata, and settings
- * operations into a single importable object.
+ * Discovers all Claude Code skills available for the given project directories.
+ *
+ * Resolution algorithm (mirrors the `skills()` shell function):
+ * 1. For each provided directory, look for `<dir>/.claude/skills/`
+ * 2. If `recursive` is true, walk up parent directories for additional `.claude/skills/` dirs
+ * 3. Always include `~/.claude/skills/` (user-level skills)
+ * 4. If `includePlugins` is true, include skills from installed Claude Code plugins
+ *
+ * @param dirs - Absolute path(s) to project directories
+ * @param options - Discovery options
+ * @returns Map of absolute SKILL.md paths to parsed skill definition objects
  *
  * @example
  * ```js
- * import { claudeHooks } from "@obibring/claude-hooks-cli/api"
- *
- * await claudeHooks.install({ event: "PreToolUse", type: "command", command: "my-hook.mjs" })
- * const { hooks } = await claudeHooks.list("project")
- * const docs = claudeHooks.getDocs("PreToolUse")
+ * const skills = discoverSkills("/path/to/project", { recursive: true, includePlugins: true })
+ * for (const [path, skill] of Object.entries(skills)) {
+ *   console.log(skill.name, Object.keys(skill.references).length, "references")
+ * }
  * ```
  */
-export declare const claudeHooks: import("./api-types.d.mts").ClaudeHooks
+export declare function discoverSkills(
+  dirs: string | string[],
+  options?: import("./api-types.d.mts").DiscoverSkillsOptions,
+): Record<string, import("./api-types.d.mts").SkillDefinition>
+
+/**
+ * Parses YAML-like frontmatter from a SKILL.md file's raw contents.
+ * Returns the parsed frontmatter (with known boolean fields coerced) and the remaining markdown body.
+ * Known boolean fields (`disable-model-invocation`, `user-invocable`) are parsed as `true`/`false`.
+ */
+export declare function parseFrontmatter(raw: string): {
+  frontmatter: import("./api-types.d.mts").SkillFrontmatter
+  contents: string
+}
+
+/**
+ * Validates a skill frontmatter object against the known Claude Code skill schema.
+ * `name` and `description` are required fields. Returns errors for missing/invalid fields
+ * and warnings for unrecognized keys.
+ *
+ * @param frontmatter - The frontmatter object to validate
+ * @param options - Pass `extraProperties` to suppress warnings for custom keys
+ *
+ * @example
+ * ```js
+ * const result = validateSkillFrontmatter({ name: "my-skill" })
+ * // result.success === false
+ * // result.errors === { description: "missing" }
+ * ```
+ */
+export declare function validateSkillFrontmatter(
+  frontmatter: Record<string, unknown>,
+  options?: import("./api-types.d.mts").ValidateSkillOptions,
+): import("./api-types.d.mts").ValidateSkillResult
+
+/** Zod schema for validating skill frontmatter. `name` and `description` are required. */
+export declare const SkillFrontmatterSchema: import("zod/v4").z.ZodObject<any>
+
+export { ClaudeHooks } from "./api-types.d.mts"

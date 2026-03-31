@@ -39,7 +39,7 @@ export { HOOK_DOCS_MAP } from "./lib/docs-map.mjs"
 
 // Re-export programmatic API
 export {
-  claudeHooks,
+  ClaudeHooks,
   addHookConfig,
   buildHookCommand,
   installHook,
@@ -52,6 +52,10 @@ export {
   getDocs,
   getAvailableDocs,
   scaffoldHookFile,
+  discoverSkills,
+  parseFrontmatter,
+  validateSkillFrontmatter,
+  SkillFrontmatterSchema,
 } from "./lib/api.mjs"
 
 // Re-export buildSyntheticInput for test utilities

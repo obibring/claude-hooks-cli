@@ -3,3 +3,4 @@ node_modules
 !.claude/hooks
 !.claude/commands
 !.claude/settings.json
+my-hooks

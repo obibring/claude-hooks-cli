@@ -32,7 +32,12 @@ describe("HookHandler.getToolInput()", () => {
     const input = {
       ...buildInput("PreToolUse"),
       tool_name: "Edit",
-      tool_input: { file_path: "/tmp/file.ts", old_string: "foo", new_string: "bar", replace_all: true },
+      tool_input: {
+        file_path: "/tmp/file.ts",
+        old_string: "foo",
+        new_string: "bar",
+        replace_all: true,
+      },
     }
     const result = await runScript(makeScript("Edit"), JSON.stringify(input))
 
@@ -91,7 +96,12 @@ describe("HookHandler.getToolInput()", () => {
     const input = {
       ...buildInput("PreToolUse"),
       tool_name: "Grep",
-      tool_input: { pattern: "TODO.*fix", path: "/src", output_mode: "content", "-i": true },
+      tool_input: {
+        pattern: "TODO.*fix",
+        path: "/src",
+        output_mode: "content",
+        "-i": true,
+      },
     }
     const result = await runScript(makeScript("Grep"), JSON.stringify(input))
 
@@ -149,7 +159,13 @@ describe("HookHandler.getToolInput()", () => {
       ...buildInput("PreToolUse"),
       tool_name: "AskUserQuestion",
       tool_input: {
-        questions: [{ question: "Which framework?", header: "Framework", options: [{ label: "React" }] }],
+        questions: [
+          {
+            question: "Which framework?",
+            header: "Framework",
+            options: [{ label: "React" }],
+          },
+        ],
       },
     }
     const result = await runScript(makeScript("AskUserQuestion"), JSON.stringify(input))

@@ -149,11 +149,7 @@ describe("HookHandler.getEnvFileVars()", () => {
   })
 
   it("handles empty lines and whitespace", async () => {
-    writeFileSync(
-      envFilePath,
-      "\n  \n  FOO = bar  \n\n  BAZ=  qux  \n\n",
-      "utf-8",
-    )
+    writeFileSync(envFilePath, "\n  \n  FOO = bar  \n\n  BAZ=  qux  \n\n", "utf-8")
     const input = JSON.stringify(buildInput(EVENT))
     const result = await runScript(makeScript(envFilePath), input, {
       CLAUDE_ENV_FILE: envFilePath,

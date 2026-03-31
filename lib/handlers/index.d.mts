@@ -110,7 +110,10 @@ interface BaseHandler<E extends keyof HookIOMap> {
 }
 
 /** Handler with CLAUDE_ENV_FILE access and getEnvFileVars(). */
-interface EnvFileHandler<E extends keyof HookIOMap> extends Omit<BaseHandler<E>, "getEnv"> {
+interface EnvFileHandler<E extends keyof HookIOMap> extends Omit<
+  BaseHandler<E>,
+  "getEnv"
+> {
   /**
    * Reads a Claude Code environment variable by name.
    * This hook event has access to CLAUDE_ENV_FILE in addition to the base variables.

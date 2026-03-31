@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, expect, it } from "vitest"
 
 describe("addHookConfig", () => {
   it("builds a command handler config entry", async () => {
@@ -37,7 +37,8 @@ describe("addHookConfig", () => {
     })
     expect(result.configEntry.hooks[0].type).toBe("http")
     expect(result.configEntry.hooks[0].url).toBe("https://example.com/webhook")
-    expect(result.configEntry.hooks[0].headers.Authorization).toBe("Bearer $TOKEN")
+    // @ts-expect-error - headers is optional
+    expect(result.configEntry.hooks[0].headers?.Authorization).toBe("Bearer $TOKEN")
   })
 
   it("includes matcher when provided", async () => {

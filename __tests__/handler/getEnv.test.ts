@@ -17,11 +17,9 @@ function makeScript(envVarName: string): string {
 describe("HookHandler.getEnv()", () => {
   it("reads CLAUDE_PROJECT_DIR from process.env", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_PROJECT_DIR"),
-      input,
-      { CLAUDE_PROJECT_DIR: "/my/project" },
-    )
+    const result = await runScript(makeScript("CLAUDE_PROJECT_DIR"), input, {
+      CLAUDE_PROJECT_DIR: "/my/project",
+    })
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)
@@ -30,11 +28,9 @@ describe("HookHandler.getEnv()", () => {
 
   it("reads CLAUDE_ENV_FILE from process.env", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_ENV_FILE"),
-      input,
-      { CLAUDE_ENV_FILE: "/tmp/env-file" },
-    )
+    const result = await runScript(makeScript("CLAUDE_ENV_FILE"), input, {
+      CLAUDE_ENV_FILE: "/tmp/env-file",
+    })
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)
@@ -43,11 +39,9 @@ describe("HookHandler.getEnv()", () => {
 
   it("reads CLAUDE_CODE_REMOTE from process.env", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_CODE_REMOTE"),
-      input,
-      { CLAUDE_CODE_REMOTE: "true" },
-    )
+    const result = await runScript(makeScript("CLAUDE_CODE_REMOTE"), input, {
+      CLAUDE_CODE_REMOTE: "true",
+    })
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)
@@ -56,11 +50,9 @@ describe("HookHandler.getEnv()", () => {
 
   it("reads CLAUDE_PLUGIN_ROOT from process.env", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_PLUGIN_ROOT"),
-      input,
-      { CLAUDE_PLUGIN_ROOT: "/plugins/my-plugin" },
-    )
+    const result = await runScript(makeScript("CLAUDE_PLUGIN_ROOT"), input, {
+      CLAUDE_PLUGIN_ROOT: "/plugins/my-plugin",
+    })
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)
@@ -69,11 +61,9 @@ describe("HookHandler.getEnv()", () => {
 
   it("reads CLAUDE_SKILL_DIR from process.env", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_SKILL_DIR"),
-      input,
-      { CLAUDE_SKILL_DIR: "/skills/my-skill" },
-    )
+    const result = await runScript(makeScript("CLAUDE_SKILL_DIR"), input, {
+      CLAUDE_SKILL_DIR: "/skills/my-skill",
+    })
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)
@@ -82,11 +72,9 @@ describe("HookHandler.getEnv()", () => {
 
   it("reads CLAUDE_PLUGIN_DATA from process.env", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_PLUGIN_DATA"),
-      input,
-      { CLAUDE_PLUGIN_DATA: "/data/my-plugin" },
-    )
+    const result = await runScript(makeScript("CLAUDE_PLUGIN_DATA"), input, {
+      CLAUDE_PLUGIN_DATA: "/data/my-plugin",
+    })
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)
@@ -108,11 +96,7 @@ describe("HookHandler.getEnv()", () => {
 
   it("returns null when env var is not set", async () => {
     const input = JSON.stringify(buildInput(EVENT))
-    const result = await runScript(
-      makeScript("CLAUDE_PLUGIN_ROOT"),
-      input,
-      {},
-    )
+    const result = await runScript(makeScript("CLAUDE_PLUGIN_ROOT"), input, {})
 
     expect(result.exitCode).toBe(0)
     const parsed = JSON.parse(result.stdout)

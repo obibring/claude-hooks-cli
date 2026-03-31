@@ -70,7 +70,9 @@ export interface PermissionRequestDecision {
 /** PermissionRequest output — can allow or deny the permission request. */
 export interface PermissionRequestOutput extends BaseHookOutput {
   /** Hook-specific output for PermissionRequest. Contains the permission decision. */
-  hookSpecificOutput?: { /** The permission decision. */ decision?: PermissionRequestDecision }
+  hookSpecificOutput?: {
+    /** The permission decision. */ decision?: PermissionRequestDecision
+  }
 }
 
 /** PostToolUse output — can block Claude from continuing. */
@@ -179,31 +181,91 @@ export interface FileChangedOutput extends BaseHookOutput {}
  */
 export interface HookIOMap {
   PreToolUse: { input: z.infer<typeof PreToolUseInputSchema>; output: PreToolUseOutput }
-  PermissionRequest: { input: z.infer<typeof PermissionRequestInputSchema>; output: PermissionRequestOutput }
-  PostToolUse: { input: z.infer<typeof PostToolUseInputSchema>; output: PostToolUseOutput }
-  PostToolUseFailure: { input: z.infer<typeof PostToolUseFailureInputSchema>; output: PostToolUseFailureOutput }
-  UserPromptSubmit: { input: z.infer<typeof UserPromptSubmitInputSchema>; output: UserPromptSubmitOutput }
-  Notification: { input: z.infer<typeof NotificationInputSchema>; output: NotificationOutput }
+  PermissionRequest: {
+    input: z.infer<typeof PermissionRequestInputSchema>
+    output: PermissionRequestOutput
+  }
+  PostToolUse: {
+    input: z.infer<typeof PostToolUseInputSchema>
+    output: PostToolUseOutput
+  }
+  PostToolUseFailure: {
+    input: z.infer<typeof PostToolUseFailureInputSchema>
+    output: PostToolUseFailureOutput
+  }
+  UserPromptSubmit: {
+    input: z.infer<typeof UserPromptSubmitInputSchema>
+    output: UserPromptSubmitOutput
+  }
+  Notification: {
+    input: z.infer<typeof NotificationInputSchema>
+    output: NotificationOutput
+  }
   Stop: { input: z.infer<typeof StopInputSchema>; output: StopOutput }
-  SubagentStart: { input: z.infer<typeof SubagentStartInputSchema>; output: SubagentStartOutput }
-  SubagentStop: { input: z.infer<typeof SubagentStopInputSchema>; output: SubagentStopOutput }
+  SubagentStart: {
+    input: z.infer<typeof SubagentStartInputSchema>
+    output: SubagentStartOutput
+  }
+  SubagentStop: {
+    input: z.infer<typeof SubagentStopInputSchema>
+    output: SubagentStopOutput
+  }
   PreCompact: { input: z.infer<typeof PreCompactInputSchema>; output: PreCompactOutput }
-  PostCompact: { input: z.infer<typeof PostCompactInputSchema>; output: PostCompactOutput }
-  SessionStart: { input: z.infer<typeof SessionStartInputSchema>; output: SessionStartOutput }
+  PostCompact: {
+    input: z.infer<typeof PostCompactInputSchema>
+    output: PostCompactOutput
+  }
+  SessionStart: {
+    input: z.infer<typeof SessionStartInputSchema>
+    output: SessionStartOutput
+  }
   SessionEnd: { input: z.infer<typeof SessionEndInputSchema>; output: SessionEndOutput }
   Setup: { input: z.infer<typeof SetupInputSchema>; output: SetupOutput }
-  TeammateIdle: { input: z.infer<typeof TeammateIdleInputSchema>; output: TeammateIdleOutput }
-  TaskCreated: { input: z.infer<typeof TaskCreatedInputSchema>; output: TaskCreatedOutput }
-  TaskCompleted: { input: z.infer<typeof TaskCompletedInputSchema>; output: TaskCompletedOutput }
-  ConfigChange: { input: z.infer<typeof ConfigChangeInputSchema>; output: ConfigChangeOutput }
-  WorktreeCreate: { input: z.infer<typeof WorktreeCreateInputSchema>; output: WorktreeCreateOutput }
-  WorktreeRemove: { input: z.infer<typeof WorktreeRemoveInputSchema>; output: WorktreeRemoveOutput }
-  InstructionsLoaded: { input: z.infer<typeof InstructionsLoadedInputSchema>; output: InstructionsLoadedOutput }
-  Elicitation: { input: z.infer<typeof ElicitationInputSchema>; output: ElicitationOutput }
-  ElicitationResult: { input: z.infer<typeof ElicitationResultInputSchema>; output: ElicitationResultOutput }
-  StopFailure: { input: z.infer<typeof StopFailureInputSchema>; output: StopFailureOutput }
+  TeammateIdle: {
+    input: z.infer<typeof TeammateIdleInputSchema>
+    output: TeammateIdleOutput
+  }
+  TaskCreated: {
+    input: z.infer<typeof TaskCreatedInputSchema>
+    output: TaskCreatedOutput
+  }
+  TaskCompleted: {
+    input: z.infer<typeof TaskCompletedInputSchema>
+    output: TaskCompletedOutput
+  }
+  ConfigChange: {
+    input: z.infer<typeof ConfigChangeInputSchema>
+    output: ConfigChangeOutput
+  }
+  WorktreeCreate: {
+    input: z.infer<typeof WorktreeCreateInputSchema>
+    output: WorktreeCreateOutput
+  }
+  WorktreeRemove: {
+    input: z.infer<typeof WorktreeRemoveInputSchema>
+    output: WorktreeRemoveOutput
+  }
+  InstructionsLoaded: {
+    input: z.infer<typeof InstructionsLoadedInputSchema>
+    output: InstructionsLoadedOutput
+  }
+  Elicitation: {
+    input: z.infer<typeof ElicitationInputSchema>
+    output: ElicitationOutput
+  }
+  ElicitationResult: {
+    input: z.infer<typeof ElicitationResultInputSchema>
+    output: ElicitationResultOutput
+  }
+  StopFailure: {
+    input: z.infer<typeof StopFailureInputSchema>
+    output: StopFailureOutput
+  }
   CwdChanged: { input: z.infer<typeof CwdChangedInputSchema>; output: CwdChangedOutput }
-  FileChanged: { input: z.infer<typeof FileChangedInputSchema>; output: FileChangedOutput }
+  FileChanged: {
+    input: z.infer<typeof FileChangedInputSchema>
+    output: FileChangedOutput
+  }
 }
 
 /** All valid hook event names. */
@@ -342,7 +404,11 @@ export interface ToolInputMap {
 }
 
 /** Hook events that receive tool_name and tool_input. */
-type ToolEventHooks = "PreToolUse" | "PostToolUse" | "PostToolUseFailure" | "PermissionRequest"
+type ToolEventHooks =
+  | "PreToolUse"
+  | "PostToolUse"
+  | "PostToolUseFailure"
+  | "PermissionRequest"
 
 /** Hook events that have access to CLAUDE_ENV_FILE. */
 type EnvFileEvents = "SessionStart" | "CwdChanged" | "FileChanged"
@@ -357,7 +423,9 @@ type EnvVarReturnType<
 > = N extends "CLAUDE_ENV_FILE"
   ? E extends EnvFileEvents
     ? string | undefined
-    : undefined | `CLAUDE_ENV_FILE is not available in "${E & string}" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.`
+    :
+        | undefined
+        | `CLAUDE_ENV_FILE is not available in "${E & string}" hooks. It is only available in: SessionStart, CwdChanged, FileChanged.`
   : string | undefined
 
 /**
@@ -436,7 +504,6 @@ export declare class HookHandler<E extends keyof HookIOMap> {
    * Exits with code 2 if stdin is empty, not valid JSON, or fails schema validation.
    */
   parseInput(): HookIOMap[E]["input"]
-
 
   /**
    * Reads a Claude Code environment variable by name.

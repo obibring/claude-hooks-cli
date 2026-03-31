@@ -1176,6 +1176,201 @@ import { BaseHookOutputSchema } from "@obibring/claude-hooks-cli/schemas/output-
 import { HookEventNameSchema } from "@obibring/claude-hooks-cli/schemas/enums.mjs"
 ```
 
+## Programmatic API
+
+This package exports a `ClaudeProject` class for managing hooks and
+discovering skills programmatically — no CLI or interactive prompts
+needed.
+
+### `ClaudeProject` class
+
+```ts
+import { ClaudeProject } from "@obibring/claude-hooks-cli"
+
+const project = new ClaudeProject("/path/to/my-project")
+```
+
+The constructor validates that the path exists and is a directory,
+throwing if not. All instance methods operate on the bound directory.
+
+#### Hook management
+
+```ts
+// Install a hook (auto-creates .claude/ directory if needed)
+await project.install({
+  event: "PreToolUse",
+  type: "command",
+  command: "node ./hooks/check-bash.mjs",
+  matcher: "Bash",
+  timeout: 10000,
+})
+
+// List all hooks
+const { filePath, hooks } = await project.getHooks()
+for (const { eventName, index, entry } of hooks) {
+  console.log(`${eventName}#${index}`, entry)
+}
+
+// Remove a hook by event name and index
+const { removed } = await project.uninstall("PreToolUse", 0)
+
+// Check if .claude/ directory exists
+project.hasClaudeDirectory() // boolean
+```
+
+#### Building hook configs without saving
+
+```ts
+// Build a validated config entry (does not write to disk)
+const { eventName, configEntry } = project.addHookConfig({
+  event: "Stop",
+  type: "prompt",
+  prompt: "Should Claude stop?",
+  model: "claude-haiku-4-5-20251001",
+})
+
+// Build a command string for a script file
+const cmd = project.buildHookCommand("tsx", "./hooks/my-hook.ts")
+// → 'npx -y tsx "$CLAUDE_PROJECT_DIR/./hooks/my-hook.ts"'
+```
+
+#### Testing hooks
+
+```ts
+// Test a command handler with synthetic input
+const result = await project.test({
+  event: "PreToolUse",
+  handler: { type: "command", command: "node ./hooks/my-hook.mjs" },
+})
+console.log(result.exitCode, result.stdout, result.stderr)
+
+// Build synthetic input for manual testing
+const input = project.buildSyntheticInput("PreToolUse", {
+  tool_name: "Write", // override defaults
+})
+```
+
+#### Documentation
+
+```ts
+const docs = project.getDocs("PreToolUse") // markdown string or null
+const events = project.getAvailableDocs() // all 26 event names
+```
+
+#### Scaffolding hook files
+
+```ts
+const { created, runnerCommand } = await project.scaffold({
+  event: "PreToolUse",
+  filePath: "./hooks/check-bash.ts",
+  // overwrite: true,  // replace existing file
+})
+```
+
+#### Skill discovery
+
+```ts
+// Discover all skills for this project
+const skills = project.discoverSkills({
+  recursive: true, // walk up parent directories
+  includePlugins: true, // include installed Claude Code plugins
+})
+
+for (const [path, skill] of Object.entries(skills)) {
+  console.log(skill.name, skill.pluginName ?? "(local)")
+  console.log(skill.frontmatter.description)
+  console.log(Object.keys(skill.references).length, "reference files")
+}
+```
+
+#### Skill frontmatter validation
+
+```ts
+const result = project.validateSkillFrontmatter({
+  name: "my-skill",
+  description: "Does things",
+  model: "opus",
+  "custom-field": "value",
+})
+// result.success === true
+// result.errors === {}
+// result.warnings === { "custom-field": '"custom-field" is not recognized...' }
+
+// Suppress warnings for known custom fields:
+project.validateSkillFrontmatter(fm, {
+  extraProperties: ["custom-field"],
+})
+```
+
+#### Static properties
+
+```ts
+// Hook metadata (no instance needed)
+ClaudeProject.metadata.eventNames // all 26 event names
+ClaudeProject.metadata.events // full metadata for each event
+ClaudeProject.metadata.getEvent("PreToolUse") // single event lookup
+ClaudeProject.metadata.handlerTypes // command, prompt, agent, http
+
+// Zod schema for skill frontmatter
+ClaudeProject.SkillFrontmatterSchema.parse({
+  name: "x",
+  description: "y",
+})
+```
+
+### Standalone function exports
+
+All functions are also available as standalone exports for consumers
+who don't need the class:
+
+```ts
+import {
+  addHookConfig,
+  buildHookCommand,
+  installHook,
+  uninstallHook,
+  listHookEntries,
+  getHooksForProjectDir,
+  saveHookToProjectDir,
+  removeHookFromProjectDir,
+  testHook,
+  buildSyntheticInput,
+  getDocs,
+  getAvailableDocs,
+  scaffoldHookFile,
+  discoverSkills,
+  parseFrontmatter,
+  validateSkillFrontmatter,
+  SkillFrontmatterSchema,
+  HOOK_METADATA,
+  HOOK_EVENT_NAMES,
+  getHookMeta,
+  HANDLER_TYPE_INFO,
+  HOOK_DOCS_MAP,
+  resolveCommand,
+  parseCommandAsFile,
+  createCommandFile,
+} from "@obibring/claude-hooks-cli"
+```
+
+### Sub-path exports
+
+| Import Path                            | What It Provides                                            |
+| -------------------------------------- | ----------------------------------------------------------- |
+| `@obibring/claude-hooks-cli`           | Everything (ClaudeProject, schemas, functions, handler)     |
+| `@obibring/claude-hooks-cli/api`       | ClaudeProject class + all API functions                     |
+| `@obibring/claude-hooks-cli/handler`   | HookHandler class (for hook script authors)                 |
+| `@obibring/claude-hooks-cli/schemas`   | Zod enum/base schemas                                       |
+| `@obibring/claude-hooks-cli/schemas/*` | Individual schema files                                     |
+| `@obibring/claude-hooks-cli/hooks`     | Per-event Config/Input/Output schemas                       |
+| `@obibring/claude-hooks-cli/hooks/*`   | Individual hook schema files                                |
+| `@obibring/claude-hooks-cli/settings`  | `getSettingsPath`, `readSettings`, `writeSettings`          |
+| `@obibring/claude-hooks-cli/store`     | `getHooksObject`, `addHook`, `removeHook`, `listHooks`      |
+| `@obibring/claude-hooks-cli/manager`   | `getHooks`, `saveHook`, `deleteHook`                        |
+| `@obibring/claude-hooks-cli/metadata`  | `HOOK_METADATA`, `getHookMeta`, `HOOK_EVENT_NAMES`          |
+| `@obibring/claude-hooks-cli/commands`  | `resolveCommand`, `parseCommandAsFile`, `createCommandFile` |
+| `@obibring/claude-hooks-cli/docs`      | `HOOK_DOCS_MAP`                                             |
+
 ## CJS Support
 
 The handler module works with both ESM `import` and CJS `require()`.
@@ -1236,6 +1431,12 @@ lib/
   test-hook.mjs          Synthetic input testing
   command-resolver.mjs   Smart file path → runner resolution
   docs-map.mjs           Auto-generated hook name → docs string mapping
+  api.mjs                Programmatic API (ClaudeProject class + standalone functions)
+  api.d.mts              API type declarations (re-exports)
+  api-types.d.mts        API type definitions (ClaudeProject, SkillFrontmatter, etc.)
+  skills.mjs             Skill discovery + frontmatter parsing + validation
+  synthetic-input.mjs    Synthetic hook input builder for testing
+  run-command.mjs        Shell command runner (stdin piping, timeout)
 scripts/
   build-docs-map.mjs     Generates lib/docs-map.mjs from docs/*.md
 schemas/
@@ -1249,6 +1450,8 @@ hooks/
   index.mjs              Barrel re-export
 docs/
   <EventName>.md         Per-hook documentation (26 files)
+__tests__/api/
+  *.test.ts              Programmatic API tests (13 files, ~350 tests)
 __tests__/handler/
   <EventName>.test.ts    Per-hook handler tests (26 files)
   getEnv.test.ts         getEnv() tests for all 7 env vars

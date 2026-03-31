@@ -64,6 +64,14 @@ export { buildSyntheticInput } from "./lib/synthetic-input.mjs"
 // Re-export hook form builder for consumers
 export { hookFormBuilder } from "./lib/hook-form-builder.mjs"
 
+/**
+ * @typedef {import("./lib/hook-form-builder.mjs").FieldType} FieldType
+ * @typedef {import("./lib/hook-form-builder.mjs").FieldDefinition} FieldDefinition
+ * @typedef {import("./lib/hook-form-builder.mjs").FieldMap} FieldMap
+ * @typedef {import("./lib/hook-form-builder.mjs").HookTypeDefinition} HookTypeDefinition
+ * @typedef {import("./lib/hook-form-builder.mjs").HookFormMap} HookFormMap
+ */
+
 // Re-export HookSchemas map (hook name → { Config, Input, Output, Matcher?, HookSpecificOutput? })
 export { HookSchemas } from "./hooks/index.mjs"
 

@@ -6,6 +6,14 @@
 // Hook form builder (field definitions, Zod schemas per field)
 export { hookFormBuilder } from "./lib/hook-form-builder.mjs"
 
+/**
+ * @typedef {import("./lib/hook-form-builder.mjs").FieldType} FieldType
+ * @typedef {import("./lib/hook-form-builder.mjs").FieldDefinition} FieldDefinition
+ * @typedef {import("./lib/hook-form-builder.mjs").FieldMap} FieldMap
+ * @typedef {import("./lib/hook-form-builder.mjs").HookTypeDefinition} HookTypeDefinition
+ * @typedef {import("./lib/hook-form-builder.mjs").HookFormMap} HookFormMap
+ */
+
 // Hook schemas (Config, Input, Output, Matcher per hook event)
 export { HookSchemas } from "./hooks/index.mjs"
 

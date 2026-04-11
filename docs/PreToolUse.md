@@ -89,12 +89,13 @@ The JSON object received on stdin:
 The JSON object to write to stdout (can be handled via
 `HookHandler.for("PreToolUse").exit("success", { ... })`):
 
-| Property                                      | Type                         | Description                                           |
-| --------------------------------------------- | ---------------------------- | ----------------------------------------------------- |
-| `hookSpecificOutput.permissionDecision`       | `"allow" \| "deny" \| "ask"` | Controls whether the tool call proceeds               |
-| `hookSpecificOutput.permissionDecisionReason` | `string`                     | Shown to the model when denied                        |
-| `hookSpecificOutput.autoAllow`                | `boolean`                    | Auto-approve future uses of this tool (since v2.0.76) |
-| `hookSpecificOutput.updatedInput`             | `Record<string, unknown>`    | Replaces the original tool input (since v2.1.85)      |
+| Property                                      | Type                          | Description                                                          |
+| --------------------------------------------- | ----------------------------- | -------------------------------------------------------------------- |
+| `hookSpecificOutput.hookEventName`            | `"PreToolUse"`                | **Required** discriminator — output validation fails silently without it |
+| `hookSpecificOutput.permissionDecision`       | `"allow" \| "deny" \| "ask"` | Controls whether the tool call proceeds                              |
+| `hookSpecificOutput.permissionDecisionReason` | `string`                      | Shown to the model when denied                                       |
+| `hookSpecificOutput.autoAllow`                | `boolean`                     | Auto-approve future uses of this tool (since v2.0.76)                |
+| `hookSpecificOutput.updatedInput`             | `Record<string, unknown>`     | Replaces the original tool input (since v2.1.85)                     |
 
 ```ts
 {
@@ -104,6 +105,7 @@ The JSON object to write to stdout (can be handled via
   systemMessage?: string
   additionalContext?: string
   hookSpecificOutput?: {
+    hookEventName: "PreToolUse"          // required discriminator
     permissionDecision?: "allow" | "deny" | "ask"
     permissionDecisionReason?: string
     autoAllow?: boolean
@@ -114,6 +116,22 @@ The JSON object to write to stdout (can be handled via
 
 ## Gotchas
 
+- **`hookEventName` is required in `hookSpecificOutput`**: Claude Code
+  validates `hookSpecificOutput` as a discriminated union keyed on
+  `hookEventName`. If you omit it, the output fails validation silently
+  — your `permissionDecision: "deny"` is ignored and the tool runs
+  anyway. Always include it:
+  ```json
+  {
+    "hookSpecificOutput": {
+      "hookEventName": "PreToolUse",
+      "permissionDecision": "deny",
+      "permissionDecisionReason": "..."
+    }
+  }
+  ```
+  The `HookHandler.exit()` method does not add this automatically — you
+  must include it yourself.
 - **Deprecated fields**: Do NOT use top-level `decision`/`reason`. Use
   `hookSpecificOutput.permissionDecision` and
   `hookSpecificOutput.permissionDecisionReason` instead.

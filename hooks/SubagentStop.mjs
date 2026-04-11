@@ -162,10 +162,12 @@ export const SubagentStopInputSchema = BaseHookInputSchema.extend({
     .describe(
       "Path to the subagent's full transcript JSON file. Useful for post-processing.",
     ),
-  /** True if a stop hook is already running. */
+  /** True if a stop hook is configured and active for this session. Use to coordinate between multiple stop hooks or guard against recursion. */
   stop_hook_active: z
     .boolean()
-    .describe("True if a stop hook is already running."),
+    .describe(
+      "True if a stop hook is configured and active for this session. Use to coordinate between multiple stop hooks or guard against recursion.",
+    ),
 })
 
 /** @typedef {z.infer<typeof SubagentStopInputSchema>} SubagentStopInput */
@@ -173,9 +175,9 @@ export const SubagentStopInputSchema = BaseHookInputSchema.extend({
 // --- Output ---
 
 export const SubagentStopOutputSchema = BaseHookOutputSchema.extend({
-  /** Set to \"block\" to stop execution after subagent completion. */
+  /** Set to "block" to prevent the subagent from stopping and re-engage it for another turn. */
   decision: BlockDecisionSchema.optional().describe(
-    'Set to "block" to stop execution after subagent completion.',
+    'Set to "block" to prevent the subagent from stopping and re-engage it for another turn.',
   ),
 })
 
@@ -216,7 +218,8 @@ const _input = {
   },
   stop_hook_active: {
     type: "boolean",
-    description: "True if a stop hook is already running.",
+    description:
+      "True if a stop hook is configured and active for this session. Use to coordinate between multiple stop hooks or guard against recursion.",
     required: true,
   },
 }
@@ -225,7 +228,8 @@ const _output = {
   ...BASE_OUTPUT_FIELDS,
   decision: {
     type: "enum",
-    description: 'Set to "block" to stop execution after subagent completion.',
+    description:
+      'Set to "block" to prevent the subagent from stopping and re-engage it for another turn.',
     values: ["block"],
     strict: true,
   },

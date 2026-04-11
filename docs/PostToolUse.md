@@ -90,9 +90,10 @@ The JSON object received on stdin:
 The JSON object to write to stdout (can be handled via
 `HookHandler.for("PostToolUse").exit("success", { ... })`):
 
-| Property   | Type      | Description                  |
-| ---------- | --------- | ---------------------------- |
-| `decision` | `"block"` | Stops Claude from continuing |
+| Property   | Type      | Description                                                     |
+| ---------- | --------- | --------------------------------------------------------------- |
+| `decision` | `"block"` | Prompts Claude with the `reason`; the tool has already executed |
+| `reason`   | `string`  | Explanation shown to Claude when `decision` is `"block"`        |
 
 ```ts
 {
@@ -109,7 +110,10 @@ The JSON object to write to stdout (can be handled via
 
 - **Only fires on success**: If the tool call fails,
   `PostToolUseFailure` fires instead — not `PostToolUse`.
-- **`decision: "block"`**: Uses top-level `decision` field (not nested
-  in `hookSpecificOutput`), unlike PreToolUse.
+- **`decision: "block"` is reactive, not preventative**: The tool has
+  already executed. Returning `{ decision: "block", reason: "..." }`
+  prompts Claude with the reason as feedback — it does not undo the
+  tool call or hard-stop Claude. This is different from
+  Stop/SubagentStop where `block` prevents Claude from finishing.
 - **Agent frontmatter**: `hook_event_name` is correctly reported as
   `"PostToolUse"`.

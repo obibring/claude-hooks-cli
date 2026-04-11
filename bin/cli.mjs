@@ -74,37 +74,40 @@ addCmd.action(async (opts) => {
 
   clack.intro("Add a Claude Code hook")
 
-  const result = await addHookFlow({
-    event: opts.event,
-    type: opts.type,
-    command: opts.command,
-    matcher: opts.matcher,
-    timeout: opts.timeout,
-    async: opts.async,
-    once: opts.once,
-    statusMessage: opts.statusMessage,
-    ifCondition: opts.if,
-    create: opts.create,
-    autoPromptSuffix: opts.autoPromptSuffix,
-    nonInteractive: opts.nonInteractive,
-  })
+  while (true) {
+    const result = await addHookFlow({
+      event: opts.event,
+      type: opts.type,
+      command: opts.command,
+      matcher: opts.matcher,
+      timeout: opts.timeout,
+      async: opts.async,
+      once: opts.once,
+      statusMessage: opts.statusMessage,
+      ifCondition: opts.if,
+      create: opts.create,
+      autoPromptSuffix: opts.autoPromptSuffix,
+      nonInteractive: opts.nonInteractive,
+    })
 
-  if (!result) {
-    clack.outro("Cancelled")
-    return
+    if (!result) {
+      clack.log.info("Cancelled")
+    } else {
+      const { filePath } = await saveHook(
+        scope,
+        result.eventName,
+        result.configEntry,
+      )
+
+      clack.log.success(
+        `Added ${result.eventName} hook to ${scope} settings (${filePath})`,
+      )
+      clack.log.message(JSON.stringify(result.configEntry, null, 2))
+    }
+
+    if (opts.nonInteractive) break
+    clack.log.info("Press Ctrl+C to exit\n")
   }
-
-  const { filePath } = await saveHook(
-    scope,
-    result.eventName,
-    result.configEntry,
-  )
-
-  clack.log.success(
-    `Added ${result.eventName} hook to ${scope} settings (${filePath})`,
-  )
-  clack.log.message(JSON.stringify(result.configEntry, null, 2))
-  clack.outro("Done")
 })
 
 program.addCommand(addCmd)
@@ -120,7 +123,13 @@ addScopeOption(listCmd)
 listCmd.action(async (opts) => {
   const scope = validateScope(opts.scope)
   if (!scope) return
-  await listHooksFlow(scope)
+
+  clack.intro("List Claude Code hooks")
+
+  while (true) {
+    await listHooksFlow(scope)
+    clack.log.info("Press Ctrl+C to exit\n")
+  }
 })
 
 program.addCommand(listCmd)
@@ -142,13 +151,16 @@ removeCmd.action(async (opts) => {
 
   clack.intro("Remove a Claude Code hook")
 
-  await removeHookFlow(scope, {
-    event: opts.event,
-    index: opts.index,
-    nonInteractive: opts.nonInteractive,
-  })
+  while (true) {
+    await removeHookFlow(scope, {
+      event: opts.event,
+      index: opts.index,
+      nonInteractive: opts.nonInteractive,
+    })
 
-  clack.outro("Done")
+    if (opts.nonInteractive) break
+    clack.log.info("Press Ctrl+C to exit\n")
+  }
 })
 
 program.addCommand(removeCmd)
@@ -166,8 +178,11 @@ testCmd.action(async (opts) => {
   if (!scope) return
 
   clack.intro("Test a Claude Code hook")
-  await testHookFlow(scope)
-  clack.outro("Done")
+
+  while (true) {
+    await testHookFlow(scope)
+    clack.log.info("Press Ctrl+C to exit\n")
+  }
 })
 
 program.addCommand(testCmd)
@@ -179,37 +194,39 @@ const docsCmd = new Command("docs")
   .option("--hook <hook>", "Hook event name (required in non-interactive mode)")
 
 docsCmd.action(async (opts) => {
-  let hookName = opts.hook
+  clack.intro("Hook Documentation")
 
-  if (!hookName) {
-    clack.intro("Hook Documentation")
+  while (true) {
+    let hookName = opts.hook
 
-    const sorted = [...HOOK_METADATA].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    )
+    if (!hookName) {
+      const sorted = [...HOOK_METADATA].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      )
 
-    hookName = await clack.autocomplete({
-      message: "Select a hook event (type to filter):",
-      options: sorted.map((h) => ({
-        value: h.name,
-        label: h.name,
-        hint: h.description,
-      })),
-    })
+      hookName = await clack.autocomplete({
+        message: "Select a hook event (type to filter):",
+        options: sorted.map((h) => ({
+          value: h.name,
+          label: h.name,
+          hint: h.description,
+        })),
+      })
 
-    if (clack.isCancel(hookName)) {
-      clack.outro("Cancelled")
-      return
+      if (clack.isCancel(hookName)) break
     }
-  }
 
-  const doc = HOOK_DOCS_MAP[hookName]
-  if (!doc) {
-    console.error(`Unknown hook event: ${hookName}`)
-    process.exit(1)
-  }
+    const doc = HOOK_DOCS_MAP[hookName]
+    if (!doc) {
+      clack.log.error(`Unknown hook event: ${hookName}`)
+    } else {
+      console.log(marked(doc))
+    }
 
-  console.log(marked(doc))
+    // If --hook was passed, don't loop
+    if (opts.hook) break
+    clack.log.info("Press Ctrl+C to exit\n")
+  }
 })
 
 program.addCommand(docsCmd)
@@ -219,113 +236,114 @@ program.addCommand(docsCmd)
 program.action(async () => {
   clack.intro("Claude Code Hooks Manager")
 
-  const action = await clack.select({
-    message: "What would you like to do?",
-    options: [
-      {
-        value: "add",
-        label: "Add a hook",
-        hint: "Create a new hook configuration",
-      },
-      { value: "list", label: "List hooks", hint: "Show all configured hooks" },
-      {
-        value: "remove",
-        label: "Remove a hook",
-        hint: "Delete a hook configuration",
-      },
-      {
-        value: "test",
-        label: "Test a hook",
-        hint: "Run a hook with synthetic input",
-      },
-      {
-        value: "docs",
-        label: "View docs",
-        hint: "Read documentation for a hook event",
-      },
-    ],
-  })
-
-  if (clack.isCancel(action)) {
-    clack.outro("Goodbye")
-    return
-  }
-
-  // Docs don't need a scope — handle separately
-  if (action === "docs") {
-    const sorted = [...HOOK_METADATA].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    )
-    const hookName = await clack.autocomplete({
-      message: "Select a hook event (type to filter):",
-      options: sorted.map((h) => ({
-        value: h.name,
-        label: h.name,
-        hint: h.description,
-      })),
+  while (true) {
+    const action = await clack.select({
+      message: "What would you like to do?",
+      options: [
+        {
+          value: "add",
+          label: "Add a hook",
+          hint: "Create a new hook configuration",
+        },
+        {
+          value: "list",
+          label: "List hooks",
+          hint: "Show all configured hooks",
+        },
+        {
+          value: "remove",
+          label: "Remove a hook",
+          hint: "Delete a hook configuration",
+        },
+        {
+          value: "test",
+          label: "Test a hook",
+          hint: "Run a hook with synthetic input",
+        },
+        {
+          value: "docs",
+          label: "View docs",
+          hint: "Read documentation for a hook event",
+        },
+      ],
     })
-    if (clack.isCancel(hookName)) {
-      clack.outro("Cancelled")
-      return
+
+    if (clack.isCancel(action)) break
+
+    // Docs don't need a scope — handle separately
+    if (action === "docs") {
+      const sorted = [...HOOK_METADATA].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      )
+      const hookName = await clack.autocomplete({
+        message: "Select a hook event (type to filter):",
+        options: sorted.map((h) => ({
+          value: h.name,
+          label: h.name,
+          hint: h.description,
+        })),
+      })
+      if (clack.isCancel(hookName)) continue
+      const doc = HOOK_DOCS_MAP[hookName]
+      if (doc) console.log(marked(doc))
+      clack.log.info("Press Ctrl+C to exit\n")
+      continue
     }
-    const doc = HOOK_DOCS_MAP[hookName]
-    if (doc) console.log(marked(doc))
-    clack.outro("Done")
-    return
-  }
 
-  const scope = await clack.select({
-    message: "Which settings scope?",
-    options: [
-      {
-        value: "project",
-        label: "Project",
-        hint: ".claude/settings.json (shared with team)",
-      },
-      {
-        value: "local",
-        label: "Local",
-        hint: ".claude/settings.local.json (personal, git-ignored)",
-      },
-      {
-        value: "user",
-        label: "User",
-        hint: "~/.claude/settings.json (global)",
-      },
-    ],
-  })
+    const scope = await clack.select({
+      message: "Which settings scope?",
+      options: [
+        {
+          value: "project",
+          label: "Project",
+          hint: ".claude/settings.json (shared with team)",
+        },
+        {
+          value: "local",
+          label: "Local",
+          hint: ".claude/settings.local.json (personal, git-ignored)",
+        },
+        {
+          value: "user",
+          label: "User",
+          hint: "~/.claude/settings.json (global)",
+        },
+      ],
+    })
 
-  if (clack.isCancel(scope)) {
-    clack.outro("Goodbye")
-    return
-  }
+    if (clack.isCancel(scope)) continue
 
-  switch (action) {
-    case "add": {
-      const result = await addHookFlow()
-      if (result) {
-        await saveHook(
-          /** @type {"user"|"project"|"local"} */ (scope),
-          result.eventName,
-          result.configEntry,
-        )
-        clack.log.success(`Added ${result.eventName} hook to ${scope} settings`)
-        clack.log.message(JSON.stringify(result.configEntry, null, 2))
+    switch (action) {
+      case "add": {
+        const result = await addHookFlow()
+        if (result) {
+          await saveHook(
+            /** @type {"user"|"project"|"local"} */ (scope),
+            result.eventName,
+            result.configEntry,
+          )
+          clack.log.success(
+            `Added ${result.eventName} hook to ${scope} settings`,
+          )
+          clack.log.message(JSON.stringify(result.configEntry, null, 2))
+        }
+        break
       }
-      break
+      case "list":
+        await listHooksFlow(/** @type {"user"|"project"|"local"} */ (scope))
+        break
+      case "remove":
+        await removeHookFlow(/** @type {"user"|"project"|"local"} */ (scope))
+        break
+      case "test":
+        await testHookFlow(/** @type {"user"|"project"|"local"} */ (scope))
+        break
     }
-    case "list":
-      await listHooksFlow(/** @type {"user"|"project"|"local"} */ (scope))
-      break
-    case "remove":
-      await removeHookFlow(/** @type {"user"|"project"|"local"} */ (scope))
-      break
-    case "test":
-      await testHookFlow(/** @type {"user"|"project"|"local"} */ (scope))
-      break
+
+    clack.log.info("Press Ctrl+C to exit\n")
   }
 
-  clack.outro("Done")
+  clack.outro("Goodbye")
 })
 
 program.parse()

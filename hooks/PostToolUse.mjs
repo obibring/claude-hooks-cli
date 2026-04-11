@@ -168,9 +168,9 @@ export const PostToolUseInputSchema = BaseHookInputSchema.extend({
 // --- Output ---
 
 export const PostToolUseOutputSchema = BaseHookOutputSchema.extend({
-  /** Set to \"block\" to stop Claude from continuing after this tool call. */
+  /** Set to "block" to prompt Claude with the reason. The tool has already executed; this provides reactive feedback, not a hard stop. */
   decision: BlockDecisionSchema.optional().describe(
-    'Set to "block" to stop Claude from continuing after this tool call.',
+    'Set to "block" to prompt Claude with the reason. The tool has already executed; this provides reactive feedback, not a hard stop.',
   ),
 })
 
@@ -199,7 +199,7 @@ const _output = {
   decision: {
     type: "enum",
     description:
-      'Set to "block" to stop Claude from continuing after this tool call.',
+      'Set to "block" to prompt Claude with the reason. The tool has already executed; this provides reactive feedback, not a hard stop.',
     values: ["block"],
     strict: true,
   },

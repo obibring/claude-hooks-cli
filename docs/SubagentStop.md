@@ -65,13 +65,13 @@ Supported handler types: command, prompt, agent, http (all 4).
 
 The JSON object received on stdin:
 
-| Property                 | Type      | Description                                    |
-| ------------------------ | --------- | ---------------------------------------------- |
-| `agent_id`               | `string`  | Unique subagent ID                             |
-| `agent_type`             | `string`  | Subagent type                                  |
-| `last_assistant_message` | `string`  | The subagent's final response                  |
-| `agent_transcript_path`  | `string`  | Path to the full transcript JSON               |
-| `stop_hook_active`       | `boolean` | `true` if another stop hook is already running |
+| Property                 | Type      | Description                                                     |
+| ------------------------ | --------- | --------------------------------------------------------------- |
+| `agent_id`               | `string`  | Unique subagent ID                                              |
+| `agent_type`             | `string`  | Subagent type                                                   |
+| `last_assistant_message` | `string`  | The subagent's final response                                   |
+| `agent_transcript_path`  | `string`  | Path to the full transcript JSON                                |
+| `stop_hook_active`       | `boolean` | `true` if a stop hook is configured and active for this session |
 
 ```ts
 {
@@ -115,5 +115,14 @@ The JSON object to write to stdout (can be handled via
   `hook_event_name: "SubagentStop"`. This is by design.
 - **`agent_transcript_path`**: Unique to SubagentStop — not present in
   SubagentStart. Useful for post-processing agent output.
+- **`stop_hook_active`**: Indicates a stop hook is configured and
+  active for this session. Use this to coordinate between multiple
+  stop hooks or to guard against recursion.
+- **Re-invocation after blocking**: When a stop hook returns
+  `{ decision: "block" }`, the subagent continues working instead of
+  stopping. When it tries to stop again, SubagentStop fires **again**.
+  The hook is re-evaluated on every subsequent stop attempt — there is
+  no automatic bypass. Guard against infinite loops by checking
+  conditions or external state before blocking.
 - **Agent frontmatter**: One of the 6 hooks that fire in agent
   sessions.

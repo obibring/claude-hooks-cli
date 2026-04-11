@@ -1,22 +1,22 @@
 import { z } from "zod/v4"
 
 import {
+  AGENT_SETTINGS_FIELDS,
+  BASE_INPUT_FIELDS,
+  BASE_OUTPUT_FIELDS,
+  COMMAND_SETTINGS_FIELDS,
+  hookFormBuilder,
+  HTTP_SETTINGS_FIELDS,
+  IF_SETTINGS_FIELD,
+  PROMPT_SETTINGS_FIELDS,
+} from "../lib/hook-form-builder.mjs"
+import {
   HttpExtraPropsSchema,
   SharedHandlerPropsSchema,
 } from "../schemas/config-schemas.mjs"
 import { BlockDecisionSchema } from "../schemas/enums.mjs"
 import { BaseHookInputSchema } from "../schemas/input-schemas.mjs"
 import { BaseHookOutputSchema } from "../schemas/output-schemas.mjs"
-import {
-  hookFormBuilder,
-  BASE_INPUT_FIELDS,
-  BASE_OUTPUT_FIELDS,
-  COMMAND_SETTINGS_FIELDS,
-  PROMPT_SETTINGS_FIELDS,
-  AGENT_SETTINGS_FIELDS,
-  HTTP_SETTINGS_FIELDS,
-  IF_SETTINGS_FIELD,
-} from "../lib/hook-form-builder.mjs"
 
 // --- Matcher ---
 
@@ -141,11 +141,11 @@ export const StopInputSchema = BaseHookInputSchema.extend({
   last_assistant_message: z
     .string()
     .describe("Claude's final response text for this turn."),
-  /** True if a stop hook is already running. Check this to avoid recursion. */
+  /** True if a stop hook is configured and active for this session. Use to coordinate between multiple stop hooks or guard against recursion. */
   stop_hook_active: z
     .boolean()
     .describe(
-      "True if a stop hook is already running. Check this to avoid recursion.",
+      "True if a stop hook is configured and active for this session. Use to coordinate between multiple stop hooks or guard against recursion.",
     ),
 })
 
@@ -175,7 +175,7 @@ const _input = {
   stop_hook_active: {
     type: "boolean",
     description:
-      "True if a stop hook is already running. Check this to avoid recursion.",
+      "True if a stop hook is configured and active for this session. Use to coordinate between multiple stop hooks or guard against recursion.",
     required: true,
   },
 }

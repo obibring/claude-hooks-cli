@@ -71,10 +71,10 @@ Supported handler types: command, prompt, agent, http (all 4).
 
 The JSON object received on stdin:
 
-| Property                 | Type      | Description                                                              |
-| ------------------------ | --------- | ------------------------------------------------------------------------ |
-| `last_assistant_message` | `string`  | Claude's final response text                                             |
-| `stop_hook_active`       | `boolean` | `true` if another stop hook is already running; check to avoid recursion |
+| Property                 | Type      | Description                                                     |
+| ------------------------ | --------- | --------------------------------------------------------------- |
+| `last_assistant_message` | `string`  | Claude's final response text                                    |
+| `stop_hook_active`       | `boolean` | `true` if a stop hook is configured and active for this session |
 
 ```ts
 {
@@ -118,8 +118,16 @@ The JSON object to write to stdout (can be handled via
   behavior: "For subagents, Stop hooks are automatically converted to
   SubagentStop since that is the event that fires when a subagent
   completes."
-- **`stop_hook_active`**: If `true`, a stop hook is already running —
-  be careful about recursion.
+- **`stop_hook_active`**: Indicates a stop hook is configured and
+  active for this session. Use this to coordinate between multiple
+  stop hooks or to guard against recursion.
+- **Re-invocation after blocking**: When a stop hook returns
+  `{ decision: "block" }`, Claude continues working instead of
+  stopping. When Claude finishes its next turn and tries to stop
+  again, the Stop hook fires **again**. The hook is re-evaluated on
+  every subsequent stop attempt — there is no automatic bypass. Guard
+  against infinite loops by checking conditions or external state
+  before blocking.
 - **Different from StopFailure**: `Stop` fires on normal turn
   completion. `StopFailure` fires on API errors (rate limit, auth
   failure, etc.).

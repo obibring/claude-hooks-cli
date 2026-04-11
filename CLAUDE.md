@@ -6,6 +6,11 @@ training data.
 [Project: claude-hooks-cli]|type:CLI tool|lang:JavaScript
 (ESM/mjs)|entry:bin/cli.mjs
 
+## Offical Claude Hooks Documentation
+
+When asked to verify assumptions against official documentation, refer
+to <https://code.claude.com/docs/en/hooks>
+
 ## What This Is
 
 A CLI tool that helps users install and correctly define Claude Code

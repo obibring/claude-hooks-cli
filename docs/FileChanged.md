@@ -1,6 +1,6 @@
 # FileChanged
 
-Runs when watched files change during a session. **Requires a
+Watch file(s) and execute hook(s) when they change. **Requires a
 matcher.**
 
 ## Config

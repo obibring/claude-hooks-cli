@@ -1,7 +1,7 @@
 {
   "name": "@obibring/claude-hooks-cli",
   "packageManager": "bun@1.3.2",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Claude Code helper for creating and installing valid hooks using typescript",
   "type": "module",
   "main": "./index.mjs",
@@ -119,6 +119,7 @@
     "dist/**/*.d.mts",
     "dist/**/*.d.mts.map",
     "bin/cli.mjs",
+    "bin/cca.mjs",
     "lib/**/*.mjs",
     "lib/**/*.d.mts",
     "lib/**/*.d.cts",
@@ -126,10 +127,12 @@
   ],
   "bin": {
     "claude-hooks": "./bin/cli.mjs",
-    "cch": "./bin/cli.mjs"
+    "cch": "./bin/cli.mjs",
+    "cca": "./bin/cca.mjs"
   },
   "scripts": {
     "start": "node ./bin/cli.mjs",
+    "cca": "node ./bin/cca.mjs",
     "build": "node scripts/build-docs-map.mjs && tsc && cp lib/handler-types.d.mts dist/lib/handler-types.d.mts && cp lib/handler.d.mts dist/lib/handler.d.mts && mkdir -p dist/lib/handlers && cp lib/handlers/index.d.mts dist/lib/handlers/index.d.mts && cp lib/api-types.d.mts dist/lib/api-types.d.mts && cp lib/api.d.mts dist/lib/api.d.mts && cp lib/hook-form-builder.d.mts dist/lib/hook-form-builder.d.mts && cp lib/claude-md.d.mts dist/lib/claude-md.d.mts",
     "dev": "bun run build && tsc --watch --preserveWatchOutput",
     "prepublishOnly": "bun run build",
